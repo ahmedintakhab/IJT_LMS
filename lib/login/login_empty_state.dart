@@ -12,6 +12,7 @@ import 'package:learn_megnagmet/login/sign_up/sign_up_empty_screen.dart';
 import 'package:learn_megnagmet/utils/shared_pref.dart';
 
 import '../utils/screen_size.dart';
+import '../widget/custom_text_form_field.dart';
 
 class EmptyState extends StatefulWidget {
   const EmptyState({Key? key}) : super(key: key);
@@ -284,79 +285,44 @@ class _EmptyStateState extends State<EmptyState> {
       key: formkey,
       child: Column(
         children: [
-          TextFormField(
+          CustomTextFormField(
             controller: emailController,
-            decoration: InputDecoration(
-
-                hintText: 'Email',
-                hintStyle:  TextStyle(
-                    fontSize: 15.sp,
-                    fontFamily: 'Gilroy',
-                    color: const Color(0XFF9B9B9B),
-                    fontWeight: FontWeight.w700),
-                border: OutlineInputBorder(
-                  borderSide:  BorderSide(color: const Color(0XFFDEDEDE),width: 1.w),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-            focusedBorder:OutlineInputBorder(
-              borderSide:  BorderSide(color: const Color(0XFF23408F),width: 1.w),
-              borderRadius: BorderRadius.circular(12),
-            ) ,
-            enabledBorder:OutlineInputBorder(
-              borderSide:  BorderSide(color: const Color(0XFFDEDEDE),width: 1.w),
-              borderRadius: BorderRadius.circular(12),
-            ),
-              filled: true,
-              fillColor: const Color(0xFFF5F5F5),
-              contentPadding:  EdgeInsets.only(left: 20.w,top:20.h,bottom: 20.h),),
+            hintText: 'Email',
             validator: (val) {
-              if (val!.isEmpty) {
-                return 'Enter the  email';
-              } else {
-                if (!RegExp(r'^.+@[a-zA-Z]+\.{1}[a-zA-Z]+(\.{0,1}[a-zA-Z]+)$')
-                    .hasMatch(val)) {
-                  return 'Please enter valid email address';
-                }
+              if (val == null || val.isEmpty) {
+                return 'Enter the email';
+              } else if (!RegExp(
+                  r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                  .hasMatch(val)) {
+                return "Please enter valid email address";
               }
               return null;
             },
           ),
            SizedBox(height: 15.h),
-          TextFormField(
+          CustomTextFormField(
             controller: passwordController,
+            hintText: 'Password',
             obscureText: ispassHiden,
-            decoration: InputDecoration(
-                hintText: 'Password',
-                hintStyle:  TextStyle(
-                    fontSize: 15.sp,
-                    fontFamily: 'Gilroy',
-                    color: const Color(0XFF9B9B9B),
-                    fontWeight: FontWeight.w700),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder:OutlineInputBorder(
-                  borderSide: BorderSide(color: const Color(0XFF23408F),width: 1.w),
-                  borderRadius: BorderRadius.circular(12),
-                ) ,
-                enabledBorder:OutlineInputBorder(
-                  borderSide: BorderSide(color: const Color(0XFFDEDEDE),width: 1.w),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                filled: true,
-                fillColor: const Color(0xFFF5F5F5),
-                contentPadding:  EdgeInsets.only(left: 20.w,top:20.h,bottom: 20.h),
-                suffixIcon: ispassHiden
-                    ? GestureDetector(
-                        onTap: () => toggle(),
-                        child:  Image(image:const  AssetImage("assets/notvisible_eye.png"),height: 20.h,width: 20.w,))
-                    : GestureDetector(
-                        onTap: () => toggle(),
-                        child:  Image(image: const AssetImage("assets/visible_eye.png"),height: 20.h,width: 20.w,))),
+            suffixIcon: ispassHiden
+                ? GestureDetector(
+              onTap: toggle,
+              child: Image(
+                image: const AssetImage("assets/notvisible_eye.png"),
+                height: 20.h,
+                width: 20.w,
+              ),
+            )
+                : GestureDetector(
+              onTap: toggle,
+              child: Image(
+                image: const AssetImage("assets/visible_eye.png"),
+                height: 20.h,
+                width: 20.w,
+              ),
+            ),
             validator: (val) {
-              if (val!.isEmpty) {
-                return 'Enter the  password';
-              }
+              if (val == null || val.isEmpty) return 'Enter the password';
               return null;
             },
           ),

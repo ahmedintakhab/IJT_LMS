@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:learn_megnagmet/login/login_empty_state.dart';
 import 'package:learn_megnagmet/login/sign_up/sign_in_phonenumber.dart';
 import 'package:learn_megnagmet/login/sign_up/term_and_condition.dart';
+import 'package:learn_megnagmet/widget/custom_text_form_field.dart';
+import 'package:learn_megnagmet/widget/phone_number_field.dart';
 
 import '../../utils/screen_size.dart';
 
@@ -23,10 +25,16 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
 
   String passworderror = '';
   final formkey = GlobalKey<FormState>();
-  TextEditingController nameController = TextEditingController();
+  TextEditingController firstnameController = TextEditingController();
+  TextEditingController lastnameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
+  TextEditingController countryController = TextEditingController();
+  TextEditingController provinceController = TextEditingController();
+  TextEditingController districtController = TextEditingController();
+  TextEditingController cityController = TextEditingController();
+  TextEditingController muqamController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  TextEditingController confirmpassController = TextEditingController();
+  TextEditingController confirmpasswordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -96,127 +104,136 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
       key: formkey,
       child: Column(
         children: [
-          TextFormField(
-            controller: nameController,
-
-            decoration: InputDecoration(
-
-                hintText: 'Name',
-                hintStyle:  TextStyle(
-                    fontSize: 15.sp,
-                    fontFamily: 'Gilroy',
-                    color: const Color(0XFF9B9B9B),
-                    fontWeight: FontWeight.bold),
-
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: const Color(0XFF23408F), width: 1.w)),
-                enabledBorder:OutlineInputBorder(
-                  borderSide: BorderSide(color: const Color(0XFFDEDEDE),width: 1.w),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              filled: true,
-              fillColor: const Color(0xFFF5F5F5),
-              contentPadding: EdgeInsets.only(left: 20.w,top:20.h,bottom: 20.h),
-            ),
-            validator: (val) {
-              if (val!.isEmpty) return 'Enter the  Name';
-              return null;
-            },
-          ),
-          SizedBox(height: 20.h),
-          TextFormField(
+          CustomTextFormField(
             controller: emailController,
-            decoration: InputDecoration(
-                hintText: 'Email',
-                hintStyle:  TextStyle(
-                    fontSize: 15.sp,
-                    fontFamily: 'Gilroy',
-                    color: const Color(0XFF9B9B9B),
-                    fontWeight: FontWeight.bold),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: const Color(0XFF23408F), width: 1.w)),
-                enabledBorder:OutlineInputBorder(
-                  borderSide: BorderSide(color: const Color(0XFFDEDEDE),width: 1.w),
-                  borderRadius: BorderRadius.circular(12),
-                ), filled: true,
-              fillColor: const Color(0xFFF5F5F5),
-              contentPadding: EdgeInsets.only(left: 20.w,top:20.h,bottom: 20.h),),
+            hintText: 'Email',
             validator: (val) {
-              if (val!.isEmpty)
-                return 'Enter the  email';
-              else {
-                if (!RegExp(
-                        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                    .hasMatch(val)) {
-                  return "Please enter valid email address";
-                }
+              if (val == null || val.isEmpty) {
+                return 'Enter the email';
+              } else if (!RegExp(
+                  r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                  .hasMatch(val)) {
+                return "Please enter valid email address";
               }
               return null;
             },
           ),
-           SizedBox(height: 20.h),
-          TextFormField(
-            controller: passwordController,
-            obscureText: ispassHiden,
-            decoration: InputDecoration(
-                suffixIcon:ispassHiden
-                    ? GestureDetector(
-                    onTap: () => toggle(),
-                    child:  Image(image: const AssetImage("assets/notvisible_eye.png"),height: 20.h,width: 20.w,))
-                    : GestureDetector(
-                    onTap: () => toggle(),
-                    child:  Image(image: const AssetImage("assets/visible_eye.png"),height: 20.h,width: 20.w,)),
-                hintText: 'Password',
-                hintStyle: const TextStyle(
-                    fontSize: 15,
-                    fontFamily: 'Gilroy',
-                    color: Color(0XFF9B9B9B),
-                    fontWeight: FontWeight.bold),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: const Color(0XFF23408F), width: 1.w)),
-                enabledBorder:OutlineInputBorder(
-                  borderSide: BorderSide(color: const Color(0XFFDEDEDE),width: 1.w),
-                  borderRadius: BorderRadius.circular(12),
-                ), filled: true,
-              fillColor: const Color(0xFFF5F5F5),
-              contentPadding: EdgeInsets.only(left: 20.w,top:20.h,bottom: 20.h),),
+          SizedBox(height: 20.h),
+          PhoneNumberField(),
+          SizedBox(height: 20.h),
+          CustomTextFormField(
+            controller: firstnameController,
+            hintText: 'First Name',
             validator: (val) {
-              if (val!.isEmpty) return 'Enter the  password';
+              if (val == null || val.isEmpty) return 'Enter the first name';
+              return null;
+            },
+          ),
+          SizedBox(height: 20.h),
+          CustomTextFormField(
+            controller: lastnameController,
+            hintText: 'Last Name',
+            validator: (val) {
+              if (val == null || val.isEmpty) return 'Enter the last name';
               return null;
             },
           ),
            SizedBox(height: 20.h),
-          TextFormField(
-            controller: confirmpassController,
-            obscureText: ispassHiden1,
-            decoration: InputDecoration(
-                suffixIcon: ispassHiden1
-                    ? GestureDetector(
-                    onTap: () => toggle1(),
-                    child:  Image(image:const  AssetImage("assets/notvisible_eye.png"),height: 20.h,width: 20.w,))
-                    : GestureDetector(
-                    onTap: () => toggle1(),
-                    child:  Image(image: const AssetImage("assets/visible_eye.png"),height: 20.h,width: 20.w,)),
-                hintText: 'Confirm password',
-                hintStyle:  TextStyle(
-                    fontSize: 15.sp,
-                    fontFamily: 'Gilroy',
-                    color: const Color(0XFF9B9B9B),
-                    fontWeight: FontWeight.bold),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: const Color(0XFF23408F), width: 1.w)),
-                enabledBorder:OutlineInputBorder(
-                  borderSide:  BorderSide(color: Color(0XFFDEDEDE),width: 1.w),
-                  borderRadius: BorderRadius.circular(12),
-                ), filled: true,
-              fillColor: const Color(0xFFF5F5F5),
-              contentPadding: EdgeInsets.only(left: 20.w,top:20.h,bottom: 20.h),),
+          CustomTextFormField(
+            controller: passwordController,
+            hintText: 'Password',
+            obscureText: ispassHiden,
+            suffixIcon: ispassHiden
+                ? GestureDetector(
+              onTap: toggle,
+              child: Image(
+                image: const AssetImage("assets/notvisible_eye.png"),
+                height: 20.h,
+                width: 20.w,
+              ),
+            )
+                : GestureDetector(
+              onTap: toggle,
+              child: Image(
+                image: const AssetImage("assets/visible_eye.png"),
+                height: 20.h,
+                width: 20.w,
+              ),
+            ),
             validator: (val) {
-              if (val!.isEmpty) return 'Enter the  confirmpassword';
+              if (val == null || val.isEmpty) return 'Enter the password';
+              return null;
+            },
+          ),
+          SizedBox(height: 20.h),
+          CustomTextFormField(
+            controller: confirmpasswordController,
+            hintText: 'Confirm password',
+            obscureText: ispassHiden1,
+            suffixIcon: ispassHiden1
+                ? GestureDetector(
+              onTap: toggle1,
+              child: Image(
+                image: const AssetImage("assets/notvisible_eye.png"),
+                height: 20.h,
+                width: 20.w,
+              ),
+            )
+                : GestureDetector(
+              onTap: toggle1,
+              child: Image(
+                image: const AssetImage("assets/visible_eye.png"),
+                height: 20.h,
+                width: 20.w,
+              ),
+            ),
+            validator: (val) {
+              if (val == null || val.isEmpty) return 'Enter the confirmpassword';
+              return null;
+            },
+          ),
+          SizedBox(height: 20.h),
+          CustomTextFormField(
+            controller: countryController,
+            hintText: 'Country',
+            validator: (val) {
+              if (val == null || val.isEmpty) return 'Enter the country';
+              return null;
+            },
+          ),
+          SizedBox(height: 20.h),
+          CustomTextFormField(
+            controller: provinceController,
+            hintText: 'Province',
+            validator: (val) {
+              if (val == null || val.isEmpty) return 'Enter the province';
+              return null;
+            },
+          ),
+          SizedBox(height: 20.h),
+          CustomTextFormField(
+            controller: districtController,
+            hintText: 'District',
+            validator: (val) {
+              if (val == null || val.isEmpty) return 'Enter the district';
+              return null;
+            },
+          ),
+          SizedBox(height: 20.h),
+          CustomTextFormField(
+            controller: cityController,
+            hintText: 'City',
+            validator: (val) {
+              if (val == null || val.isEmpty) return 'Enter the city';
+              return null;
+            },
+          ),
+          SizedBox(height: 20.h),
+          CustomTextFormField(
+            controller: muqamController,
+            hintText: 'Muqam',
+            validator: (val) {
+              if (val == null || val.isEmpty) return 'Enter the muqam';
               return null;
             },
           ),
@@ -274,7 +291,7 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
         onPressed: ischeaked
             ? () {
                 if (formkey.currentState!.validate()) {
-                  if (confirmpassController.value == passwordController.value) {
+                  if (confirmpasswordController.value == passwordController.value) {
                     Get.to(const SignInPhonenumber());
                   }
                 }
@@ -328,10 +345,17 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
 
   @override
   void dispose() {
-    nameController.dispose();
+    firstnameController.dispose();
+    lastnameController.dispose();
     emailController.dispose();
     passwordController.dispose();
-    confirmpassController.dispose();
+    confirmpasswordController.dispose();
+    countryController.dispose();
+    provinceController.dispose();
+    districtController.dispose();
+    cityController.dispose();
+    muqamController.dispose();
+    confirmpasswordController.dispose();
     super.dispose();
   }
 }
