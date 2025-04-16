@@ -9,6 +9,7 @@ import 'package:learn_megnagmet/widget/custom_text_form_field.dart';
 import 'package:learn_megnagmet/widget/phone_number_field.dart';
 
 import '../../utils/screen_size.dart';
+import 'affiliation_field.dart';
 
 class SignInEmptyScreen extends StatefulWidget {
   const SignInEmptyScreen({Key? key}) : super(key: key);
@@ -192,6 +193,8 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
               return null;
             },
           ),
+          SizedBox(height: 20.h),
+          const AffiliationField(),
           SizedBox(height: 20.h),
           CustomTextFormField(
             controller: countryController,
