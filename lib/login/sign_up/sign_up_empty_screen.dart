@@ -18,7 +18,6 @@ import '../../dropdowns/muqam_dropdown.dart';
 import '../../dropdowns/province_dropdown.dart';
 import '../../utils/api_constant.dart';
 import '../../utils/screen_size.dart';
-import '../../widget/custom_dropdown.dart';
 import 'affiliation_field.dart';
 
 class SignInEmptyScreen extends StatefulWidget {
@@ -29,8 +28,6 @@ class SignInEmptyScreen extends StatefulWidget {
 }
 
 class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
-  // List<String> cities = ['Wah Cantt', 'Islamabad', 'Rawalpindi'];
-  List<String> muqams = ['Central', 'North', 'South'];
 
   String? selectedCountry;
   String? selectedProvince;
@@ -56,11 +53,12 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
   TextEditingController firstnameController = TextEditingController();
   TextEditingController lastnameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
-  TextEditingController phoneNumberController = TextEditingController();
+  // TextEditingController phoneNumberController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmpasswordController = TextEditingController();
   TextEditingController membershipController = TextEditingController();
   TextEditingController provinceController = TextEditingController();
+  String phoneNumber = '';
   final locationControllers = {
     'country': TextEditingController(),
     'province': TextEditingController(),
@@ -107,19 +105,19 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
       cityHint = isDistrictSelected ? '--Select City--' : 'City';
     });
   }
-
+//Get all ids from Shared Preferances
+  Future<Map<String, String?>> getAllIdsFromSharedPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    return {
+      'country_id': prefs.getString('country_id'),
+      'province_id': prefs.getString('province_id'),
+      'district_id': prefs.getString('district_id'),
+      'city_id': prefs.getString('city_id'),
+      'muqam_id': prefs.getString('muqam_id'),
+      'student_type': prefs.getInt('has_affiliation')?.toString(),
+    };
+  }
   Future<void> registerUser() async {
-    if (!formkey.currentState!.validate()) return;
-    if (!ischeaked) {
-      Get.snackbar(
-        'Error',
-        'Please accept terms and conditions',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      return;
-    }
     if (passwordController.text != confirmpasswordController.text) {
       Get.snackbar(
         'Error',
@@ -130,15 +128,22 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
       );
       return;
     }
-    if (selectedCountry == null ||
-        selectedProvince == null ||
-        selectedDistrict == null ||
-        selectedCity == null ||
-        selectedMuqam == null) {
-      Get.snackbar('Error', 'Please select all location fields',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white);
+    // Fetch all IDs and student_type from SharedPreferences
+    final ids = await getAllIdsFromSharedPreferences();
+    // Validate that all required IDs are available
+    if (ids['country_id'] == null ||
+        ids['province_id'] == null ||
+        ids['district_id'] == null ||
+        ids['city_id'] == null ||
+        ids['muqam_id'] == null ||
+        ids['student_type'] == null) {
+      Get.snackbar(
+        'Error',
+        'Please complete all selections (Country, Province, District, City, Muqam, and Affiliation)',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
       return;
     }
 
@@ -146,18 +151,18 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
 
     final url = '${ApiConstant.baseUrl}register';
     final data = {
-      'email': emailController.text.trim(),
       'first_name': firstnameController.text.trim(),
       'last_name': lastnameController.text.trim(),
-      'phone_number': phoneNumberController.text.trim(),
+      'email': emailController.text.trim(),
       'password': passwordController.text.trim(),
-      'confirm_password': confirmpasswordController.text.trim(),
-      'membership': membershipController.text.trim(),
-      'country': locationControllers['country']!.text.trim(),
-      'province': locationControllers['province']!.text.trim(),
-      'district': locationControllers['district']!.text.trim(),
-      'city': locationControllers['city']!.text.trim(),
-      'muqam': locationControllers['muqam']!.text.trim(),
+      'password_confirmation': confirmpasswordController.text.trim(),
+      'mobile_number': phoneNumber,
+      'country_id': ids['country_id'],
+      'province_id': ids['province_id'],
+      'district_id': ids['district_id'],
+      'city_id': ids['city_id'],
+      'muqam_id': ids['muqam_id'],
+      'student_type': ids['student_type'], // 0 for "No", 1 for "Yes"
     };
 
     try {
@@ -169,8 +174,8 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
 
       final responseData = json.decode(response.body);
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        print('Login api status response: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        print('Register api status response: ${response.statusCode}');
         Get.snackbar(
           'Successful',
           'User registered successfully',
@@ -193,7 +198,7 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
-        print('Login error: $errorMessage');
+        print('Register API error: $errorMessage');
       }
     } catch (e) {
       Get.snackbar(
@@ -203,7 +208,7 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-      print('Login error: ${e.toString()}');
+      print('Register error: ${e.toString()}');
 
     } finally {
       setState(() => isLoading = false);
@@ -298,8 +303,18 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
             },
           ),
           SizedBox(height: 20.h),
-          PhoneNumberField(
-            controller: phoneNumberController,
+          phone_number_field(
+            onPhoneNumberChanged: (String phone) {
+              setState(() {
+                phoneNumber = phone; // Store the phone number
+              });
+            },
+            validator: (String? value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter phone number';
+              }
+              return null;
+            },
           ),
           SizedBox(height: 20.h),
           CustomTextFormField(
@@ -420,7 +435,9 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
             },
             initialValue: selectedProvince,
             isCountrySelected: isCountrySelected,
-          ),          SizedBox(height: 20.h),
+          ),
+
+          SizedBox(height: 20.h),
           DistrictDropdown(
             hint: districtHint,
             onChanged: (value) async {
@@ -517,7 +534,7 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
     firstnameController.dispose();
     lastnameController.dispose();
     emailController.dispose();
-    phoneNumberController.dispose();
+    // phoneNumber.dispose();
     passwordController.dispose();
     confirmpasswordController.dispose();
     locationControllers.values.forEach((controller) => controller.dispose());

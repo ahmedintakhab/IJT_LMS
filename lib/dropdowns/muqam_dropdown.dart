@@ -33,6 +33,7 @@ class _MuqamDropdownState extends State<MuqamDropdown> {
   void initState() {
     super.initState();
     selectedValue = widget.initialValue;
+    print('MuqamDropdown initState: Initializing with value $selectedValue');
     if (widget.isCitySelected) {
       fetchMuqams();
     }
@@ -53,7 +54,14 @@ class _MuqamDropdownState extends State<MuqamDropdown> {
     return cityId;
   }
 
+  Future<void> saveMuqamId(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('muqam_id', id);
+    print('saveMuqamId: Saved muqam ID: $id');
+  }
+
   Future<void> fetchMuqams() async {
+    print('fetchMuqams: Starting to fetch muqams');
     try {
       final cityId = await getCityId();
       if (cityId == null) {
@@ -66,6 +74,7 @@ class _MuqamDropdownState extends State<MuqamDropdown> {
       }
       print('fetchMuqams: Using city ID: $cityId');
       final response = await getMuqams(cityId);
+      print('fetchMuqams: Successfully fetched muqams: $response');
       setState(() {
         muqams = response;
         hasError = false;
@@ -81,19 +90,22 @@ class _MuqamDropdownState extends State<MuqamDropdown> {
 
   Future<List<Map<String, dynamic>>> getMuqams(String cityId) async {
     final url = '${ApiConstant.baseUrl}muqams/$cityId';
+    print('getMuqams: Calling API with URL: $url');
     try {
       final response = await http.get(Uri.parse(url));
-      print('Muqams API response status code: ${response.statusCode}');
+      print('getMuqams: API response status code: ${response.statusCode}');
+      print('getMuqams: Raw API response: ${response.body}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        print('getMuqams: Parsed JSON response: $jsonResponse');
         if (jsonResponse['success'] == true && jsonResponse['data'] is List) {
           final List<dynamic> data = jsonResponse['data'];
-          // Map the API response to a list of maps with 'id' and 'muqam_name'
           final muqamList = data.map((item) => {
             'id': item['id'].toString(),
             'muqam_name': item['muqam_name'].toString(),
           }).toList();
+          print('getMuqams: Extracted muqam list: $muqamList');
           return muqamList;
         } else {
           print('getMuqams: Invalid API response format');
@@ -111,6 +123,7 @@ class _MuqamDropdownState extends State<MuqamDropdown> {
 
   @override
   Widget build(BuildContext context) {
+    print('MuqamDropdown build: Rendering with ${muqams.length} muqams');
     return GestureDetector(
       onTap: hasError ? fetchMuqams : null,
       child: Container(
@@ -140,6 +153,9 @@ class _MuqamDropdownState extends State<MuqamDropdown> {
               print('MuqamDropdown onChanged: Selected muqam: $value');
               setState(() {
                 selectedValue = value;
+                final selectedMuqam = muqams.firstWhere(
+                        (muqam) => muqam['muqam_name'] == value);
+                saveMuqamId(selectedMuqam['id']);
               });
               widget.onChanged(value);
             }
@@ -148,7 +164,7 @@ class _MuqamDropdownState extends State<MuqamDropdown> {
               return DropdownMenuItem<String>(
                 value: muqam['muqam_name'],
                 child: Text(
-                  muqam['muqam_name'], // Displays "Taxila/Wah"
+                  muqam['muqam_name'],
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontFamily: 'Gilroy',
