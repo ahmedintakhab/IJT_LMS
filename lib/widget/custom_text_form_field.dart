@@ -35,7 +35,7 @@ class CustomTextFormField extends StatelessWidget {
             ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: const Color(0xFF23408F), width: 1.w),
+          borderSide: BorderSide(color: const Color(0XFF00AFEE), width: 1.w),
         ),
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(color: const Color(0xFFDEDEDE), width: 1.w),
@@ -51,7 +51,7 @@ class CustomTextFormField extends StatelessWidget {
         ),
         filled: true,
         fillColor: const Color(0xFFF5F5F5),
-        contentPadding: EdgeInsets.only(left: 20.w, top: 20.h, bottom: 20.h),
+        contentPadding: EdgeInsets.only(left: 20.w, top: 17.h, bottom: 17.h),
         suffixIcon: suffixIcon,
       ),
       validator: validator,

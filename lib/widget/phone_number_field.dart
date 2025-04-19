@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
 class PhoneNumberField extends StatelessWidget {
-  const PhoneNumberField({super.key});
+  const PhoneNumberField({super.key, required TextEditingController controller});
 
   @override
   Widget build(BuildContext context) {

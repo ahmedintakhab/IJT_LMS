@@ -1,16 +1,17 @@
 // ignore_for_file: non_constant_identifier_names
-
+import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:learn_megnagmet/home/home_main.dart';
 import 'package:learn_megnagmet/login/forgot_password.dart';
 import 'package:learn_megnagmet/login/sign_up/sign_up_empty_screen.dart';
-import 'package:learn_megnagmet/utils/shared_pref.dart';
+import 'package:learn_megnagmet/widget/button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
+import '../utils/api_constant.dart';
 import '../utils/screen_size.dart';
 import '../widget/custom_text_form_field.dart';
 
@@ -22,11 +23,84 @@ class EmptyState extends StatefulWidget {
 }
 
 class _EmptyStateState extends State<EmptyState> {
+
   final formkey = GlobalKey<FormState>();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   bool ispassHiden = false;
+  bool isLoading = false;
+  String authToken = '';
 
+  Future<void> loginUser() async {
+    if (!formkey.currentState!.validate()) return;
+
+    setState(() => isLoading = true);
+
+    final url = '${ApiConstant.baseUrl}login';
+    final data = {
+      'email': emailController.text.trim(),
+      'password': passwordController.text.trim(),
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(data),
+      );
+
+      final responseData = json.decode(response.body);
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        // Extract token from nested data object
+        final token = responseData['data']['token'];
+
+        if (token != null && token.isNotEmpty) {
+          authToken = token;
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('authToken', token);
+
+          Get.snackbar(
+            'Successful',
+            responseData['message'] ?? 'User login successfully',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
+
+          // Navigate to home screen or dashboard
+          // Get.off(() => const HomeScreen());
+        } else {
+          Get.snackbar(
+            'Error',
+            'Authentication token not received',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
+      } else {
+        String errorMessage = responseData['message'] ?? 'Login failed';
+        Get.snackbar(
+          'Error',
+          errorMessage,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'An error occurred: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
   @override
   Widget build(BuildContext context) {
     initializeScreenSize(context);
@@ -91,7 +165,12 @@ class _EmptyStateState extends State<EmptyState> {
                       SizedBox(height: 21.h),
                       forgotpassword(),
                       SizedBox(height: 40.h),
-                      loginbutton(),
+                      // loginbutton(),
+                      CustomButton(
+                        onTap: loginUser,
+                        buttonText: 'Log In',
+                        isLoading: isLoading,
+                      ),
                       SizedBox(height: 40.h),
                       or_sign_in_with_text(),
                       SizedBox(height: 41.h),
@@ -134,47 +213,12 @@ class _EmptyStateState extends State<EmptyState> {
             fontFamily: 'Gilroy',
             fontWeight: FontWeight.w700,
             fontSize: 15.sp,
-            color: Color(0XFF23408F),
+            color: Color(0XFF00AFEE),
           ),
         ),
       ),
     );
   }
-
-  Widget loginbutton() {
-    return Center(
-      child: GestureDetector(
-        onTap: () {
-          if (formkey.currentState!.validate()) {
-            PrefData.setLogin(true);
-
-            //PrefData.setVarification(true);
-            Get.to(const HomeMainScreen());
-          }
-
-
-        },
-        child: Container(
-          height: 56.h,
-          width: 374.w,
-          //color: Color(0XFF23408F),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: const Color(0XFF23408F),
-          ),
-          child:  Center(
-            child: Text("Log In",
-                style: TextStyle(
-                    color: Color(0XFFFFFFFF),
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w700,
-                    fontFamily: 'Gilroy')),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget login_google() {
     return GestureDetector(
       onTap: () {},

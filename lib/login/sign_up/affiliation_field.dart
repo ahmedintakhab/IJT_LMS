@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../widget/custom_dropdown.dart';
 
 class AffiliationField extends StatefulWidget {
-  const AffiliationField({super.key});
+  const AffiliationField({super.key, required TextEditingController controller});
 
   @override
   AffiliationFieldState createState() => AffiliationFieldState();

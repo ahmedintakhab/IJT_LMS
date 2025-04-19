@@ -3,12 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:learn_megnagmet/login/login_empty_state.dart';
-import 'package:learn_megnagmet/login/sign_up/sign_in_phonenumber.dart';
-import 'package:learn_megnagmet/login/sign_up/term_and_condition.dart';
+import 'package:learn_megnagmet/login/sign_up/term_condition_widget.dart';
+import 'package:learn_megnagmet/widget/button.dart';
 import 'package:learn_megnagmet/widget/custom_text_form_field.dart';
 import 'package:learn_megnagmet/widget/phone_number_field.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
+import '../../dropdowns/country_dropdown.dart';
+import '../../dropdowns/district_dropdown.dart';
+import '../../dropdowns/province_dropdown.dart';
+import '../../utils/api_constant.dart';
 import '../../utils/screen_size.dart';
+import '../../widget/custom_dropdown.dart';
 import 'affiliation_field.dart';
 
 class SignInEmptyScreen extends StatefulWidget {
@@ -19,23 +27,166 @@ class SignInEmptyScreen extends StatefulWidget {
 }
 
 class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
+  List<String> cities = ['Wah Cantt', 'Islamabad', 'Rawalpindi'];
+  List<String> muqams = ['Central', 'North', 'South'];
+
+  String? selectedCountry;
+  String? selectedProvince;
+  String? selectedDistrict;
+  String? selectedCity;
+  String? selectedMuqam;
 
   bool ischeaked = false;
   bool ispassHiden = true;
   bool ispassHiden1 = true;
+  bool isLoading = false;
+  bool isCountrySelected = false;
+  bool isProvinceSelected = false;
+  String provinceHint = 'Province';
+  String districtHint = 'District';
 
   String passworderror = '';
   final formkey = GlobalKey<FormState>();
   TextEditingController firstnameController = TextEditingController();
   TextEditingController lastnameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
-  TextEditingController countryController = TextEditingController();
-  TextEditingController provinceController = TextEditingController();
-  TextEditingController districtController = TextEditingController();
-  TextEditingController cityController = TextEditingController();
-  TextEditingController muqamController = TextEditingController();
+  TextEditingController phoneNumberController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmpasswordController = TextEditingController();
+  TextEditingController membershipController = TextEditingController();
+  TextEditingController provinceController = TextEditingController();
+  final locationControllers = {
+    'country': TextEditingController(),
+    'province': TextEditingController(),
+    'district': TextEditingController(),
+    'city': TextEditingController(),
+    'muqam': TextEditingController(),
+  };
+  @override
+  void initState() {
+    super.initState();
+    checkCountrySelection();
+  }
+  Future<void> checkCountrySelection() async {
+    final prefs = await SharedPreferences.getInstance();
+    final countryId = prefs.getString('country_id');
+    setState(() {
+      // Only set isCountrySelected to true if a country is actually selected
+      isCountrySelected = countryId != null && selectedCountry != null;
+      provinceHint = isCountrySelected ? '--Select Province--' : 'Province';
+    });
+  }
+
+  Future<void> checkProvinceSelection() async {
+    final prefs = await SharedPreferences.getInstance();
+    final provinceId = prefs.getString('province_id');
+    setState(() {
+      isProvinceSelected = provinceId != null && selectedProvince != null;
+      districtHint = isProvinceSelected ? '--Select District--' : 'District';
+    });
+  }
+
+  Future<void> registerUser() async {
+    if (!formkey.currentState!.validate()) return;
+    if (!ischeaked) {
+      Get.snackbar(
+        'Error',
+        'Please accept terms and conditions',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+    if (passwordController.text != confirmpasswordController.text) {
+      Get.snackbar(
+        'Error',
+        'Passwords do not match',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+    if (selectedCountry == null ||
+        selectedProvince == null ||
+        selectedDistrict == null ||
+        selectedCity == null ||
+        selectedMuqam == null) {
+      Get.snackbar('Error', 'Please select all location fields',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    final url = '${ApiConstant.baseUrl}register';
+    final data = {
+      'email': emailController.text.trim(),
+      'first_name': firstnameController.text.trim(),
+      'last_name': lastnameController.text.trim(),
+      'phone_number': phoneNumberController.text.trim(),
+      'password': passwordController.text.trim(),
+      'confirm_password': confirmpasswordController.text.trim(),
+      'membership': membershipController.text.trim(),
+      'country': locationControllers['country']!.text.trim(),
+      'province': locationControllers['province']!.text.trim(),
+      'district': locationControllers['district']!.text.trim(),
+      'city': locationControllers['city']!.text.trim(),
+      'muqam': locationControllers['muqam']!.text.trim(),
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(data),
+      );
+
+      final responseData = json.decode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('Login api status response: ${response.statusCode}');
+        Get.snackbar(
+          'Successful',
+          'User registered successfully',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+        Get.off(() => const EmptyState());
+      } else {
+        String errorMessage = 'Registration failed';
+        if (responseData.containsKey('message')) {
+          errorMessage = responseData['message'];
+        } else if (responseData.containsKey('errors')) {
+          errorMessage = responseData['errors'].values.first[0];
+        }
+        Get.snackbar(
+          'Error',
+          errorMessage,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        print('Login error: $errorMessage');
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'An error occurred: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      print('Login error: ${e.toString()}');
+
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,14 +198,14 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         body: Padding(
-          padding:  EdgeInsets.only(left: 20.w, right: 20.w),
+          padding: EdgeInsets.only(left: 20.w, right: 20.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-               SizedBox(height: 60.h),
+              SizedBox(height: 60.h),
               back_button(),
-               SizedBox(height: 20.h),
-               Center(
+              SizedBox(height: 20.h),
+              Center(
                 child: Text(
                   "Create an account",
                   style: TextStyle(
@@ -65,23 +216,27 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
                   textAlign: TextAlign.center,
                 ),
               ),
-             //  SizedBox(height: 20.h),
               Expanded(
-                child:ListView(
+                child: ListView(
                   children: [
                     detailform(),
                     SizedBox(height: 25.h),
-                    term_condition_cheakbox(),
+                    // term_condition_cheakbox(),
+                    TermConditionCheckbox(),
                     SizedBox(height: 25.h),
-                    sign_up_button(),
+                    CustomButton(
+                      onTap: registerUser,
+                      buttonText: 'Sign Up',
+                      isLoading: isLoading,
+                    )
                   ],
                 ),
               ),
+
               Padding(
-                padding:  EdgeInsets.only(bottom: 30.h),
+                padding: EdgeInsets.only(bottom: 30.h),
                 child: already_login_button(),
               ),
-              //Checkbox
             ],
           ),
         ),
@@ -94,6 +249,7 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
       ispassHiden = !ispassHiden;
     });
   }
+
   toggle1() {
     setState(() {
       ispassHiden1 = !ispassHiden1;
@@ -120,7 +276,9 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
             },
           ),
           SizedBox(height: 20.h),
-          PhoneNumberField(),
+          PhoneNumberField(
+            controller: phoneNumberController,
+          ),
           SizedBox(height: 20.h),
           CustomTextFormField(
             controller: firstnameController,
@@ -139,7 +297,7 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
               return null;
             },
           ),
-           SizedBox(height: 20.h),
+          SizedBox(height: 20.h),
           CustomTextFormField(
             controller: passwordController,
             hintText: 'Password',
@@ -163,6 +321,7 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
             ),
             validator: (val) {
               if (val == null || val.isEmpty) return 'Enter the password';
+              if (val.length < 6) return 'Password must be at least 6 characters';
               return null;
             },
           ),
@@ -189,123 +348,92 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
               ),
             ),
             validator: (val) {
-              if (val == null || val.isEmpty) return 'Enter the confirmpassword';
+              if (val == null || val.isEmpty) return 'Enter the confirm password';
+              if (val != passwordController.text) return 'Passwords do not match';
               return null;
             },
           ),
           SizedBox(height: 20.h),
-          const AffiliationField(),
+          AffiliationField(
+            controller: membershipController,
+          ),
           SizedBox(height: 20.h),
-          CustomTextFormField(
-            controller: countryController,
-            hintText: 'Country',
-            validator: (val) {
-              if (val == null || val.isEmpty) return 'Enter the country';
-              return null;
+          CountryDropdown(
+            hint: 'Country',
+            onChanged: (value) async {
+              setState(() {
+                selectedCountry = value;
+                isCountrySelected = value != null;
+                provinceHint = isCountrySelected ? '--Select Province--' : 'Province';
+                selectedProvince = null;
+                selectedDistrict = null;
+                isProvinceSelected = false;
+                districtHint = 'District';
+              });
+              final prefs = await SharedPreferences.getInstance();
+              if (value == null) {
+                await prefs.remove('country_id');
+              }
+              await prefs.remove('province_id');
+              await prefs.remove('district_id');
+            },
+            initialValue: selectedCountry,
+          ),
+          SizedBox(height: 20.h),
+          ProvinceDropdown(
+            hint: provinceHint,
+            onChanged: (value) async {
+              setState(() {
+                selectedProvince = value;
+                isProvinceSelected = value != null;
+                districtHint = isProvinceSelected ? '--Select District--' : 'District';
+                selectedDistrict = null;
+              });
+              final prefs = await SharedPreferences.getInstance();
+              if (value == null) {
+                await prefs.remove('province_id');
+              }
+              await prefs.remove('district_id');
+              checkProvinceSelection();
+            },
+            initialValue: selectedProvince,
+            isCountrySelected: isCountrySelected,
+          ),          SizedBox(height: 20.h),
+          DistrictDropdown(
+            hint: districtHint,
+            onChanged: (value) {
+              setState(() {
+                selectedDistrict = value;
+              });
+            },
+            initialValue: selectedDistrict,
+            isProvinceSelected: isProvinceSelected,
+          ),
+          SizedBox(height: 20.h),
+          CustomDropdown(
+            hint: 'City',
+            value: selectedCity,
+            items: cities,
+            onChanged: (value) {
+              setState(() {
+                selectedCity = value;
+                // cityController.text = value ?? '';
+              });
             },
           ),
           SizedBox(height: 20.h),
-          CustomTextFormField(
-            controller: provinceController,
-            hintText: 'Province',
-            validator: (val) {
-              if (val == null || val.isEmpty) return 'Enter the province';
-              return null;
-            },
-          ),
-          SizedBox(height: 20.h),
-          CustomTextFormField(
-            controller: districtController,
-            hintText: 'District',
-            validator: (val) {
-              if (val == null || val.isEmpty) return 'Enter the district';
-              return null;
-            },
-          ),
-          SizedBox(height: 20.h),
-          CustomTextFormField(
-            controller: cityController,
-            hintText: 'City',
-            validator: (val) {
-              if (val == null || val.isEmpty) return 'Enter the city';
-              return null;
-            },
-          ),
-          SizedBox(height: 20.h),
-          CustomTextFormField(
-            controller: muqamController,
-            hintText: 'Muqam',
-            validator: (val) {
-              if (val == null || val.isEmpty) return 'Enter the muqam';
-              return null;
+          CustomDropdown(
+            hint: 'Muqam',
+            value: selectedMuqam,
+            items: muqams,
+            onChanged: (value) {
+              setState(() {
+                selectedMuqam = value;
+                // muqamController.text = value ?? '';
+              });
             },
           ),
         ],
-      ),
-    );
-  }
-
-  Widget term_condition_cheakbox() {
-    return Row(
-      children: [
-        Checkbox(
-
-          activeColor: const Color(0XFF23408F),
-          side: const BorderSide(color: Color(0XFFDEDEDE)),
-          value: ischeaked,
-          onChanged: (value) {
-            setState(() {
-              ischeaked = value!;
-            });
-          },
-        ),
-        RichText(
-            text: TextSpan(
-                text: 'I Agree with ',
-                style:  TextStyle(color: Colors.black, fontSize: 15.sp, fontFamily: 'Gilroy',fontWeight: FontWeight.w400),
-                children: [
-              TextSpan(
-                recognizer: TapGestureRecognizer()
-                  ..onTap = () {
-
-                    Get.to(const TermCondition());
-                  },
-                text: 'Terms and condition',
-                style: const TextStyle(
-                    color: Color(0XFF23408F),
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    fontFamily: 'Gilroy'),
-              )
-            ])),
-      ],
-    );
-  }
-
-  Widget sign_up_button() {
-    return Container(
-      height: 56.h,
-      width: 374.w,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: const Color(0XFF23408F),
-      ),
-      child: TextButton(
-        onPressed: ischeaked
-            ? () {
-                if (formkey.currentState!.validate()) {
-                  if (confirmpasswordController.value == passwordController.value) {
-                    Get.to(const SignInPhonenumber());
-                  }
-                }
-              }
-            : null,
-        child:  Text("Sign Up",
-            style: TextStyle(
-                color: Color(0XFFFFFFFF),
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Gilroy')),
       ),
     );
   }
@@ -316,21 +444,21 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
       child: RichText(
           text: TextSpan(
               text: 'Already have an account? ',
-              style:  TextStyle(color: Colors.black, fontSize: 15.sp,fontFamily: 'Gilroy'),
+              style: TextStyle(color: Colors.black, fontSize: 15.sp, fontFamily: 'Gilroy'),
               children: [
-            TextSpan(
-              recognizer: TapGestureRecognizer()
-                ..onTap = () {
-                  Get.off(const EmptyState());
-                },
-              text: 'Login',
-              style:  TextStyle(
-                  color: const Color(0XFF000000),
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Gilroy'),
-            )
-          ])),
+                TextSpan(
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      Get.off(const EmptyState());
+                    },
+                  text: 'Login',
+                  style: TextStyle(
+                      color: const Color(0XFF000000),
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Gilroy'),
+                )
+              ])),
     );
   }
 
@@ -351,14 +479,11 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
     firstnameController.dispose();
     lastnameController.dispose();
     emailController.dispose();
+    phoneNumberController.dispose();
     passwordController.dispose();
     confirmpasswordController.dispose();
-    countryController.dispose();
-    provinceController.dispose();
-    districtController.dispose();
-    cityController.dispose();
-    muqamController.dispose();
-    confirmpasswordController.dispose();
+    locationControllers.values.forEach((controller) => controller.dispose());
+    membershipController.dispose();
     super.dispose();
   }
 }
