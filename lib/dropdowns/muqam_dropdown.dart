@@ -6,124 +6,119 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/api_constant.dart';
 
-class ProvinceDropdown extends StatefulWidget {
+class MuqamDropdown extends StatefulWidget {
   final String hint;
   final void Function(String?) onChanged;
   final String? initialValue;
-  final bool isCountrySelected;
+  final bool isCitySelected;
 
-  const ProvinceDropdown({
+  const MuqamDropdown({
     Key? key,
     required this.hint,
     required this.onChanged,
     this.initialValue,
-    required this.isCountrySelected,
+    required this.isCitySelected,
   }) : super(key: key);
 
   @override
-  _ProvinceDropdownState createState() => _ProvinceDropdownState();
+  _MuqamDropdownState createState() => _MuqamDropdownState();
 }
 
-class _ProvinceDropdownState extends State<ProvinceDropdown> {
+class _MuqamDropdownState extends State<MuqamDropdown> {
   String? selectedValue;
-  List<Map<String, dynamic>> provinces = [];
-  bool hasError = false; // Track error state for retry logic
+  List<Map<String, dynamic>> muqams = [];
+  bool hasError = false;
 
   @override
   void initState() {
     super.initState();
     selectedValue = widget.initialValue;
-    if (widget.isCountrySelected) {
-      fetchProvinces();
+    if (widget.isCitySelected) {
+      fetchMuqams();
     }
   }
 
   @override
-  void didUpdateWidget(covariant ProvinceDropdown oldWidget) {
+  void didUpdateWidget(covariant MuqamDropdown oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.isCountrySelected != oldWidget.isCountrySelected && widget.isCountrySelected) {
-      fetchProvinces();
+    if (widget.isCitySelected != oldWidget.isCitySelected && widget.isCitySelected) {
+      fetchMuqams();
     }
   }
 
-  Future<String?> getCountryId() async {
+  Future<String?> getCityId() async {
     final prefs = await SharedPreferences.getInstance();
-    final countryId = prefs.getString('country_id');
-    print('getCountryId: Retrieved country ID: $countryId');
-    return countryId;
+    final cityId = prefs.getString('city_id');
+    print('getCityId: Retrieved city ID: $cityId');
+    return cityId;
   }
 
-  Future<void> saveProvinceId(String id) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('province_id', id);
-    print('saveProvinceId: Saved province ID: $id');
-  }
-
-  Future<void> fetchProvinces() async {
+  Future<void> fetchMuqams() async {
     try {
-      final countryId = await getCountryId();
-      if (countryId == null) {
+      final cityId = await getCityId();
+      if (cityId == null) {
+        print('fetchMuqams: No city ID found in SharedPreferences');
         setState(() {
-          provinces = [];
+          muqams = [];
           hasError = true;
         });
         return;
       }
-      print('fetchProvinces: Using country ID: $countryId');
-      final response = await getProvinces(countryId);
+      print('fetchMuqams: Using city ID: $cityId');
+      final response = await getMuqams(cityId);
       setState(() {
-        provinces = response;
+        muqams = response;
         hasError = false;
       });
     } catch (e) {
-      print('fetchProvinces: Error fetching provinces: $e');
+      print('fetchMuqams: Error fetching muqams: $e');
       setState(() {
-        provinces = [];
+        muqams = [];
         hasError = true;
       });
     }
   }
 
-  Future<List<Map<String, dynamic>>> getProvinces(String countryId) async {
-    final url = '${ApiConstant.baseUrl}provinces/$countryId';
+  Future<List<Map<String, dynamic>>> getMuqams(String cityId) async {
+    final url = '${ApiConstant.baseUrl}muqams/$cityId';
     try {
       final response = await http.get(Uri.parse(url));
-      print('Provinces API response status code: ${response.statusCode}');
+      print('Muqams API response status code: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         if (jsonResponse['success'] == true && jsonResponse['data'] is List) {
           final List<dynamic> data = jsonResponse['data'];
-          final provinceList = data.map((item) => {
+          // Map the API response to a list of maps with 'id' and 'muqam_name'
+          final muqamList = data.map((item) => {
             'id': item['id'].toString(),
-            'province_name': item['province_name'].toString(),
+            'muqam_name': item['muqam_name'].toString(),
           }).toList();
-          return provinceList;
+          return muqamList;
         } else {
-          print('getProvinces: Invalid API response format');
+          print('getMuqams: Invalid API response format');
           throw Exception('Invalid API response format');
         }
       } else {
-        print('getProvinces: API call failed with status: ${response.statusCode}');
-        throw Exception('Failed to load provinces: ${response.statusCode}');
+        print('getMuqams: API call failed with status: ${response.statusCode}');
+        throw Exception('Failed to load muqams: ${response.statusCode}');
       }
     } catch (e) {
-      print('getProvinces: Error in API call or parsing: $e');
+      print('getMuqams: Error in API call or parsing: $e');
       rethrow;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    print('ProvinceDropdown build: Rendering with ${provinces.length} provinces');
     return GestureDetector(
-      onTap: hasError ? fetchProvinces : null,
+      onTap: hasError ? fetchMuqams : null,
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFFF5F5F5),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: widget.isCountrySelected ? const Color(0XFFDEDEDE) : Colors.grey[300]!,
+            color: widget.isCitySelected ? const Color(0XFFDEDEDE) : Colors.grey[300]!,
             width: 1.w,
           ),
         ),
@@ -135,28 +130,25 @@ class _ProvinceDropdownState extends State<ProvinceDropdown> {
               style: TextStyle(
                 fontSize: 15.sp,
                 fontFamily: 'Gilroy',
-                color: widget.isCountrySelected ? const Color(0XFF9B9B9B) : Colors.grey[400],
+                color: widget.isCitySelected ? const Color(0XFF9B9B9B) : Colors.grey[400],
                 fontWeight: FontWeight.bold,
               ),
             ),
             value: selectedValue,
-            onChanged: widget.isCountrySelected && provinces.isNotEmpty
+            onChanged: widget.isCitySelected && muqams.isNotEmpty
                 ? (value) {
-              print('ProvinceDropdown onChanged: Selected province: $value');
+              print('MuqamDropdown onChanged: Selected muqam: $value');
               setState(() {
                 selectedValue = value;
-                final selectedProvince = provinces.firstWhere(
-                        (province) => province['province_name'] == value);
-                saveProvinceId(selectedProvince['id']);
               });
               widget.onChanged(value);
             }
                 : null,
-            items: provinces.map<DropdownMenuItem<String>>((Map<String, dynamic> province) {
+            items: muqams.map<DropdownMenuItem<String>>((Map<String, dynamic> muqam) {
               return DropdownMenuItem<String>(
-                value: province['province_name'],
+                value: muqam['muqam_name'],
                 child: Text(
-                  province['province_name'],
+                  muqam['muqam_name'], // Displays "Taxila/Wah"
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontFamily: 'Gilroy',
@@ -188,9 +180,9 @@ class _ProvinceDropdownState extends State<ProvinceDropdown> {
               iconSize: 24,
             ),
             onMenuStateChange: (isOpen) {
-              print('ProvinceDropdown onMenuStateChange: isOpen = $isOpen');
-              if (isOpen && widget.isCountrySelected) {
-                fetchProvinces();
+              print('MuqamDropdown onMenuStateChange: isOpen = $isOpen');
+              if (isOpen && widget.isCitySelected) {
+                fetchMuqams();
               }
             },
           ),

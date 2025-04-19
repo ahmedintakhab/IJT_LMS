@@ -27,13 +27,12 @@ class DistrictDropdown extends StatefulWidget {
 class _DistrictDropdownState extends State<DistrictDropdown> {
   String? selectedValue;
   List<Map<String, dynamic>> districts = [];
-  bool hasError = false; // Track error state for retry logic
+  bool hasError = false;
 
   @override
   void initState() {
     super.initState();
     selectedValue = widget.initialValue;
-    print('DistrictDropdown initState: Initializing with value $selectedValue');
     if (widget.isProvinceSelected) {
       fetchDistricts();
     }
@@ -54,12 +53,16 @@ class _DistrictDropdownState extends State<DistrictDropdown> {
     return provinceId;
   }
 
+  Future<void> saveDistrictId(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('district_id', id);
+    print('saveDistrictId: Saved district ID: $id');
+  }
+
   Future<void> fetchDistricts() async {
-    print('fetchDistricts: Starting to fetch districts');
     try {
       final provinceId = await getProvinceId();
       if (provinceId == null) {
-        print('fetchDistricts: No province ID found in SharedPreferences');
         setState(() {
           districts = [];
           hasError = true;
@@ -68,7 +71,6 @@ class _DistrictDropdownState extends State<DistrictDropdown> {
       }
       print('fetchDistricts: Using province ID: $provinceId');
       final response = await getDistricts(provinceId);
-      print('fetchDistricts: Successfully fetched districts: $response');
       setState(() {
         districts = response;
         hasError = false;
@@ -84,22 +86,18 @@ class _DistrictDropdownState extends State<DistrictDropdown> {
 
   Future<List<Map<String, dynamic>>> getDistricts(String provinceId) async {
     final url = '${ApiConstant.baseUrl}districts/$provinceId';
-    print('getDistricts: Calling API with URL: $url');
     try {
       final response = await http.get(Uri.parse(url));
-      print('getDistricts: API response status code: ${response.statusCode}');
-      print('getDistricts: Raw API response: ${response.body}');
+      print('District API response status code: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-        print('getDistricts: Parsed JSON response: $jsonResponse');
         if (jsonResponse['success'] == true && jsonResponse['data'] is List) {
           final List<dynamic> data = jsonResponse['data'];
           final districtList = data.map((item) => {
             'id': item['id'].toString(),
             'district_name': item['district_name'].toString(),
           }).toList();
-          print('getDistricts: Extracted district list: $districtList');
           return districtList;
         } else {
           print('getDistricts: Invalid API response format');
@@ -117,7 +115,6 @@ class _DistrictDropdownState extends State<DistrictDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    print('DistrictDropdown build: Rendering with ${districts.length} districts');
     return GestureDetector(
       onTap: hasError ? fetchDistricts : null,
       child: Container(
@@ -147,6 +144,9 @@ class _DistrictDropdownState extends State<DistrictDropdown> {
               print('DistrictDropdown onChanged: Selected district: $value');
               setState(() {
                 selectedValue = value;
+                final selectedDistrict = districts.firstWhere(
+                        (district) => district['district_name'] == value);
+                saveDistrictId(selectedDistrict['id']);
               });
               widget.onChanged(value);
             }

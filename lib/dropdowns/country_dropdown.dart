@@ -50,7 +50,6 @@ class _CountryDropdownState extends State<CountryDropdown> {
 
     if (response.statusCode == 200) {
       print('Country dropdown api response: ${response.statusCode}');
-      print('Raw API response: ${response.body}');
       final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
       final List<dynamic> data = jsonResponse['data'];
       return data.map((item) => {

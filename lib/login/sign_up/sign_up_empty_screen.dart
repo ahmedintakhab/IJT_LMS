@@ -11,8 +11,10 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
+import '../../dropdowns/city_dropdown.dart';
 import '../../dropdowns/country_dropdown.dart';
 import '../../dropdowns/district_dropdown.dart';
+import '../../dropdowns/muqam_dropdown.dart';
 import '../../dropdowns/province_dropdown.dart';
 import '../../utils/api_constant.dart';
 import '../../utils/screen_size.dart';
@@ -27,7 +29,7 @@ class SignInEmptyScreen extends StatefulWidget {
 }
 
 class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
-  List<String> cities = ['Wah Cantt', 'Islamabad', 'Rawalpindi'];
+  // List<String> cities = ['Wah Cantt', 'Islamabad', 'Rawalpindi'];
   List<String> muqams = ['Central', 'North', 'South'];
 
   String? selectedCountry;
@@ -42,8 +44,12 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
   bool isLoading = false;
   bool isCountrySelected = false;
   bool isProvinceSelected = false;
+  bool isDistrictSelected = false;
+  bool isCitySelected = false;
   String provinceHint = 'Province';
   String districtHint = 'District';
+  String cityHint = 'City';
+  String muqamHint = 'Muqam';
 
   String passworderror = '';
   final formkey = GlobalKey<FormState>();
@@ -83,6 +89,22 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
     setState(() {
       isProvinceSelected = provinceId != null && selectedProvince != null;
       districtHint = isProvinceSelected ? '--Select District--' : 'District';
+    });
+  }
+  Future<void> checkCitySelection() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cityId = prefs.getString('city_id');
+    setState(() {
+      isCitySelected = cityId != null && selectedCity != null;
+      muqamHint = isCitySelected ? '--Select Muqam--' : 'Muqam';
+    });
+  }
+  Future<void> checkDistrictSelection() async {
+    final prefs = await SharedPreferences.getInstance();
+    final districtId = prefs.getString('district_id');
+    setState(() {
+      isDistrictSelected = districtId != null && selectedDistrict != null;
+      cityHint = isDistrictSelected ? '--Select City--' : 'City';
     });
   }
 
@@ -401,37 +423,53 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
           ),          SizedBox(height: 20.h),
           DistrictDropdown(
             hint: districtHint,
-            onChanged: (value) {
+            onChanged: (value) async {
               setState(() {
                 selectedDistrict = value;
+                isDistrictSelected = value != null;
+                cityHint = isDistrictSelected ? '--Select City--' : 'City';
+                selectedCity = null;
               });
+              final prefs = await SharedPreferences.getInstance();
+              if (value == null) {
+                await prefs.remove('district_id');
+              }
+              await prefs.remove('city_id');
+              checkDistrictSelection();
             },
             initialValue: selectedDistrict,
             isProvinceSelected: isProvinceSelected,
           ),
           SizedBox(height: 20.h),
-          CustomDropdown(
-            hint: 'City',
-            value: selectedCity,
-            items: cities,
-            onChanged: (value) {
+          CityDropdown(
+            hint: cityHint,
+            onChanged: (value) async {
               setState(() {
                 selectedCity = value;
-                // cityController.text = value ?? '';
+                isCitySelected = value != null;
+                muqamHint = isCitySelected ? '--Select Muqam--' : 'Muqam';
+                selectedMuqam = null;
               });
+              final prefs = await SharedPreferences.getInstance();
+              if (value == null) {
+                await prefs.remove('city_id');
+              }
+              await prefs.remove('muqam_id');
+              checkCitySelection();
             },
+            initialValue: selectedCity,
+            isDistrictSelected: isDistrictSelected,
           ),
           SizedBox(height: 20.h),
-          CustomDropdown(
-            hint: 'Muqam',
-            value: selectedMuqam,
-            items: muqams,
+          MuqamDropdown(
+            hint: muqamHint,
             onChanged: (value) {
               setState(() {
                 selectedMuqam = value;
-                // muqamController.text = value ?? '';
               });
             },
+            initialValue: selectedMuqam,
+            isCitySelected: isCitySelected,
           ),
         ],
       ),
