@@ -51,7 +51,7 @@ class _FilterSheetState extends State<FilterSheet> {
             ],
           ),
           RangeSlider(
-            activeColor: Color(0XFF23408F),
+            activeColor: Color(0XFF00AFEE),
             values: _currentRangeValues,
             min: 0,
             max: 100,
@@ -127,7 +127,7 @@ class _FilterSheetState extends State<FilterSheet> {
                             border: Border.all(
                                 color:
                                     selectedCategory.contains(categoryList[i])
-                                        ? Color(0XFF23408F)
+                                        ? Color(0XFF00AFEE)
                                         : Color(0XFF6E758A),
                                 width: 1),
                           ),
@@ -136,7 +136,7 @@ class _FilterSheetState extends State<FilterSheet> {
                             style: selectedCategory.contains(categoryList[i])
                                 ? const TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0XFF23408F),
+                                    color: Color(0XFF00AFEE),
                                     fontFamily: 'Gilroy')
                                 : const TextStyle(
                                     color: Color(0XFF6E758A),
@@ -161,7 +161,7 @@ class _FilterSheetState extends State<FilterSheet> {
                   width: 177,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(22),
-                    color: Color(0XFF23408F),
+                    color: Color(0XFF00AFEE),
                   ),
                   child: const Center(
                       child: Text(
@@ -181,7 +181,7 @@ class _FilterSheetState extends State<FilterSheet> {
                   width: 177,
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: Color(0XFF23408F),
+                      color: Color(0XFF00AFEE),
                     ),
                     borderRadius: BorderRadius.circular(22),
                   ),
@@ -190,7 +190,7 @@ class _FilterSheetState extends State<FilterSheet> {
                     "Clear All",
                     style: TextStyle(
                         fontSize: 18,
-                        color: Color(0XFF23408F),
+                        color: Color(0XFF00AFEE),
                         fontFamily: 'Gilroy',
                         fontWeight: FontWeight.bold),
                   )),

@@ -98,7 +98,7 @@ class _RecentCourceDetailState extends State<RecentCourceDetail> {
                                             fontFamily:
                                             'Gilroy',
                                             color:
-                                            Color(0XFF23408F),
+                                            Color(0XFF00AFEE),
                                             fontSize: 12.sp,
                                             fontWeight: FontWeight.w700),
                                       ),
@@ -140,7 +140,7 @@ class _RecentCourceDetailState extends State<RecentCourceDetail> {
                                             fontFamily:
                                             'Gilroy',
                                             color:
-                                            Color(0XFF23408F),
+                                            Color(0XFF00AFEE),
                                             fontSize: 12.sp,
                                             fontWeight: FontWeight.w700),
                                       ),
@@ -156,7 +156,7 @@ class _RecentCourceDetailState extends State<RecentCourceDetail> {
                                 borderRadius: BorderRadius.circular(22.h),
                                 boxShadow: [
                                   BoxShadow(
-                                      color: const Color(0XFF23408F).withOpacity(0.14),
+                                      color: const Color(0XFF00AFEE).withOpacity(0.14),
                                       offset: const Offset(-4, 5),
                                       blurRadius: 16.h),
                                 ],
@@ -176,7 +176,7 @@ class _RecentCourceDetailState extends State<RecentCourceDetail> {
                                       child: Text(
                                         "${cource_detail[index].lessonID}",
                                         style:  TextStyle(
-                                            color: Color(0XFF23408F),
+                                            color: Color(0XFF00AFEE),
                                             fontSize: 15.sp,
                                             fontFamily: 'Gilroy',
                                             fontWeight:
@@ -264,10 +264,10 @@ class _RecentCourceDetailState extends State<RecentCourceDetail> {
                 child: Container(
                   height: 56.h,
                   width: 374.w,
-                  //color: Color(0XFF23408F),
+                  //color: Color(0XFF00AFEE),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20.h),
-                    color: const Color(0XFF23408F),
+                    color: const Color(0XFF00AFEE),
                   ),
                   child:  Center(
                     child: Text("Continue Course",

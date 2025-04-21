@@ -92,7 +92,7 @@ class _TrendingCourceState extends State<TrendingCource> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                            color: const Color(0XFF23408F).withOpacity(0.14),
+                            color: const Color(0XFF00AFEE).withOpacity(0.14),
                             offset: const Offset(-4, 5),
                             blurRadius: 16),
                       ],
@@ -110,7 +110,7 @@ class _TrendingCourceState extends State<TrendingCource> {
                           boxShadow: [
                             BoxShadow(
                                 color:
-                                    const Color(0XFF23408F).withOpacity(0.14),
+                                    const Color(0XFF00AFEE).withOpacity(0.14),
                                 offset: const Offset(-4, 5),
                                 blurRadius: 16),
                           ],
@@ -243,7 +243,7 @@ class _TrendingCourceState extends State<TrendingCource> {
                                 Text(
                                   index.personname!,
                                   style: TextStyle(
-                                      color: const Color(0XFF23408F),
+                                      color: const Color(0XFF00AFEE),
                                       fontSize: 14.sp,
                                       fontWeight: FontWeight.w500,
                                       fontFamily: 'Gilroy'),

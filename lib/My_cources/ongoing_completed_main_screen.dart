@@ -69,7 +69,7 @@ class _OngoingCompletedScreenState extends State<OngoingCompletedScreen> {
                     borderRadius: BorderRadius.circular(22.h),
                     boxShadow: [
                       BoxShadow(
-                          color: const Color(0XFF23408F).withOpacity(0.14),
+                          color: const Color(0XFF00AFEE).withOpacity(0.14),
                           offset: const Offset(-4, 5),
                           blurRadius: 16.h),
                     ],
@@ -81,13 +81,13 @@ class _OngoingCompletedScreenState extends State<OngoingCompletedScreen> {
                     padding:
                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 7.h),
                     labelStyle:  TextStyle(
-                        color: Color(0XFF23408F),
+                        color: Color(0XFF00AFEE),
                         fontWeight: FontWeight.bold,
                         fontSize: 15.sp,
                         fontFamily: 'Gilroy'),
-                    labelColor: const Color(0XFF23408F),
+                    labelColor: const Color(0XFF00AFEE),
                     unselectedLabelStyle:  TextStyle(
-                        color: Color(0XFF23408F),
+                        color: Color(0XFF00AFEE),
                         fontWeight: FontWeight.bold,
                         fontSize: 15.sp,
                         fontFamily: 'Gilroy'),

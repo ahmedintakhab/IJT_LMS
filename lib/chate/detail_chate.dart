@@ -137,12 +137,12 @@ class _DetailChateState extends State<DetailChate> {
                                     fontWeight: FontWeight.w400,
                                     fontFamily: 'Gilroy'),
                                 focusedBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(width: 1.w, color: Color(0XFF23408F)),
+                                    borderSide: BorderSide(width: 1.w, color: Color(0XFF00AFEE)),
                                     borderRadius: BorderRadius.circular(15.h)),
                                 enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(width: 1.w, color: Color(0XFFB3B3B3)),
                                     borderRadius: BorderRadius.circular(15.h)),),
-                            cursorColor: const Color(0XFF23408F),
+                            cursorColor: const Color(0XFF00AFEE),
 
                           ),
                         ),

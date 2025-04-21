@@ -72,7 +72,7 @@ class _CardBottomSheetState extends State<CardBottomSheet> {
           borderRadius: BorderRadius.circular(22.h),
           boxShadow: [
             BoxShadow(
-                color: const Color(0XFF23408F).withOpacity(0.14),
+                color: const Color(0XFF00AFEE).withOpacity(0.14),
                 offset: const Offset(-4, 5),
                 blurRadius: 16.h),
           ],
@@ -116,7 +116,7 @@ class _CardBottomSheetState extends State<CardBottomSheet> {
             borderRadius: BorderRadius.circular(22.h),
             boxShadow: [
               BoxShadow(
-                  color: const Color(0XFF23408F).withOpacity(0.14),
+                  color: const Color(0XFF00AFEE).withOpacity(0.14),
                   offset: const Offset(-4, 5),
                   blurRadius: 16.h),
             ],
@@ -146,7 +146,7 @@ class _CardBottomSheetState extends State<CardBottomSheet> {
       children: [
         Checkbox(
           value: ischeaked,
-          activeColor:const  Color(0XFF23408F),
+          activeColor:const  Color(0XFF00AFEE),
           side: const BorderSide(color: Color(0XFFDEDEDE)),
 
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.h)),
@@ -177,7 +177,7 @@ class _CardBottomSheetState extends State<CardBottomSheet> {
         height: 56.h,
         width: 374.w,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20.h), color:  ischeaked?const Color(0XFF23408F):Colors.grey,
+          borderRadius: BorderRadius.circular(20.h), color:  ischeaked?const Color(0XFF00AFEE):Colors.grey,
         ),
         child:  Center(
           child: Text("Add",

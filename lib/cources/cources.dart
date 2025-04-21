@@ -105,7 +105,7 @@ class _MyCourcesState extends State<MyCources> {
                       color:Colors.white,
                         boxShadow: [
                           BoxShadow(
-                            color: Color(0XFF23408F).withOpacity(0.1),
+                            color: Color(0XFF00AFEE).withOpacity(0.1),
                             blurRadius: 16,
                           ),
                         ],
@@ -128,7 +128,7 @@ class _MyCourcesState extends State<MyCources> {
                     decoration: BoxDecoration(
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0XFF23408F).withOpacity(0.20),
+                            color: const Color(0XFF00AFEE).withOpacity(0.20),
                             blurRadius: 16,
                           ),
                         ],
@@ -139,13 +139,13 @@ class _MyCourcesState extends State<MyCources> {
                       padding:
                            EdgeInsets.symmetric(horizontal: 5.w, vertical: 5.h),
                       labelStyle:  TextStyle(
-                          color: const Color(0XFF23408F),
+                          color: const Color(0XFF00AFEE),
                           fontWeight: FontWeight.bold,
                           fontSize: 15.sp,
                           fontFamily: 'Gilroy'),
-                      labelColor: const Color(0XFF23408F),
+                      labelColor: const Color(0XFF00AFEE),
                       unselectedLabelStyle:  TextStyle(
-                          color: const Color(0XFF23408F),
+                          color: const Color(0XFF00AFEE),
                           fontWeight: FontWeight.w700,
                           fontSize: 15.sp,
                           fontFamily: 'Gilroy'),

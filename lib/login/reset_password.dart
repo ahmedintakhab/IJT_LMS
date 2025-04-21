@@ -102,7 +102,7 @@ class _ResetPasswordState extends State<ResetPassword> {
           contentPadding:  EdgeInsets.only(left: 20.w),
           focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide:  BorderSide(color: const Color(0XFF23408F), width: 1.w)),
+              borderSide:  BorderSide(color: const Color(0XFF00AFEE), width: 1.w)),
           enabledBorder:OutlineInputBorder(
             borderSide: BorderSide(color: const Color(0XFFDEDEDE),width: 1.w),
             borderRadius: BorderRadius.circular(12),
@@ -190,10 +190,10 @@ class _ResetPasswordState extends State<ResetPassword> {
         child: Container(
           height: 56.h,
           width: 374.w,
-          //color: Color(0XFF23408F),
+          //color: Color(0XFF00AFEE),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: const Color(0XFF23408F),
+            color: const Color(0XFF00AFEE),
           ),
           child:  Center(
             child: Text("Done",
@@ -220,10 +220,10 @@ class _ResetPasswordState extends State<ResetPassword> {
           child: Container(
             height: 56.h,
             width: 334.w,
-            //color: Color(0XFF23408F),
+            //color: Color(0XFF00AFEE),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              color: const Color(0XFF23408F),
+              color: const Color(0XFF00AFEE),
             ),
             child:  Center(
               child: Text("Ok",

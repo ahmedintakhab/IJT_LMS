@@ -107,7 +107,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                               border: Border.all(
                                                   color: selectedCategory
                                                           .contains(categoryList[i])
-                                                      ? Color(0XFF23408F)
+                                                      ? Color(0XFF00AFEE)
                                                       : Color(0XFF6E758A),
                                                   width: 1.w),
                                             ),
@@ -118,7 +118,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                                   ? TextStyle(
                                                       fontSize: 15.sp,
                                                       fontWeight: FontWeight.w700,
-                                                      color: Color(0XFF23408F),
+                                                      color: Color(0XFF00AFEE),
                                                       fontFamily: 'Gilroy')
                                                   : TextStyle(
                                                       fontSize: 15.sp,
@@ -155,7 +155,7 @@ class _SearchScreenState extends State<SearchScreen> {
       child: TextFormField(
           decoration: InputDecoration(
               focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0XFF23408F), width: 1.w),
+                  borderSide: BorderSide(color: Color(0XFF00AFEE), width: 1.w),
                   borderRadius: BorderRadius.circular(22.h)),
               hintText: 'Search',
               hintStyle: TextStyle(
@@ -247,7 +247,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 borderRadius: BorderRadius.circular(12.h),
                 boxShadow: [
                   BoxShadow(
-                      color: const Color(0XFF23408F).withOpacity(0.14),
+                      color: const Color(0XFF00AFEE).withOpacity(0.14),
                       offset: const Offset(-4, 5),
                       blurRadius: 16.h),
                 ],
@@ -264,7 +264,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     borderRadius: BorderRadius.circular(12.h),
                     boxShadow: [
                       BoxShadow(
-                          color: const Color(0XFF23408F).withOpacity(0.14),
+                          color: const Color(0XFF00AFEE).withOpacity(0.14),
                           offset: const Offset(-4, 5),
                           blurRadius: 16),
                     ],
@@ -379,7 +379,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           Text(
                             cource[index].personname!,
                             style: TextStyle(
-                                color: const Color(0XFF23408F),
+                                color: const Color(0XFF00AFEE),
                                 fontSize: 14.sp,
                                 fontFamily: 'Gilroy'),
                           )
@@ -415,7 +415,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   borderRadius: BorderRadius.circular(12.h),
                   boxShadow: [
                     BoxShadow(
-                        color: const Color(0XFF23408F).withOpacity(0.14),
+                        color: const Color(0XFF00AFEE).withOpacity(0.14),
                         offset: const Offset(-4, 5),
                         blurRadius: 16.h),
                   ],
@@ -538,7 +538,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               style: TextStyle(
                                   fontFamily: 'Gilroy',
                                   fontWeight: FontWeight.w400,
-                                  color: const Color(0XFF23408F),
+                                  color: const Color(0XFF00AFEE),
                                   fontSize: 15.sp),
                             ),
                           ],
@@ -554,7 +554,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               child: Text(
                             recentAdded[index].price!,
                             style: TextStyle(
-                                color: Color(0XFF23408F),
+                                color: Color(0XFF00AFEE),
                                 fontFamily: 'Gilroy',
                                 fontSize: 19.sp,
                                 fontWeight: FontWeight.w400),

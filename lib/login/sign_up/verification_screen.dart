@@ -98,7 +98,7 @@ class _VerificationState extends State<Verification> {
         showFieldAsBox: true,
         borderRadius: BorderRadius.circular(12),
        borderWidth: 1,
-        focusedBorderColor: Color(0XFF23408F),
+        focusedBorderColor: Color(0XFF00AFEE),
         fieldWidth: 79.w,
 
 
@@ -178,10 +178,10 @@ class _VerificationState extends State<Verification> {
       child: Container(
         height: 56.h,
         width: 374.w,
-        //color: Color(0XFF23408F),
+        //color: Color(0XFF00AFEE),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          color: const Color(0XFF23408F),
+          color: const Color(0XFF00AFEE),
         ),
         child:  Center(
           child: Text("Confirm",
@@ -230,10 +230,10 @@ class _VerificationState extends State<Verification> {
           child: Container(
             height: 56.h,
             width: 334.w,
-            //color: Color(0XFF23408F),
+            //color: Color(0XFF00AFEE),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              color: const Color(0XFF23408F),
+              color: const Color(0XFF00AFEE),
             ),
             child:  Center(
               child: Text("Ok",

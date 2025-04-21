@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:learn_megnagmet/home/home_main.dart';
 import 'package:learn_megnagmet/login/forgot_password.dart';
 import 'package:learn_megnagmet/login/sign_up/sign_up_empty_screen.dart';
 import 'package:learn_megnagmet/widget/button.dart';
@@ -69,7 +70,7 @@ class _EmptyStateState extends State<EmptyState> {
           );
 
           // Navigate to home screen or dashboard
-          // Get.off(() => const HomeScreen());
+           Get.off(() => const HomeMainScreen());
         } else {
           Get.snackbar(
             'Error',
@@ -277,7 +278,7 @@ class _EmptyStateState extends State<EmptyState> {
             TextSpan(
               recognizer: TapGestureRecognizer()
                 ..onTap = () {
-                  Get.to(const SignInEmptyScreen());
+                  Get.to(const SignUpEmptyScreen());
                 },
               text: ' Sign up',
               style:  TextStyle(

@@ -151,7 +151,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
         ),
     focusedBorder: OutlineInputBorder(
     borderRadius: BorderRadius.circular(12),
-    borderSide: BorderSide(color: const Color(0XFF23408F), width: 1.w)),
+    borderSide: BorderSide(color: const Color(0XFF00AFEE), width: 1.w)),
     enabledBorder:OutlineInputBorder(
     borderSide: BorderSide(color: const Color(0XFFDEDEDE),width: 1.w),
     borderRadius: BorderRadius.circular(12),

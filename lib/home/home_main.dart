@@ -32,7 +32,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                   topRight: Radius.circular(22), topLeft: Radius.circular(22)),
               boxShadow: [
                 BoxShadow(
-                    color: const Color(0XFF23408F).withOpacity(0.12),
+                    color: const Color(0XFF00AFEE).withOpacity(0.12),
                     spreadRadius: 0,
                     blurRadius: 12),
               ],
@@ -59,19 +59,20 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                             Image(
                                 image: AssetImage("assets/bottomhomeblue.png"),
                                 height: 24,
-                                width: 24),
+                                width: 24,
+                            color:  Color(0XFF00AFEE),),
                             SizedBox(height: 8.79),
                             Image(
                                 image: AssetImage("assets/line.png"),
                                 height: 1.75,
-                                width: 24),
+                                width: 24,
+                                color:  Color(0XFF00AFEE),),
                           ],
                         ),
                         icon: const Image(
                           image: AssetImage("assets/bottomhomeblack.png"),
                           height: 24,
-                          width: 24,
-                        ),
+                          width: 24),
                         label: ''),
                     BottomNavigationBarItem(
                         activeIcon: Column(
@@ -79,18 +80,23 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                             Image(
                                 image: AssetImage("assets/bottombookblue.png"),
                                 height: 24,
-                                width: 24),
+                                width: 24,
+                              color:  Color(0XFF00AFEE),),
+
                             SizedBox(height: 8.79),
                             Image(
                                 image: AssetImage("assets/line.png"),
                                 height: 1.75,
-                                width: 24),
+                                width: 24,
+                              color:  Color(0XFF00AFEE),),
+
                           ],
                         ),
                         icon: const Image(
                             image: AssetImage("assets/bottombookblack.png"),
                             height: 24,
-                            width: 24),
+                            width: 24,),
+
                         label: ''),
                     BottomNavigationBarItem(
                         activeIcon: Column(
@@ -99,18 +105,23 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                                 image:
                                     AssetImage("assets/bottommessegeblue.png"),
                                 height: 24,
-                                width: 24),
+                                width: 24,
+                              color:  Color(0XFF00AFEE),),
+
                             SizedBox(height: 8.79),
                             Image(
                                 image: AssetImage("assets/line.png"),
                                 height: 1.75,
-                                width: 24),
+                                width: 24,
+                              color:  Color(0XFF00AFEE),),
+
                           ],
                         ),
                         icon: const Image(
                             image: AssetImage("assets/bottommessegeblack.png"),
                             height: 24,
-                            width: 24),
+                            width: 24,),
+
                         label: ''),
                     BottomNavigationBarItem(
                         activeIcon: Column(
@@ -119,18 +130,23 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                                 image:
                                     AssetImage("assets/bottomprofileblue.png"),
                                 height: 24,
-                                width: 24),
+                                width: 24,
+                              color:  Color(0XFF00AFEE),),
+
                             SizedBox(height: 8.79),
                             Image(
                                 image: AssetImage("assets/line.png"),
                                 height: 1.75,
-                                width: 24),
+                                width: 24,
+                              color:  Color(0XFF00AFEE),),
+
                           ],
                         ),
                         icon: const Image(
                             image: AssetImage("assets/bottomprofileblack.png"),
                             height: 24,
-                            width: 24),
+                            width: 24,),
+
                         label: ''),
                   ]),
             )),

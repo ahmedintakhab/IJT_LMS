@@ -64,7 +64,7 @@ class _CertificatePaymentState extends State<CertificatePayment> {
                               borderRadius: BorderRadius.circular(12.h),
                               boxShadow: [
                                 BoxShadow(
-                                    color: const Color(0XFF23408F)
+                                    color: const Color(0XFF00AFEE)
                                         .withOpacity(0.14),
                                     offset: const Offset(-4, 5),
                                     blurRadius: 16.h),
@@ -174,7 +174,7 @@ class _CertificatePaymentState extends State<CertificatePayment> {
                                                                         borderRadius:
                                                                             BorderRadius.circular(22.h),
                                                                         color: const Color(
-                                                                            0XFF23408F),
+                                                                            0XFF00AFEE),
                                                                       ),
                                                                       child: Center(
                                                                           child: Text(
@@ -197,7 +197,7 @@ class _CertificatePaymentState extends State<CertificatePayment> {
                                                                             width: double.infinity.w,
                                                                             decoration: BoxDecoration(
                                                                               border: Border.all(
-                                                                                color: const Color(0xFF23408F),
+                                                                                color: const Color(0XFF00AFEE),
                                                                                 style: BorderStyle.solid,
                                                                                 width: 1.0.w,
                                                                               ),
@@ -206,7 +206,7 @@ class _CertificatePaymentState extends State<CertificatePayment> {
                                                                             child:  Center(
                                                                                 child: Text(
                                                                               "No",
-                                                                              style: TextStyle(fontFamily: 'Gilroy', fontWeight: FontWeight.w700, color: Color(0xFF23408F), fontSize: 18.sp),
+                                                                              style: TextStyle(fontFamily: 'Gilroy', fontWeight: FontWeight.w700, color: Color(0XFF00AFEE), fontSize: 18.sp),
                                                                             ))))
                                                                   ],
                                                                 ),
@@ -263,7 +263,7 @@ class _CertificatePaymentState extends State<CertificatePayment> {
           width: 374.w,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20.h),
-            color: const Color(0XFF23408F),
+            color: const Color(0XFF00AFEE),
           ),
           child:  Center(
             child: Text("Add New Card",

@@ -70,7 +70,7 @@ class _OverviewState extends State<Overview> {
                       collapseText: 'Learn less.',
                       maxLines: 3,
                       linkStyle: TextStyle(
-                          color: const Color(0XFF23408F),
+                          color: const Color(0XFF00AFEE),
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w700,
                           fontFamily: 'Gilroy'),
@@ -145,7 +145,7 @@ class _OverviewState extends State<Overview> {
                                     color: const Color(0XFFFFFFFF),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: const Color(0XFF23408F)
+                                        color: const Color(0XFF00AFEE)
                                             .withOpacity(0.14),
                                         blurRadius: 20.0.h,
                                       ),
@@ -237,7 +237,7 @@ class _OverviewState extends State<Overview> {
                                       border: Border.all(
                                           color: selectedCategory
                                                   .contains(categoryList[i])
-                                              ? Color(0XFF23408F)
+                                              ? Color(0XFF00AFEE)
                                               : Color(0XFF6E758A),
                                           width: 1.w),
                                     ),
@@ -247,7 +247,7 @@ class _OverviewState extends State<Overview> {
                                               .contains(categoryList[i])
                                           ? const TextStyle(
                                               fontWeight: FontWeight.bold,
-                                              color: Color(0XFF23408F),
+                                              color: Color(0XFF00AFEE),
                                               fontFamily: 'Gilroy')
                                           : const TextStyle(
                                               color: Color(0XFF6E758A),

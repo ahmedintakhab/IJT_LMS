@@ -40,7 +40,7 @@ class _LessonState extends State<Lesson> {
                                 borderRadius: BorderRadius.circular(12.h),
                                 boxShadow: [
                                   BoxShadow(
-                                      color: const Color(0XFF23408F).withOpacity(0.14),
+                                      color: const Color(0XFF00AFEE).withOpacity(0.14),
                                       offset: const Offset(-4, 5),
                                       blurRadius: 16),
                                 ],
@@ -86,7 +86,7 @@ class _LessonState extends State<Lesson> {
                                       style:  TextStyle(
                                           fontSize: 12.sp,
                                           fontWeight: FontWeight.bold,
-                                          color: const Color(0XFF23408F)),
+                                          color: const Color(0XFF00AFEE)),
                                     )),
                                   ),
                                 ],
@@ -146,7 +146,7 @@ class _LessonState extends State<Lesson> {
                   style:  TextStyle(
                       fontSize: 14.sp,
                       color:
-                      Color(0XFF23408F)),
+                      Color(0XFF00AFEE)),
                 )
               ],
             ),

@@ -60,3 +60,18 @@ Widget phone_number_field({
     },
   );
 }
+
+
+// phone_number_field(
+// onPhoneNumberChanged: (String phone) {
+// setState(() {
+// phoneNumber = phone; // Store the phone number
+// });
+// },
+// validator: (String? value) {
+// if (value == null || value.isEmpty) {
+// return 'Please enter phone number';
+// }
+// return null;
+// },
+// ),

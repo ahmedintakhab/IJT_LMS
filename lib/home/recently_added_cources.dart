@@ -93,7 +93,7 @@ class _RecentlyAddedState extends State<RecentlyAdded> {
                       borderRadius: BorderRadius.circular(12.h),
                       boxShadow: [
                         BoxShadow(
-                            color: const Color(0XFF23408F).withOpacity(0.14),
+                            color: const Color(0XFF00AFEE).withOpacity(0.14),
                             offset: const Offset(-4, 5),
                             blurRadius: 16.h),
                       ],
@@ -111,7 +111,7 @@ class _RecentlyAddedState extends State<RecentlyAdded> {
                                   borderRadius: BorderRadius.circular(12.h),
                                   boxShadow: [
                                     BoxShadow(
-                                        color: const Color(0XFF23408F)
+                                        color: const Color(0XFF00AFEE)
                                             .withOpacity(0.14),
                                         offset: const Offset(-4, 5),
                                         blurRadius: 16.h),
@@ -264,7 +264,7 @@ class _RecentlyAddedState extends State<RecentlyAdded> {
                                     Text(
                                       recentcource[index].personname!,
                                       style:  TextStyle(
-                                          color: Color(0XFF23408F),
+                                          color: Color(0XFF00AFEE),
                                           fontSize: 15.sp,
                                           fontWeight: FontWeight.w400,
                                           fontFamily: 'Gilroy'),
@@ -283,7 +283,7 @@ class _RecentlyAddedState extends State<RecentlyAdded> {
                                           child: Text(
                                         recentcource[index].price!,
                                         style:  TextStyle(
-                                            color: const Color(0XFF23408F),
+                                            color: const Color(0XFF00AFEE),
                                             fontFamily: 'Gilroy',
                                             fontSize: 19.sp,
                                             fontWeight: FontWeight.w700),

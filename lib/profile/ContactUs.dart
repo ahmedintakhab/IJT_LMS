@@ -24,7 +24,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             borderRadius: BorderRadius.circular(22.h),
             boxShadow: [
               BoxShadow(
-                  color: Color(0XFF23408F).withOpacity(0.14),
+                  color: Color(0XFF00AFEE).withOpacity(0.14),
                   offset: Offset(-4, 5),
                   blurRadius: 16.h),
             ],

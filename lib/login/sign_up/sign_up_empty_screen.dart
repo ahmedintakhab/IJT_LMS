@@ -7,8 +7,8 @@ import 'package:learn_megnagmet/login/sign_up/term_condition_widget.dart';
 import 'package:learn_megnagmet/widget/button.dart';
 import 'package:learn_megnagmet/widget/custom_text_form_field.dart';
 import 'package:learn_megnagmet/widget/phone_number_field.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import '../../dropdowns/city_dropdown.dart';
@@ -18,17 +18,17 @@ import '../../dropdowns/muqam_dropdown.dart';
 import '../../dropdowns/province_dropdown.dart';
 import '../../utils/api_constant.dart';
 import '../../utils/screen_size.dart';
+import 'Signup_screen2.dart';
 import 'affiliation_field.dart';
 
-class SignInEmptyScreen extends StatefulWidget {
-  const SignInEmptyScreen({Key? key}) : super(key: key);
+class SignUpEmptyScreen extends StatefulWidget {
+  const SignUpEmptyScreen({Key? key}) : super(key: key);
 
   @override
-  State<SignInEmptyScreen> createState() => _SignInEmptyScreenState();
+  State<SignUpEmptyScreen> createState() => _SignUpEmptyScreenState();
 }
 
-class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
-
+class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
   String? selectedCountry;
   String? selectedProvince;
   String? selectedDistrict;
@@ -39,6 +39,7 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
   bool ispassHiden = true;
   bool ispassHiden1 = true;
   bool isLoading = false;
+  bool isDataLoading = true;
   bool isCountrySelected = false;
   bool isProvinceSelected = false;
   bool isDistrictSelected = false;
@@ -48,7 +49,7 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
   String cityHint = 'City';
   String muqamHint = 'Muqam';
 
-  String passworderror = '';
+  String phoneNumber = '';
   final formkey = GlobalKey<FormState>();
   TextEditingController firstnameController = TextEditingController();
   TextEditingController lastnameController = TextEditingController();
@@ -57,8 +58,6 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmpasswordController = TextEditingController();
   TextEditingController membershipController = TextEditingController();
-  TextEditingController provinceController = TextEditingController();
-  String phoneNumber = '';
   final locationControllers = {
     'country': TextEditingController(),
     'province': TextEditingController(),
@@ -66,46 +65,81 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
     'city': TextEditingController(),
     'muqam': TextEditingController(),
   };
+
+  List<Map<String, dynamic>> countries = [];
+  List<Map<String, dynamic>> provinces = [];
+  List<Map<String, dynamic>> districts = [];
+  List<Map<String, dynamic>> cities = [];
+  List<Map<String, dynamic>> muqams = [];
+
+  late LocationDataService locationDataService;
+
   @override
   void initState() {
     super.initState();
-    checkCountrySelection();
-  }
-  Future<void> checkCountrySelection() async {
-    final prefs = await SharedPreferences.getInstance();
-    final countryId = prefs.getString('country_id');
-    setState(() {
-      // Only set isCountrySelected to true if a country is actually selected
-      isCountrySelected = countryId != null && selectedCountry != null;
-      provinceHint = isCountrySelected ? '--Select Province--' : 'Province';
-    });
+    locationDataService = LocationDataService();
+    _loadDropdownData();
   }
 
-  Future<void> checkProvinceSelection() async {
+  Future<void> _loadDropdownData() async {
+    setState(() => isDataLoading = true);
     final prefs = await SharedPreferences.getInstance();
-    final provinceId = prefs.getString('province_id');
-    setState(() {
-      isProvinceSelected = provinceId != null && selectedProvince != null;
-      districtHint = isProvinceSelected ? '--Select District--' : 'District';
-    });
+
+    // Pre-load all data (countries and provinces for all countries)
+    await locationDataService.preloadAllData(prefs);
+
+    // Load countries into the state
+    countries = await locationDataService.fetchCountries(prefs);
+
+    // Do not load selected values from SharedPreferences to set as initialValue
+    // Instead, keep the dropdowns empty (showing hints) by leaving selectedX as null
+    selectedCountry = null;
+    selectedProvince = null;
+    selectedDistrict = null;
+    selectedCity = null;
+    selectedMuqam = null;
+    isCountrySelected = false;
+    isProvinceSelected = false;
+    isDistrictSelected = false;
+    isCitySelected = false;
+    provinceHint = 'Province';
+    districtHint = 'District';
+    cityHint = 'City';
+    muqamHint = 'Muqam';
+
+    // Check if there’s a previously selected country and load provinces
+    if (prefs.containsKey('selected_country')) {
+      final countryId = prefs.getString('country_id');
+      if (countryId != null) {
+        provinces = await locationDataService.fetchProvinces(countryId, prefs);
+      }
+    }
+
+    // Load districts, cities, and muqams if previously selected
+    if (prefs.containsKey('selected_province')) {
+      final provinceId = prefs.getString('province_id');
+      if (provinceId != null) {
+        districts = await locationDataService.fetchDistricts(provinceId, prefs);
+      }
+    }
+
+    if (prefs.containsKey('selected_district')) {
+      final districtId = prefs.getString('district_id');
+      if (districtId != null) {
+        cities = await locationDataService.fetchCities(districtId, prefs);
+      }
+    }
+
+    if (prefs.containsKey('selected_city')) {
+      final cityId = prefs.getString('city_id');
+      if (cityId != null) {
+        muqams = await locationDataService.fetchMuqams(cityId, prefs);
+      }
+    }
+
+    setState(() => isDataLoading = false);
   }
-  Future<void> checkCitySelection() async {
-    final prefs = await SharedPreferences.getInstance();
-    final cityId = prefs.getString('city_id');
-    setState(() {
-      isCitySelected = cityId != null && selectedCity != null;
-      muqamHint = isCitySelected ? '--Select Muqam--' : 'Muqam';
-    });
-  }
-  Future<void> checkDistrictSelection() async {
-    final prefs = await SharedPreferences.getInstance();
-    final districtId = prefs.getString('district_id');
-    setState(() {
-      isDistrictSelected = districtId != null && selectedDistrict != null;
-      cityHint = isDistrictSelected ? '--Select City--' : 'City';
-    });
-  }
-//Get all ids from Shared Preferances
+
   Future<Map<String, String?>> getAllIdsFromSharedPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     return {
@@ -117,7 +151,25 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
       'student_type': prefs.getInt('has_affiliation')?.toString(),
     };
   }
+
   Future<void> registerUser() async {
+    if (!formkey.currentState!.validate()) {
+      print('Form validation failed');
+      return;
+    }
+
+    // if (!ischeaked) {
+    //   Get.snackbar(
+    //     'Error',
+    //     'Please accept terms and conditions',
+    //     snackPosition: SnackPosition.BOTTOM,
+    //     backgroundColor: Colors.red,
+    //     colorText: Colors.white,
+    //   );
+    //   print('Terms and conditions not accepted');
+    //   return;
+    // }
+
     if (passwordController.text != confirmpasswordController.text) {
       Get.snackbar(
         'Error',
@@ -126,11 +178,12 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+      print('Passwords do not match');
       return;
     }
-    // Fetch all IDs and student_type from SharedPreferences
+
     final ids = await getAllIdsFromSharedPreferences();
-    // Validate that all required IDs are available
+
     if (ids['country_id'] == null ||
         ids['province_id'] == null ||
         ids['district_id'] == null ||
@@ -144,10 +197,26 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+      print('Missing selections: $ids');
       return;
     }
 
     setState(() => isLoading = true);
+
+    String mobileNumber = phoneNumber.trim();
+
+    if (mobileNumber.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Phone number cannot be empty',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      print('Phone number is empty');
+      setState(() => isLoading = false);
+      return;
+    }
 
     final url = '${ApiConstant.baseUrl}register';
     final data = {
@@ -162,8 +231,11 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
       'district_id': ids['district_id'],
       'city_id': ids['city_id'],
       'muqam_id': ids['muqam_id'],
-      'student_type': ids['student_type'], // 0 for "No", 1 for "Yes"
+      'student_type': ids['student_type'],
     };
+
+    print('Fields being sent to API:');
+    data.forEach((key, value) => print('$key: $value'));
 
     try {
       final response = await http.post(
@@ -173,9 +245,11 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
       );
 
       final responseData = json.decode(response.body);
+      print('API response status code: ${response.statusCode}');
+      print('API response body: ${response.body}');
 
       if (response.statusCode == 200) {
-        print('Register api status response: ${response.statusCode}');
+        print('Register API status response: ${response.statusCode}');
         Get.snackbar(
           'Successful',
           'User registered successfully',
@@ -209,7 +283,6 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
         colorText: Colors.white,
       );
       print('Register error: ${e.toString()}');
-
     } finally {
       setState(() => isLoading = false);
     }
@@ -219,9 +292,7 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
   Widget build(BuildContext context) {
     initializeScreenSize(context);
     return WillPopScope(
-      onWillPop: () {
-        return Future.value(false);
-      },
+      onWillPop: () => Future.value(false),
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         body: Padding(
@@ -230,39 +301,40 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 60.h),
-              back_button(),
+              backButton(),
               SizedBox(height: 20.h),
               Center(
                 child: Text(
                   "Create an account",
                   style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24.sp,
-                      fontFamily: 'Gilroy',
-                      color: const Color(0XFF000000)),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24.sp,
+                    fontFamily: 'Gilroy',
+                    color: const Color(0XFF000000),
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),
               Expanded(
-                child: ListView(
+                child: isDataLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView(
                   children: [
-                    detailform(),
+                    detailForm(),
                     SizedBox(height: 25.h),
-                    // term_condition_cheakbox(),
                     TermConditionCheckbox(),
                     SizedBox(height: 25.h),
                     CustomButton(
                       onTap: registerUser,
                       buttonText: 'Sign Up',
                       isLoading: isLoading,
-                    )
+                    ),
                   ],
                 ),
               ),
-
               Padding(
                 padding: EdgeInsets.only(bottom: 30.h),
-                child: already_login_button(),
+                child: alreadyLoginButton(),
               ),
             ],
           ),
@@ -271,19 +343,19 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
     );
   }
 
-  toggle() {
+  void toggle() {
     setState(() {
       ispassHiden = !ispassHiden;
     });
   }
 
-  toggle1() {
+  void toggle1() {
     setState(() {
       ispassHiden1 = !ispassHiden1;
     });
   }
 
-  Widget detailform() {
+  Widget detailForm() {
     return Form(
       key: formkey,
       child: Column(
@@ -292,10 +364,8 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
             controller: emailController,
             hintText: 'Email',
             validator: (val) {
-              if (val == null || val.isEmpty) {
-                return 'Enter the email';
-              } else if (!RegExp(
-                  r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+              if (val == null || val.isEmpty) return 'Enter the email';
+              if (!RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                   .hasMatch(val)) {
                 return "Please enter valid email address";
               }
@@ -391,68 +461,127 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
             },
           ),
           SizedBox(height: 20.h),
-          AffiliationField(
-            controller: membershipController,
-          ),
+          AffiliationField(controller: membershipController),
           SizedBox(height: 20.h),
           CountryDropdown(
             hint: 'Country',
+            items: countries,
             onChanged: (value) async {
+              final prefs = await SharedPreferences.getInstance();
+              List<Map<String, dynamic>> newProvinces = [];
+              if (value != null) {
+                final selectedItem = countries.firstWhere((item) => item['country_name'] == value);
+                await prefs.setString('country_id', selectedItem['id']);
+                await prefs.setString('selected_country', value);
+                newProvinces = await locationDataService.fetchProvinces(selectedItem['id'], prefs);
+              } else {
+                await prefs.remove('country_id');
+                await prefs.remove('selected_country');
+              }
+
+              // Update state after fetching data
               setState(() {
                 selectedCountry = value;
                 isCountrySelected = value != null;
                 provinceHint = isCountrySelected ? '--Select Province--' : 'Province';
+                provinces = newProvinces;
                 selectedProvince = null;
                 selectedDistrict = null;
+                selectedCity = null;
+                selectedMuqam = null;
                 isProvinceSelected = false;
-                districtHint = 'District';
+                isDistrictSelected = false;
+                isCitySelected = false;
+                districts = [];
+                cities = [];
+                muqams = [];
               });
-              final prefs = await SharedPreferences.getInstance();
-              if (value == null) {
-                await prefs.remove('country_id');
-              }
+
+              // Clear dependent SharedPreferences keys
               await prefs.remove('province_id');
+              await prefs.remove('selected_province');
               await prefs.remove('district_id');
+              await prefs.remove('selected_district');
+              await prefs.remove('city_id');
+              await prefs.remove('selected_city');
+              await prefs.remove('muqam_id');
+              await prefs.remove('selected_muqam');
             },
             initialValue: selectedCountry,
           ),
           SizedBox(height: 20.h),
           ProvinceDropdown(
             hint: provinceHint,
+            items: provinces,
             onChanged: (value) async {
+              final prefs = await SharedPreferences.getInstance();
+              List<Map<String, dynamic>> newDistricts = [];
+              if (value != null) {
+                final selectedItem = provinces.firstWhere((item) => item['province_name'] == value);
+                await prefs.setString('province_id', selectedItem['id']);
+                await prefs.setString('selected_province', value);
+                newDistricts = await locationDataService.fetchDistricts(selectedItem['id'], prefs);
+              } else {
+                await prefs.remove('province_id');
+                await prefs.remove('selected_province');
+              }
+
               setState(() {
                 selectedProvince = value;
                 isProvinceSelected = value != null;
                 districtHint = isProvinceSelected ? '--Select District--' : 'District';
+                districts = newDistricts;
                 selectedDistrict = null;
+                selectedCity = null;
+                selectedMuqam = null;
+                isDistrictSelected = false;
+                isCitySelected = false;
+                cities = [];
+                muqams = [];
               });
-              final prefs = await SharedPreferences.getInstance();
-              if (value == null) {
-                await prefs.remove('province_id');
-              }
+
               await prefs.remove('district_id');
-              checkProvinceSelection();
+              await prefs.remove('selected_district');
+              await prefs.remove('city_id');
+              await prefs.remove('selected_city');
+              await prefs.remove('muqam_id');
+              await prefs.remove('selected_muqam');
             },
             initialValue: selectedProvince,
             isCountrySelected: isCountrySelected,
           ),
-
           SizedBox(height: 20.h),
           DistrictDropdown(
             hint: districtHint,
+            items: districts,
             onChanged: (value) async {
+              final prefs = await SharedPreferences.getInstance();
+              List<Map<String, dynamic>> newCities = [];
+              if (value != null) {
+                final selectedItem = districts.firstWhere((item) => item['district_name'] == value);
+                await prefs.setString('district_id', selectedItem['id']);
+                await prefs.setString('selected_district', value);
+                newCities = await locationDataService.fetchCities(selectedItem['id'], prefs);
+              } else {
+                await prefs.remove('district_id');
+                await prefs.remove('selected_district');
+              }
+
               setState(() {
                 selectedDistrict = value;
                 isDistrictSelected = value != null;
                 cityHint = isDistrictSelected ? '--Select City--' : 'City';
+                cities = newCities;
                 selectedCity = null;
+                selectedMuqam = null;
+                isCitySelected = false;
+                muqams = [];
               });
-              final prefs = await SharedPreferences.getInstance();
-              if (value == null) {
-                await prefs.remove('district_id');
-              }
+
               await prefs.remove('city_id');
-              checkDistrictSelection();
+              await prefs.remove('selected_city');
+              await prefs.remove('muqam_id');
+              await prefs.remove('selected_muqam');
             },
             initialValue: selectedDistrict,
             isProvinceSelected: isProvinceSelected,
@@ -460,19 +589,35 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
           SizedBox(height: 20.h),
           CityDropdown(
             hint: cityHint,
+            items: cities,
             onChanged: (value) async {
+              final prefs = await SharedPreferences.getInstance();
+              List<Map<String, dynamic>> newMuqams = [];
+              if (value != null && cities.isNotEmpty) {
+                final selectedItem = cities.firstWhere(
+                      (item) => item['name'] == value,
+                  orElse: () => {'id': '', 'name': ''},
+                );
+                if (selectedItem['id'] != '') {
+                  await prefs.setString('city_id', selectedItem['id']);
+                  await prefs.setString('selected_city', value);
+                  newMuqams = await locationDataService.fetchMuqams(selectedItem['id'], prefs);
+                }
+              } else {
+                await prefs.remove('city_id');
+                await prefs.remove('selected_city');
+              }
+
               setState(() {
                 selectedCity = value;
                 isCitySelected = value != null;
                 muqamHint = isCitySelected ? '--Select Muqam--' : 'Muqam';
+                muqams = newMuqams;
                 selectedMuqam = null;
               });
-              final prefs = await SharedPreferences.getInstance();
-              if (value == null) {
-                await prefs.remove('city_id');
-              }
+
               await prefs.remove('muqam_id');
-              checkCitySelection();
+              await prefs.remove('selected_muqam');
             },
             initialValue: selectedCity,
             isDistrictSelected: isDistrictSelected,
@@ -480,7 +625,18 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
           SizedBox(height: 20.h),
           MuqamDropdown(
             hint: muqamHint,
-            onChanged: (value) {
+            items: muqams,
+            onChanged: (value) async {
+              final prefs = await SharedPreferences.getInstance();
+              if (value != null) {
+                final selectedItem = muqams.firstWhere((item) => item['muqam_name'] == value);
+                await prefs.setString('muqam_id', selectedItem['id']);
+                await prefs.setString('selected_muqam', value);
+              } else {
+                await prefs.remove('muqam_id');
+                await prefs.remove('selected_muqam');
+              }
+
               setState(() {
                 selectedMuqam = value;
               });
@@ -493,40 +649,44 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
     );
   }
 
-  Widget already_login_button() {
+  Widget alreadyLoginButton() {
     return Align(
       alignment: Alignment.center,
       child: RichText(
-          text: TextSpan(
-              text: 'Already have an account? ',
-              style: TextStyle(color: Colors.black, fontSize: 15.sp, fontFamily: 'Gilroy'),
-              children: [
-                TextSpan(
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () {
-                      Get.off(const EmptyState());
-                    },
-                  text: 'Login',
-                  style: TextStyle(
-                      color: const Color(0XFF000000),
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Gilroy'),
-                )
-              ])),
+        text: TextSpan(
+          text: 'Already have an account? ',
+          style: TextStyle(color: Colors.black, fontSize: 15.sp, fontFamily: 'Gilroy'),
+          children: [
+            TextSpan(
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  Get.off(const EmptyState());
+                },
+              text: 'Login',
+              style: TextStyle(
+                color: const Color(0XFF000000),
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Gilroy',
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget back_button() {
+  Widget backButton() {
     return GestureDetector(
-        onTap: () {
-          Navigator.pop(context, true);
-        },
-        child: Image(
-          image: const AssetImage("assets/back_arrow.png"),
-          height: 24.h,
-          width: 24.w,
-        ));
+      onTap: () {
+        Navigator.pop(context, true);
+      },
+      child: Image(
+        image: const AssetImage("assets/back_arrow.png"),
+        height: 24.h,
+        width: 24.w,
+      ),
+    );
   }
 
   @override
@@ -534,7 +694,7 @@ class _SignInEmptyScreenState extends State<SignInEmptyScreen> {
     firstnameController.dispose();
     lastnameController.dispose();
     emailController.dispose();
-    // phoneNumber.dispose();
+    // phoneNumberController.dispose();
     passwordController.dispose();
     confirmpasswordController.dispose();
     locationControllers.values.forEach((controller) => controller.dispose());

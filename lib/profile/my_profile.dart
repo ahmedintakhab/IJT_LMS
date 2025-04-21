@@ -178,7 +178,7 @@ class _MyProfileState extends State<MyProfile> {
                                               borderRadius: BorderRadius.circular(22.h),
                                               boxShadow: [
                                                 BoxShadow(
-                                                    color: const Color(0XFF23408F)
+                                                    color: const Color(0XFF00AFEE)
                                                         .withOpacity(0.14),
                                                     offset: const Offset(-4, 5),
                                                     blurRadius: 16.h),
@@ -245,10 +245,10 @@ class _MyProfileState extends State<MyProfile> {
                                   height: 56.h,
                                   width: 374.w,
 
-                                  //color: Color(0XFF23408F),
+                                  //color: Color(0XFF00AFEE),
                                   decoration: BoxDecoration(
                                     border: Border.all(
-                                      color: const Color(0xFF23408F),
+                                      color: const Color(0XFF00AFEE),
                                       style: BorderStyle.solid,
                                       width: 1.0.w,
                                     ),
@@ -257,7 +257,7 @@ class _MyProfileState extends State<MyProfile> {
                                   child: Center(
                                     child: Text("Logout",
                                         style: TextStyle(
-                                            color: const Color(0xFF23408F),
+                                            color: const Color(0XFF00AFEE),
                                             fontSize: 18.sp,
                                             fontWeight: FontWeight.w700,
                                             fontFamily: 'Gilroy')),
@@ -350,7 +350,7 @@ class _MyProfileState extends State<MyProfile> {
                           width: double.infinity,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(22.h),
-                            color: const Color(0XFF23408F),
+                            color: const Color(0XFF00AFEE),
                           ),
                           child:  Center(
                               child: Text(
@@ -377,7 +377,7 @@ class _MyProfileState extends State<MyProfile> {
                             width: double.infinity.w,
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: const Color(0xFF23408F),
+                                color: const Color(0XFF00AFEE),
                                 style: BorderStyle.solid,
                                 width: 1.0.w,
                               ),
@@ -389,7 +389,7 @@ class _MyProfileState extends State<MyProfile> {
                                   style: TextStyle(
                                       fontFamily: 'Gilroy',
                                       fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF23408F),
+                                      color: const Color(0XFF00AFEE),
                                       fontStyle: FontStyle.normal,
                                       fontSize: 18.sp),
                                 ))),
@@ -433,7 +433,7 @@ class _MyProfileState extends State<MyProfile> {
                             width: double.infinity.w,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(22.h),
-                              color: const Color(0XFF23408F),
+                              color: const Color(0XFF00AFEE),
                             ),
                             child:  Center(
                                 child: Text(
@@ -458,7 +458,7 @@ class _MyProfileState extends State<MyProfile> {
                               width: double.infinity.w,
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: const Color(0xFF23408F),
+                                  color: const Color(0XFF00AFEE),
                                   style: BorderStyle.solid,
                                   width: 1.0.w,
                                 ),
@@ -470,7 +470,7 @@ class _MyProfileState extends State<MyProfile> {
                                     style: TextStyle(
                                         fontFamily: 'Gilroy',
                                         fontWeight: FontWeight.bold,
-                                        color: Color(0xFF23408F),
+                                        color: Color(0XFF00AFEE),
                                         fontStyle: FontStyle.normal,
                                         fontSize: 18.sp),
                                   ))),

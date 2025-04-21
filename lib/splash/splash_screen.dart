@@ -53,7 +53,7 @@ class _SplashscreenState extends State<Splashscreen> {
             "Learn Management",
             style: TextStyle(
                 fontSize: 28.sp,
-                color: const Color(0XFF23408F),
+                color: const Color(0XFF00AFEE),
                 fontFamily: 'AvenirLTPro',
                 fontWeight: FontWeight.w700),
           ),

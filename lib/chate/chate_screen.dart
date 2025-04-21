@@ -27,7 +27,7 @@ class _ChateScreenState extends State<ChateScreen> {
     return Scaffold(
         floatingActionButton: FloatingActionButton(
             onPressed: () {},
-            backgroundColor: const Color(0XFF23408F),
+            backgroundColor: const Color(0XFF00AFEE),
             child:  Image(
               image: AssetImage("assets/floatingaction.png"),
               height: 24.h,
@@ -93,7 +93,7 @@ class _ChateScreenState extends State<ChateScreen> {
                                           borderRadius: BorderRadius.circular(12.h),
                                           boxShadow: [
                                             BoxShadow(
-                                                color: const Color(0XFF23408F)
+                                                color: const Color(0XFF00AFEE)
                                                     .withOpacity(0.14),
                                                 offset: const Offset(-4, 5),
                                                 blurRadius: 16.h),
@@ -177,7 +177,7 @@ class _ChateScreenState extends State<ChateScreen> {
                                                           shape:
                                                           BoxShape.circle,
                                                           color: Color(
-                                                              0XFF23408F)),
+                                                              0XFF00AFEE)),
                                                       child: Center(
                                                           child: Text(
                                                               chate[index]
@@ -214,7 +214,7 @@ class _ChateScreenState extends State<ChateScreen> {
         child: TextFormField(
             decoration: InputDecoration(
           focusedBorder: OutlineInputBorder(
-              borderSide:  BorderSide(color: Color(0XFF23408F), width: 1.w),
+              borderSide:  BorderSide(color: Color(0XFF00AFEE), width: 1.w),
               borderRadius: BorderRadius.circular(22)),
           hintText: 'Search',
           hintStyle:  TextStyle(

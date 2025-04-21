@@ -67,7 +67,7 @@ class _ChoosePlaneState extends State<ChoosePlane> {
                                           borderRadius: BorderRadius.circular(12.h),
                                           boxShadow: [
                                             BoxShadow(
-                                                color: const Color(0XFF23408F)
+                                                color: const Color(0XFF00AFEE)
                                                     .withOpacity(0.14),
                                                 offset: const Offset(-4, 5),
                                                 blurRadius: 16.h),
@@ -95,7 +95,7 @@ class _ChoosePlaneState extends State<ChoosePlane> {
                                                       fontWeight: FontWeight.w700),
                                                 ),
                                                 Radio(
-                                                    activeColor: Color(0XFF23408F),
+                                                    activeColor: Color(0XFF00AFEE),
                                                     value: profilePageController
                                                         .choice[index],
                                                     groupValue:
@@ -194,10 +194,10 @@ class _ChoosePlaneState extends State<ChoosePlane> {
       child: Container(
         height: 56.h,
         width: 374.w,
-        //color: Color(0XFF23408F),
+        //color: Color(0XFF00AFEE),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20.h),
-          color: const Color(0XFF23408F),
+          color: const Color(0XFF00AFEE),
         ),
         child:  Center(
           child: Text("Payment",

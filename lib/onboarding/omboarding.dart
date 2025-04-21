@@ -85,7 +85,7 @@ class _SlidePageState extends State<SlidePage> {
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(5.h),
                 color: (index == currentpage)
-                    ? const Color(0XFF23408F)
+                    ? const Color(0XFF00AFEE)
                     : const Color(0XFFDEDEDE)),
           );
         }));
@@ -111,10 +111,10 @@ class _SlidePageState extends State<SlidePage> {
       child: Container(
         height: 56.h,
         width: 177.w,
-        //color: Color(0XFF23408F),
+        //color: Color(0XFF00AFEE),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(22.h),
-            color: const Color(0XFF23408F)),
+            color: const Color(0XFF00AFEE)),
         child: (currentpage == pages.length - 1)
             ?  Center(
                 child: Text(

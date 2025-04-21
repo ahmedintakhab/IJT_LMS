@@ -71,7 +71,7 @@ class _PaymenConfirmState extends State<PaymenConfirm> {
                                 borderRadius: BorderRadius.circular(22.h),
                                 boxShadow: [
                                   BoxShadow(
-                                      color: const Color(0XFF23408F)
+                                      color: const Color(0XFF00AFEE)
                                           .withOpacity(0.14),
                                       offset: const Offset(-4, 5),
                                       blurRadius: 16),
@@ -97,7 +97,7 @@ class _PaymenConfirmState extends State<PaymenConfirm> {
                                         fontWeight: FontWeight.w700,
                                         fontSize: 20.sp,
                                         fontFamily: 'Gilroy',
-                                        color: Color(0XFF23408F)),
+                                        color: Color(0XFF00AFEE)),
                                   ),
                                 ],
                               ),
@@ -129,7 +129,7 @@ class _PaymenConfirmState extends State<PaymenConfirm> {
                                                 BorderRadius.circular(12.h),
                                             boxShadow: [
                                               BoxShadow(
-                                                  color: const Color(0XFF23408F)
+                                                  color: const Color(0XFF00AFEE)
                                                       .withOpacity(0.14),
                                                   offset: const Offset(-4, 5),
                                                   blurRadius: 16.h),
@@ -165,7 +165,7 @@ class _PaymenConfirmState extends State<PaymenConfirm> {
                                               ),
                                               Radio(
                                                   activeColor:
-                                                      const Color(0XFF23408F),
+                                                      const Color(0XFF00AFEE),
                                                   value:
                                                       paymentSelectionController
                                                           .choice[index],
@@ -216,7 +216,7 @@ class _PaymenConfirmState extends State<PaymenConfirm> {
       child: Text(
         "Add New +",
         style: TextStyle(
-            fontSize: 18.sp, color: Color(0XFF23408F), fontFamily: 'Gilroy'),
+            fontSize: 18.sp, color: Color(0XFF00AFEE), fontFamily: 'Gilroy'),
       ),
     ));
   }
@@ -266,10 +266,10 @@ class _PaymenConfirmState extends State<PaymenConfirm> {
                           child: Container(
                             height: 56.h,
                             width: 374.w,
-                            //color: Color(0XFF23408F),
+                            //color: Color(0XFF00AFEE),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(20.h),
-                              color: const Color(0XFF23408F),
+                              color: const Color(0XFF00AFEE),
                             ),
                             child: Center(
                               child: Text("Back To Home",
@@ -288,10 +288,10 @@ class _PaymenConfirmState extends State<PaymenConfirm> {
             child: Container(
               height: 56,
               width: 374,
-              //color: Color(0XFF23408F),
+              //color: Color(0XFF00AFEE),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
-                color: const Color(0XFF23408F),
+                color: const Color(0XFF00AFEE),
               ),
               child: const Center(
                 child: Text("Confirm",

@@ -39,7 +39,7 @@ class _CompletedScreenState extends State<CompletedScreen> {
                             boxShadow: [
                               BoxShadow(
                                   color:
-                                  const Color(0XFF23408F).withOpacity(0.14),
+                                  const Color(0XFF00AFEE).withOpacity(0.14),
                                   offset: const Offset(-4, 5),
                                   blurRadius: 16.h),
                             ],
@@ -72,7 +72,7 @@ class _CompletedScreenState extends State<CompletedScreen> {
                                           child: Text("100%",style: TextStyle(fontFamily: 'Gilroy',fontSize: 14,fontWeight: FontWeight.w400),),
                                         ),
                                         backgroundColor: const Color(0XFFDEDEDE),
-                                        progressColor: const Color(0XFF23408F),
+                                        progressColor: const Color(0XFF00AFEE),
                                         barRadius:  Radius.circular(22.w),
 
                                       ),

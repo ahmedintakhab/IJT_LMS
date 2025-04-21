@@ -90,7 +90,7 @@ class _ReviewState extends State<Review> {
                             itemPadding:  EdgeInsets.symmetric(horizontal: 2.17.h),
                             itemBuilder: (context, _) => const Icon(
                               Icons.star_border,
-                              color: Color(0XFF23408F),
+                              color: Color(0XFF00AFEE),
                             ),
                             onRatingUpdate: (rating) {},
                           ),
@@ -119,7 +119,7 @@ class _ReviewState extends State<Review> {
                             itemPadding:  EdgeInsets.symmetric(horizontal: 2.17.w),
                             itemBuilder: (context, _) => const Icon(
                               Icons.star_border,
-                              color: Color(0XFF23408F),
+                              color: Color(0XFF00AFEE),
                             ),
                             onRatingUpdate: (rating) {},
                           ),
@@ -148,7 +148,7 @@ class _ReviewState extends State<Review> {
                             itemPadding:  EdgeInsets.symmetric(horizontal: 2.17.w),
                             itemBuilder: (context, _) => const Icon(
                               Icons.star_border,
-                              color: Color(0XFF23408F),
+                              color: Color(0XFF00AFEE),
                             ),
                             onRatingUpdate: (rating) {},
                           ),
@@ -177,7 +177,7 @@ class _ReviewState extends State<Review> {
                             itemPadding:  EdgeInsets.symmetric(horizontal: 2.17.w),
                             itemBuilder: (context, _) => const Icon(
                               Icons.star_border,
-                              color: Color(0XFF23408F),
+                              color: Color(0XFF00AFEE),
                             ),
                             onRatingUpdate: (rating) {},
                           ),
@@ -207,7 +207,7 @@ class _ReviewState extends State<Review> {
                             itemPadding:  EdgeInsets.symmetric(horizontal: 2.17.w),
                             itemBuilder: (context, _) => const Icon(
                               Icons.star_border,
-                              color: Color(0XFF23408F),
+                              color: Color(0XFF00AFEE),
                             ),
                             onRatingUpdate: (rating) {},
                           ),
@@ -320,7 +320,7 @@ class _ReviewState extends State<Review> {
                                   child: Text(
                                     review[index].time!,
                                     style:  TextStyle(
-                                        fontSize: 12.sp, color: Color(0XFF23408F),fontFamily: 'Gilroy'),
+                                        fontSize: 12.sp, color: Color(0XFF00AFEE),fontFamily: 'Gilroy'),
                                   ),
                                 ),
                               ],

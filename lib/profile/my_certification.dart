@@ -69,7 +69,7 @@ class _MyCertificationState extends State<MyCertification> {
           width: 374.w,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20.h),
-            color: const Color(0XFF23408F),
+            color: const Color(0XFF00AFEE),
           ),
           child:  Center(
             child: Text("Download Certificate",

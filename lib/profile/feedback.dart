@@ -68,7 +68,7 @@ class _FeedBackState extends State<FeedBack> {
                   focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.h),
                       borderSide:
-                          BorderSide(color: Color(0XFF23408F), width: 1.w)),
+                          BorderSide(color: Color(0XFF00AFEE), width: 1.w)),
                   enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.h),
                       borderSide:
@@ -116,7 +116,7 @@ class _FeedBackState extends State<FeedBack> {
         width: 374.w,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20.h),
-          color: const Color(0XFF23408F),
+          color: const Color(0XFF00AFEE),
         ),
         child:  Center(
           child: Text("Submit Feedback",

@@ -27,7 +27,7 @@ class _FAQScreenState extends State<FAQScreen> {
           child: Container(
             decoration: BoxDecoration(
               boxShadow: [
-                BoxShadow(color: Color(0XFF23408F).withOpacity(0.14),
+                BoxShadow(color: Color(0XFF00AFEE).withOpacity(0.14),
                 offset: Offset(-4, 5),
                 blurRadius: 16.h)
               ]

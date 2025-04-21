@@ -119,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   decoration: InputDecoration(
                                       focusedBorder: OutlineInputBorder(
                                           borderSide:  BorderSide(
-                                              color: const Color(0XFF23408F), width: 1.w),
+                                              color: const Color(0XFF00AFEE), width: 1.w),
                                           borderRadius: BorderRadius.circular(22)),
                                       hintText: 'Search',
                                       hintStyle:  TextStyle(
@@ -131,6 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         image: AssetImage('assets/search.png'),
                                         height: 24.h,
                                         width: 24.w,
+
                                       ),
                                       suffixIcon: GestureDetector(
                                         onTap: () {
@@ -142,6 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           decoration: const BoxDecoration(
                                             image: DecorationImage(
                                               image: AssetImage("assets/filico.png"),
+
                                             ),
                                           ),
                                         ),
@@ -175,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         style: TextStyle(
                                             fontSize: 18.sp,
                                             fontFamily: 'Gilroy',
-                                            color: const Color(0XFF23408F),
+                                            color: const Color(0XFF00AFEE),
                                             fontWeight: FontWeight.bold)))
                               ],
                             ),
@@ -199,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         style: TextStyle(
                                             fontFamily: 'Gilroy',
                                             fontSize: 18.sp,
-                                            color: const Color(0XFF23408F),
+                                            color: const Color(0XFF00AFEE),
                                             fontWeight: FontWeight.w700)))
                               ],
                             ),
@@ -265,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text(
                     "Get Start",
                     style: TextStyle(
-                        color: const Color(0XFF23408F),
+                        color: const Color(0XFF00AFEE),
                         fontWeight: FontWeight.w700,
                         fontFamily: 'Gilroy',
                     fontSize: 18.sp),
@@ -294,7 +296,7 @@ class _HomeScreenState extends State<HomeScreen> {
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(5),
                   color: (index == homecontroller.currentpage.value)
-                      ? const Color(0XFF23408F)
+                      ? const Color(0XFF00AFEE)
                       : const Color(0XFFDEDEDE)),
             ),
           );
@@ -475,7 +477,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                            color: const Color(0XFF23408F).withOpacity(0.14),
+                            color: const Color(0XFF00AFEE).withOpacity(0.14),
                             offset: const Offset(-4, 5),
                             blurRadius: 16),
                       ],
@@ -603,7 +605,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   style:  TextStyle(
                                       fontFamily: 'Gilroy',
                                       fontWeight: FontWeight.w400,
-                                      color: Color(0XFF23408F),
+                                      color: Color(0XFF00AFEE),
                                       fontSize: 15.sp),
                                 ),
                               ],
@@ -619,7 +621,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   child: Text(
                                 recentAdded[index].price!,
                                 style:  TextStyle(
-                                    color: const Color(0XFF23408F),
+                                    color: const Color(0XFF00AFEE),
                                     fontFamily: 'Gilroy',
                                     fontSize: 19.sp,
                                     fontWeight: FontWeight.bold),

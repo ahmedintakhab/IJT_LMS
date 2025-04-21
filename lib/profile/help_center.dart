@@ -55,7 +55,7 @@ class _HelpCenterState extends State<HelpCenter> {
                       borderRadius: BorderRadius.circular(22.h),
                       boxShadow: [
                         BoxShadow(
-                            color: const Color(0XFF23408F).withOpacity(0.14),
+                            color: const Color(0XFF00AFEE).withOpacity(0.14),
                             offset: const Offset(-4, 5),
                             blurRadius: 16.h),
                       ],
@@ -65,13 +65,13 @@ class _HelpCenterState extends State<HelpCenter> {
                     padding:
                      EdgeInsets.symmetric(horizontal: 5.w, vertical: 5.h),
                     labelStyle:  TextStyle(
-                        color: const Color(0XFF23408F),
+                        color: const Color(0XFF00AFEE),
                         fontWeight: FontWeight.bold,
                         fontSize: 15.sp,
                         fontFamily: 'Gilroy'),
-                    labelColor: const Color(0XFF23408F),
+                    labelColor: const Color(0XFF00AFEE),
                     unselectedLabelStyle:  TextStyle(
-                        color:const  Color(0XFF23408F),
+                        color:const  Color(0XFF00AFEE),
                         fontWeight: FontWeight.w700,
                         fontSize: 15.sp,
                         fontFamily: 'Gilroy'),

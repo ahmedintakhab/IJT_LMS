@@ -47,7 +47,7 @@ class _OngoingScreenState extends State<OngoingScreen> {
                         borderRadius: BorderRadius.circular(22),
                         boxShadow: [
                           BoxShadow(
-                              color: const Color(0XFF23408F)
+                              color: const Color(0XFF00AFEE)
                                   .withOpacity(0.14),
                               offset: const Offset(-4, 5),
                               blurRadius: 16),
@@ -87,7 +87,7 @@ class _OngoingScreenState extends State<OngoingScreen> {
                               const SizedBox(height: 15),
                               LinearPercentIndicator(
                                 padding: EdgeInsets.zero,
-                                width: 202.0,
+                                width: 170.0,
                                 lineHeight: 6.0,
                                 percent: 0.5,
                                 trailing: Padding(
@@ -97,7 +97,7 @@ class _OngoingScreenState extends State<OngoingScreen> {
                                 backgroundColor:
                                     const Color(0XFFDEDEDE),
                                 progressColor:
-                                    const Color(0XFF23408F),
+                                    const Color(0XFF00AFEE),
                                 barRadius:
                                     const Radius.circular(22),
                               ),
