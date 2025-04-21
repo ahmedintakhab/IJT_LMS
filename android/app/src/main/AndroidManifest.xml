@@ -2,7 +2,7 @@
     package="com.example.learn_megnagmet">
     <uses-permission android:name="android.permission.INTERNET" />
    <application
-        android:label="learn_megnagmet"
+        android:label="Tarbiyyah Online"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
        >
