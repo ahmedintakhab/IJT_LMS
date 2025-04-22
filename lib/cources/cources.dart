@@ -121,54 +121,69 @@ class _MyCourcesState extends State<MyCources> {
                 ),
                  SizedBox(height: 12.h),
                 Padding(
-                  padding:  EdgeInsets.symmetric(horizontal: 15.w),
+                  padding: EdgeInsets.symmetric(horizontal: 15.w),
                   child: Container(
                     height: 54.h,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0XFF00AFEE).withOpacity(0.20),
-                            blurRadius: 16,
-                          ),
-                        ],
-                        color: const Color(0XFFFFFFFF),
-                        borderRadius: BorderRadius.circular(22)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF00AFEE).withOpacity(0.20),
+                          blurRadius: 16,
+                        ),
+                      ],
+                      color: const Color(0xFFFFFFFF),
+                      borderRadius: BorderRadius.circular(6.h),
+                    ),
                     child: TabBar(
-                      unselectedLabelColor: Color(0XFF6E758A),
-                      padding:
-                           EdgeInsets.symmetric(horizontal: 5.w, vertical: 5.h),
-                      labelStyle:  TextStyle(
-                          color: const Color(0XFF00AFEE),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15.sp,
-                          fontFamily: 'Gilroy'),
-                      labelColor: const Color(0XFF00AFEE),
-                      unselectedLabelStyle:  TextStyle(
-                          color: const Color(0XFF00AFEE),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15.sp,
-                          fontFamily: 'Gilroy'),
-                      indicator: ShapeDecoration(
-                          color: const Color(0XFFE5ECFF),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(22.h))),
                       controller: courceController.tabController,
-                      tabs: const [
+                      labelColor: Colors.white, // Selected tab text color
+                      unselectedLabelColor: Colors.black, // Unselected tab text color
+                      labelStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15.sp,
+                        fontFamily: 'Gilroy',
+                      ),
+                      unselectedLabelStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15.sp,
+                        fontFamily: 'Gilroy',
+                      ),
+                      indicator: BoxDecoration(
+                        color: const Color(0xFF00AFEE), // Selected tab background color
+                        borderRadius: BorderRadius.circular(6.h),
+                      ),
+                      indicatorSize: TabBarIndicatorSize.tab, // Makes the indicator span the tab
+                      dividerColor: Colors.transparent, // Removes any divider line
+                      tabs: [
                         Tab(
-                          text: "Overview ",
+                          child: Container(
+                            width: double.infinity, // Ensures equal width for all tabs (one-third each)
+                            alignment: Alignment.center,
+                            child: const Text("Overview"),
+                          ),
                         ),
                         Tab(
-                          text: "Lessons",
+                          child: Container(
+                            width: double.infinity,
+                            alignment: Alignment.center,
+                            child: const Text("Lessons"),
+                          ),
                         ),
                         Tab(
-                          text: "Reviews",
+                          child: Container(
+                            width: double.infinity,
+                            alignment: Alignment.center,
+                            child: const Text("Reviews"),
+                          ),
                         ),
                       ],
                       onTap: (value) {
-                        courceController.pController.animateToPage(value,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.ease);
+                        courceController.pController.animateToPage(
+                          value,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.ease,
+                        );
                       },
                     ),
                   ),

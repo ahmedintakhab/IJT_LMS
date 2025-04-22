@@ -175,7 +175,7 @@ class _MyProfileState extends State<MyProfile> {
                                           height: 60.h,
                                           width: double.infinity.w,
                                           decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(22.h),
+                                              borderRadius: BorderRadius.circular(6.h),
                                               boxShadow: [
                                                 BoxShadow(
                                                     color: const Color(0XFF00AFEE)
@@ -349,7 +349,7 @@ class _MyProfileState extends State<MyProfile> {
                           height: 56.h,
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(22.h),
+                            borderRadius: BorderRadius.circular(6.h),
                             color: const Color(0XFF00AFEE),
                           ),
                           child:  Center(
@@ -381,7 +381,7 @@ class _MyProfileState extends State<MyProfile> {
                                 style: BorderStyle.solid,
                                 width: 1.0.w,
                               ),
-                              borderRadius: BorderRadius.circular(22.h),
+                              borderRadius: BorderRadius.circular(6.h),
                             ),
                             child:  Center(
                                 child: Text(
@@ -432,7 +432,7 @@ class _MyProfileState extends State<MyProfile> {
                             height: 56.h,
                             width: double.infinity.w,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(22.h),
+                              borderRadius: BorderRadius.circular(6.h),
                               color: const Color(0XFF00AFEE),
                             ),
                             child:  Center(
@@ -462,7 +462,7 @@ class _MyProfileState extends State<MyProfile> {
                                   style: BorderStyle.solid,
                                   width: 1.0.w,
                                 ),
-                                borderRadius: BorderRadius.circular(22.h),
+                                borderRadius: BorderRadius.circular(6.h),
                               ),
                               child:  Center(
                                   child: Text(

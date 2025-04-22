@@ -123,7 +123,7 @@ class _FilterSheetState extends State<FilterSheet> {
                             color: selectedCategory.contains(categoryList[i])
                                 ? Color(0XFFE5ECFF)
                                 : Colors.white,
-                            borderRadius: BorderRadius.circular(26),
+                            borderRadius: BorderRadius.circular(6),
                             border: Border.all(
                                 color:
                                     selectedCategory.contains(categoryList[i])
@@ -150,7 +150,7 @@ class _FilterSheetState extends State<FilterSheet> {
             ],
           ),
           const SizedBox(
-            height: 30,
+            height: 20,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -158,9 +158,9 @@ class _FilterSheetState extends State<FilterSheet> {
               GestureDetector(
                 child: Container(
                   height: 56,
-                  width: 177,
+                  width: 157,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(22),
+                    borderRadius: BorderRadius.circular(6),
                     color: Color(0XFF00AFEE),
                   ),
                   child: const Center(
@@ -178,12 +178,12 @@ class _FilterSheetState extends State<FilterSheet> {
                 onTap: () {},
                 child: Container(
                   height: 56,
-                  width: 177,
+                  width: 157,
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: Color(0XFF00AFEE),
                     ),
-                    borderRadius: BorderRadius.circular(22),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: const Center(
                       child: Text(

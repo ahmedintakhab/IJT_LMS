@@ -104,6 +104,7 @@ class _OverviewState extends State<Overview> {
                                             height: 30.h,
                                             width: 30.w,
                                             fit: BoxFit.cover,
+                                            color: Color(0xFF00AFEE),
                                           ),
                                           SizedBox(height: 10.h),
                                           Text(
@@ -141,7 +142,7 @@ class _OverviewState extends State<Overview> {
                                 bottom: index == 1 ? 0.w : 8.w),
                             child: Container(
                                 decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(22.h),
+                                    borderRadius: BorderRadius.circular(6.h),
                                     color: const Color(0XFFFFFFFF),
                                     boxShadow: [
                                       BoxShadow(
@@ -233,7 +234,7 @@ class _OverviewState extends State<Overview> {
                                               .contains(categoryList[i])
                                           ? Color(0XFFE5ECFF)
                                           : Colors.white,
-                                      borderRadius: BorderRadius.circular(26.h),
+                                      borderRadius: BorderRadius.circular(6.h),
                                       border: Border.all(
                                           color: selectedCategory
                                                   .contains(categoryList[i])

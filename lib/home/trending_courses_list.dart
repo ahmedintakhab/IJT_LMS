@@ -85,7 +85,7 @@ class _TrendingCourceListState extends State<TrendingCourceList> {
                     style: TextStyle(
                       fontFamily: 'Gilroy',
                       fontWeight: FontWeight.w700,
-                      fontSize: 15.sp,
+                      fontSize: 12.sp,
                       color: const Color(0XFF000000),
                     ),
                   ),
@@ -95,7 +95,7 @@ class _TrendingCourceListState extends State<TrendingCourceList> {
                     style: TextStyle(
                       fontFamily: 'Gilroy',
                       fontWeight: FontWeight.w700,
-                      fontSize: 15.sp,
+                      fontSize: 12.sp,
                       color: const Color(0XFF000000),
                     ),
                   ),

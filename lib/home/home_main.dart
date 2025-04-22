@@ -52,103 +52,89 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                     controller.onChange(index);
                   },
                   type: BottomNavigationBarType.fixed,
-                  items: [
-                    BottomNavigationBarItem(
-                        activeIcon: Column(
-                          children: const [
-                            Image(
-                                image: AssetImage("assets/bottomhomeblue.png"),
-                                height: 24,
-                                width: 24,
-                            color:  Color(0XFF00AFEE),),
-                            SizedBox(height: 8.79),
-                            Image(
-                                image: AssetImage("assets/line.png"),
-                                height: 1.75,
-                                width: 24,
-                                color:  Color(0XFF00AFEE),),
-                          ],
-                        ),
-                        icon: const Image(
-                          image: AssetImage("assets/bottomhomeblack.png"),
-                          height: 24,
-                          width: 24),
-                        label: ''),
-                    BottomNavigationBarItem(
-                        activeIcon: Column(
-                          children: const [
-                            Image(
-                                image: AssetImage("assets/bottombookblue.png"),
-                                height: 24,
-                                width: 24,
-                              color:  Color(0XFF00AFEE),),
-
-                            SizedBox(height: 8.79),
-                            Image(
-                                image: AssetImage("assets/line.png"),
-                                height: 1.75,
-                                width: 24,
-                              color:  Color(0XFF00AFEE),),
-
-                          ],
-                        ),
-                        icon: const Image(
-                            image: AssetImage("assets/bottombookblack.png"),
-                            height: 24,
-                            width: 24,),
-
-                        label: ''),
-                    BottomNavigationBarItem(
-                        activeIcon: Column(
-                          children: const [
-                            Image(
-                                image:
-                                    AssetImage("assets/bottommessegeblue.png"),
-                                height: 24,
-                                width: 24,
-                              color:  Color(0XFF00AFEE),),
-
-                            SizedBox(height: 8.79),
-                            Image(
-                                image: AssetImage("assets/line.png"),
-                                height: 1.75,
-                                width: 24,
-                              color:  Color(0XFF00AFEE),),
-
-                          ],
-                        ),
-                        icon: const Image(
-                            image: AssetImage("assets/bottommessegeblack.png"),
-                            height: 24,
-                            width: 24,),
-
-                        label: ''),
-                    BottomNavigationBarItem(
-                        activeIcon: Column(
-                          children: const [
-                            Image(
-                                image:
-                                    AssetImage("assets/bottomprofileblue.png"),
-                                height: 24,
-                                width: 24,
-                              color:  Color(0XFF00AFEE),),
-
-                            SizedBox(height: 8.79),
-                            Image(
-                                image: AssetImage("assets/line.png"),
-                                height: 1.75,
-                                width: 24,
-                              color:  Color(0XFF00AFEE),),
-
-                          ],
-                        ),
-                        icon: const Image(
-                            image: AssetImage("assets/bottomprofileblack.png"),
-                            height: 24,
-                            width: 24,),
-
-                        label: ''),
-                  ]),
+                items: [
+              BottomNavigationBarItem(
+              activeIcon: Column(
+              children: [
+                Icon(
+                Icons.home,
+                size: 24,
+                color: Color(0XFF00AFEE),),
+                SizedBox(height: 8.79),
+                Container(
+                  height: 1.75,
+                  width: 24,
+                  color: Color(0XFF00AFEE),)
+                  ],
+                ),
+                icon: Icon(
+                    Icons.home_outlined,
+                    size: 24,
+                    color: Colors.black), // Inactive color
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                activeIcon: Column(
+                  children: [
+                    Icon(
+                        Icons.menu_book,
+                        size: 24,
+                        color: Color(0XFF00AFEE)),
+                    SizedBox(height: 8.79),
+                    Container(
+                        height: 1.75,
+                        width: 24,
+                        color: Color(0XFF00AFEE)),
+                  ],
+                ),
+                icon: Icon(
+                    Icons.menu_book_outlined,
+                    size: 24,
+                    color: Colors.black),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                activeIcon: Column(
+                  children: [
+                    Icon(
+                        Icons.message,
+                        size: 24,
+                        color: Color(0XFF00AFEE)),
+                    SizedBox(height: 8.79),
+                    Container(
+                        height: 1.75,
+                        width: 24,
+                        color: Color(0XFF00AFEE)),
+                  ],
+                ),
+                icon: Icon(
+                    Icons.message_outlined,
+                    size: 24,
+                    color: Colors.black),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                activeIcon: Column(
+                  children: [
+                    Icon(
+                        Icons.person,
+                        size: 24,
+                        color: Color(0XFF00AFEE)),
+                    SizedBox(height: 8.79),
+                    Container(
+                        height: 1.75,
+                        width: 24,
+                        color: Color(0XFF00AFEE)),
+                  ],
+                ),
+                icon: Icon(
+                    Icons.person_outline,
+                    size: 24,
+                    color: Colors.black),
+                label: '',
+              ),
+              ],
+              ),
             )),
       ),
     );

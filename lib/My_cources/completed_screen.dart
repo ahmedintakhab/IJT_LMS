@@ -35,7 +35,7 @@ class _CompletedScreenState extends State<CompletedScreen> {
                         height: 124.h,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(22.h),
+                            borderRadius: BorderRadius.circular(6.h),
                             boxShadow: [
                               BoxShadow(
                                   color:

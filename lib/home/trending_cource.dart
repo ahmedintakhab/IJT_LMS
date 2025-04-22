@@ -87,9 +87,9 @@ class _TrendingCourceState extends State<TrendingCource> {
         children: cource
             .map((index) => Container(
                   //height: 302,
-                  width: 177.w,
+                  width: 187.w,
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(6),
                       boxShadow: [
                         BoxShadow(
                             color: const Color(0XFF00AFEE).withOpacity(0.14),
@@ -101,7 +101,7 @@ class _TrendingCourceState extends State<TrendingCource> {
                     children: [
                       Container(
                         height: 165.h,
-                        width: 190.w,
+                        width: 200.w,
                         decoration: BoxDecoration(
                           image: DecorationImage(
                               image: AssetImage(index.image!),
@@ -156,21 +156,21 @@ class _TrendingCourceState extends State<TrendingCource> {
                             Text(
                               index.title!,
                               style: TextStyle(
-                                  fontSize: 14.sp,
+                                  fontSize: 12.sp,
                                   fontWeight: FontWeight.w700,
                                   fontFamily: 'Gilroy',
                                   color: const Color(0XFF000000)),
                             ),
-                            Text(
-                              index.subtitle!,
-                              style: TextStyle(
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.w700,
-                                  fontFamily: 'Gilroy',
-                                  color: const Color(0XFF000000)),
-                            ),
+                            // Text(
+                            //   index.subtitle!,
+                            //   style: TextStyle(
+                            //       fontSize: 14.sp,
+                            //       fontWeight: FontWeight.w700,
+                            //       fontFamily: 'Gilroy',
+                            //       color: const Color(0XFF000000)),
+                            // ),
                             Padding(
-                              padding: EdgeInsets.only(top: 12.h),
+                              padding: EdgeInsets.only(top: 6.h),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -197,7 +197,7 @@ class _TrendingCourceState extends State<TrendingCource> {
                                           style: TextStyle(
                                               color: Color(0XFFFFC403),
                                               fontFamily: 'Gilroy',
-                                              fontSize: 14.sp),
+                                              fontSize: 12.sp),
                                         ),
                                       ],
                                     ),
@@ -219,7 +219,7 @@ class _TrendingCourceState extends State<TrendingCource> {
                                           Text(
                                             index.time!,
                                             style: TextStyle(
-                                                fontSize: 13.sp,
+                                                fontSize: 12.sp,
                                                 color: const Color(0XFF000000),
                                                 fontWeight: FontWeight.w400,
                                                 fontFamily: 'Gilroy'),

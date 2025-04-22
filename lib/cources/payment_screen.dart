@@ -68,7 +68,7 @@ class _PaymenConfirmState extends State<PaymenConfirm> {
                             height: 60.h,
                             width: double.infinity.w,
                             decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(22.h),
+                                borderRadius: BorderRadius.circular(6.h),
                                 boxShadow: [
                                   BoxShadow(
                                       color: const Color(0XFF00AFEE)
@@ -126,7 +126,7 @@ class _PaymenConfirmState extends State<PaymenConfirm> {
                                         width: double.infinity.w,
                                         decoration: BoxDecoration(
                                             borderRadius:
-                                                BorderRadius.circular(12.h),
+                                                BorderRadius.circular(6.h),
                                             boxShadow: [
                                               BoxShadow(
                                                   color: const Color(0XFF00AFEE)

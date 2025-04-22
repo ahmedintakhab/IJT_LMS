@@ -6,7 +6,6 @@ import 'package:learn_megnagmet/home/recent_added_cource_detail.dart';
 import 'package:learn_megnagmet/models/recently_added.dart';
 import 'package:learn_megnagmet/utils/slider_page_data_model.dart';
 
-import '../My_cources/cources_details.dart';
 import '../utils/screen_size.dart';
 
 
@@ -90,7 +89,7 @@ class _RecentlyAddedState extends State<RecentlyAdded> {
                 padding:  EdgeInsets.only(left: 20.w,right: 20.w,top:index==0?0.h: 10.h,bottom: 10.h),
                 child: Container(
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12.h),
+                      borderRadius: BorderRadius.circular(6.h),
                       boxShadow: [
                         BoxShadow(
                             color: const Color(0XFF00AFEE).withOpacity(0.14),
@@ -123,7 +122,7 @@ class _RecentlyAddedState extends State<RecentlyAdded> {
                                     height: 210.h,
                                     width: double.infinity.w,
                                     decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(20.h),
+                                        // borderRadius: BorderRadius.circular(6.h),
                                         color: Colors.white),
                                     child: Image(
                                       image:
@@ -185,7 +184,7 @@ class _RecentlyAddedState extends State<RecentlyAdded> {
                                   height: 27.h,
                                   width: 59.w,
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20.h),
+                                    borderRadius: BorderRadius.circular(6.h),
                                     color: const Color(0XFFFAF4E1),
                                   ),
                                   child: Row(
@@ -277,7 +276,7 @@ class _RecentlyAddedState extends State<RecentlyAdded> {
                                       height: 30.h,
                                       width: 74.w,
                                       decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(12.h),
+                                          borderRadius: BorderRadius.circular(6.h),
                                           color:const  Color(0XFFE5ECFF)),
                                       child: Center(
                                           child: Text(

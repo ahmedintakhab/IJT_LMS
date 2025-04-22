@@ -31,7 +31,7 @@ class _CardBottomSheetState extends State<CardBottomSheet> {
                   height: 4.h,
                   width: 48.w,
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10.h),
+                      borderRadius: BorderRadius.circular(6.h),
                       color: const Color(0XFF12121D)))),
            SizedBox(height: 9.h),
            Text(
@@ -69,7 +69,7 @@ class _CardBottomSheetState extends State<CardBottomSheet> {
       height: 60.h,
       width: double.infinity,
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(22.h),
+          borderRadius: BorderRadius.circular(6.h),
           boxShadow: [
             BoxShadow(
                 color: const Color(0XFF00AFEE).withOpacity(0.14),
@@ -113,7 +113,7 @@ class _CardBottomSheetState extends State<CardBottomSheet> {
         height: 60.h,
         width: double.infinity.w,
         decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22.h),
+            borderRadius: BorderRadius.circular(6.h),
             boxShadow: [
               BoxShadow(
                   color: const Color(0XFF00AFEE).withOpacity(0.14),

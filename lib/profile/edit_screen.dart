@@ -90,7 +90,7 @@ class _EditScreenState extends State<EditScreen> {
       height: 60.h,
       width: double.infinity,
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(22.h),
+          borderRadius: BorderRadius.circular(6.h),
           boxShadow: [
             BoxShadow(
                 color: const Color(0XFF00AFEE).withOpacity(0.14),

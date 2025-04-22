@@ -138,10 +138,10 @@ class _DetailChateState extends State<DetailChate> {
                                     fontFamily: 'Gilroy'),
                                 focusedBorder: OutlineInputBorder(
                                     borderSide: BorderSide(width: 1.w, color: Color(0XFF00AFEE)),
-                                    borderRadius: BorderRadius.circular(15.h)),
+                                    borderRadius: BorderRadius.circular(6.h)),
                                 enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(width: 1.w, color: Color(0XFFB3B3B3)),
-                                    borderRadius: BorderRadius.circular(15.h)),),
+                                    borderRadius: BorderRadius.circular(6.h)),),
                             cursorColor: const Color(0XFF00AFEE),
 
                           ),
@@ -154,7 +154,7 @@ class _DetailChateState extends State<DetailChate> {
                               border: Border.all(
                                 color: const Color(0XFFB3B3B3),
                                 width: 1),
-                            borderRadius: BorderRadius.circular(15.h)
+                            borderRadius: BorderRadius.circular(6.h)
 
                             //borderRadius: BorderRadius.all(Radius.circular(15))
                           ),

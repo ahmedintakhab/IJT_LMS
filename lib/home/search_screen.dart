@@ -156,7 +156,7 @@ class _SearchScreenState extends State<SearchScreen> {
           decoration: InputDecoration(
               focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Color(0XFF00AFEE), width: 1.w),
-                  borderRadius: BorderRadius.circular(22.h)),
+                  borderRadius: BorderRadius.circular(6.h)),
               hintText: 'Search',
               hintStyle: TextStyle(
                   color: const Color(0XFF9B9B9B),
@@ -172,23 +172,30 @@ class _SearchScreenState extends State<SearchScreen> {
                 onTap: () {
                   showModalBottomSheet(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(22.h),
+                        borderRadius: BorderRadius.circular(6.h),
                       ),
                       context: context,
                       builder: (context) => const FilterSheet());
                 },
-                child: Container(
-                  height: 5.h,
-                  width: 5.w,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage("assets/filico.png"),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    height: 3.h,
+                    width: 3.w,
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage("assets/filtericon.png"),
+                        colorFilter: ColorFilter.mode(
+                          Color(0xFF00AFEE), // Apply the color 0xFF00AFEE
+                          BlendMode.srcIn, // Blend mode to tint the image
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
               border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(22.h)))),
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(6.h)))),
     );
   }
 
@@ -244,7 +251,7 @@ class _SearchScreenState extends State<SearchScreen> {
             //height: 302,
             width: 177.w,
             decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12.h),
+                borderRadius: BorderRadius.circular(6.h),
                 boxShadow: [
                   BoxShadow(
                       color: const Color(0XFF00AFEE).withOpacity(0.14),
@@ -261,7 +268,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     image: DecorationImage(
                         image: AssetImage(cource[index].image!),
                         fit: BoxFit.cover),
-                    borderRadius: BorderRadius.circular(12.h),
+                    borderRadius: BorderRadius.circular(6.h),
                     boxShadow: [
                       BoxShadow(
                           color: const Color(0XFF00AFEE).withOpacity(0.14),
@@ -316,7 +323,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               height: 27.h,
                               width: 50.w,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20.h),
+                                borderRadius: BorderRadius.circular(6.h),
                                 color: const Color(0XFFFAF4E1),
                               ),
                               child: Row(
@@ -412,7 +419,7 @@ class _SearchScreenState extends State<SearchScreen> {
               width: 276.w,
 
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12.h),
+                  borderRadius: BorderRadius.circular(6.h),
                   boxShadow: [
                     BoxShadow(
                         color: const Color(0XFF00AFEE).withOpacity(0.14),
@@ -427,7 +434,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     height: 158.h,
                     width: 276.w,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(6),
                       image: DecorationImage(
                           image: AssetImage(
                             recentAdded[index].image!,
@@ -462,7 +469,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           height: 25.h,
                           width: 58.w,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20.h),
+                            borderRadius: BorderRadius.circular(6.h),
                             color: const Color(0XFFFAF4E1),
                           ),
                           child: Row(
@@ -547,7 +554,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           height: 33.h,
                           width: 76.w,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12.h),
+                            borderRadius: BorderRadius.circular(6.h),
                             color: const Color(0XFFE5ECFF),
                           ),
                           child: Center(

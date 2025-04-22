@@ -44,7 +44,7 @@ class _OngoingScreenState extends State<OngoingScreen> {
                     height: 124,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(22),
+                        borderRadius: BorderRadius.circular(6),
                         boxShadow: [
                           BoxShadow(
                               color: const Color(0XFF00AFEE)

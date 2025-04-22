@@ -153,7 +153,7 @@ class _RecentCourceDetailState extends State<RecentCourceDetail> {
                             height: 80.h,
                             width: double.infinity,
                             decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(22.h),
+                                borderRadius: BorderRadius.circular(6.h),
                                 boxShadow: [
                                   BoxShadow(
                                       color: const Color(0XFF00AFEE).withOpacity(0.14),
@@ -170,7 +170,7 @@ class _RecentCourceDetailState extends State<RecentCourceDetail> {
                                     width: 33.w,
                                     decoration: BoxDecoration(
                                         borderRadius:
-                                        BorderRadius.circular(22.h),
+                                        BorderRadius.circular(6.h),
                                         color: const Color(0XFFE5ECFF)),
                                     child: Center(
                                       child: Text(
