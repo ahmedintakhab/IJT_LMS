@@ -71,10 +71,10 @@ class Utils {
 
   static List<Design> getDesign() {
     return [
-      Design(image: 'assets/d3.png', name: 'Design', color: '0XFFFFF6E5'),
-      Design(image: 'assets/d4.png', name: 'Code', color: '0XFFFEE9EB'),
-      Design(image: 'assets/d5.png', name: 'Buisness', color: '0XFFECF6FF'),
-      Design(image: 'assets/d6.png', name: 'Photography', color: '0XFFFFF6E5'),
+      Design(image: 'assets/category1.png', name: 'Nisab-e-Jamiat Courses', ), //color: '0XFFFFF6E5'
+      Design(image: 'assets/category2.png', name: 'Quran and Sunnah Courses', ),//color: '0XFFFEE9EB'
+      Design(image: 'assets/category3.png', name: 'Islamic Thought & Modern Topics',),// color: '0XFFECF6FF'
+      Design(image: 'assets/category4.png', name: 'Soft Skills & Academic Support', ),//color: '0XFFFFF6E5'
     ];
   }
 

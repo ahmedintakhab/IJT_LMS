@@ -173,6 +173,10 @@ class _EmptyStateState extends State<EmptyState> {
                         isLoading: isLoading,
                       ),
                       SizedBox(height: 40.h),
+                      CustomButton(onTap: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=>HomeMainScreen()));
+                      }, buttonText: 'Skip'),
+                      SizedBox(height: 40.h),
                       or_sign_in_with_text(),
                       SizedBox(height: 41.h),
                       login_google(),

@@ -1,5 +1,4 @@
 
-
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -10,14 +9,17 @@ import 'package:learn_megnagmet/cources/review_screen.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter/material.dart';
 
-import '../models/trending_cource.dart';
 import '../utils/screen_size.dart';
 import '../widget/button.dart';
 import 'choose_plane_screen.dart';
 
 class MyCources extends StatefulWidget {
-  const MyCources({Key? key,required this.trende}) : super(key: key);
-  final Trending trende;
+  // final Map<String, dynamic> trende;
+  final String slug;  // Add this parameter
+
+  const MyCources({Key? key,required this.slug,
+  }) : super(key: key);
+  // final Trending trende;
 
 
   @override
