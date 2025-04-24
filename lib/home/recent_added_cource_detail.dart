@@ -10,8 +10,10 @@ import '../utils/screen_size.dart';
 import '../utils/slider_page_data_model.dart';
 
 class RecentCourceDetail extends StatefulWidget {
+  final List<Map<String, dynamic>> corcedetail;
+
   const RecentCourceDetail({Key? key,required this.corcedetail}) : super(key: key);
-  final Recent corcedetail;
+  // final Recent corcedetail;
 
   @override
   State<RecentCourceDetail> createState() => _RecentCourceDetailState();
@@ -44,13 +46,13 @@ class _RecentCourceDetailState extends State<RecentCourceDetail> {
                         width: 24.w,
                       )),
                    SizedBox(width: 15.w),
-                  Flexible(
-                    child: Text(
-                      "${widget.corcedetail.title}",
-                      style:  TextStyle(
-                          fontWeight: FontWeight.w700, fontSize: 24.sp,fontFamily: 'Gilroy'),overflow: TextOverflow.ellipsis
-                    ),
-                  ),
+                  // Flexible(
+                  //   child: Text(
+                  //       "${widget.corcedetail['course_title']}",
+                  //     style:  TextStyle(
+                  //         fontWeight: FontWeight.w700, fontSize: 24.sp,fontFamily: 'Gilroy'),overflow: TextOverflow.ellipsis
+                  //   ),
+                  // ),
                 ],
               ),
             ),

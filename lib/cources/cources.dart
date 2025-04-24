@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -40,17 +41,24 @@ class _MyCourcesState extends State<MyCources> {
   List<dynamic> lessonsData = [];
   bool isLoading = true;
   String courseTitle = "";
+  bool isVideo = true;
+  bool isMediaLoading = true;
   String videoUrl = "https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4"; // Default video
 
   @override
   void initState() {
     super.initState();
-    // Initialize with default video first
     flickManager = FlickManager(
       videoPlayerController: VideoPlayerController.network(videoUrl),
       autoPlay: false,
-    );
+    )..flickControlManager!.addListener(_checkVideoLoading);
     fetchCourseDetails();
+  }
+
+  void _checkVideoLoading() {
+    if (flickManager.flickVideoManager!.isVideoInitialized && isMediaLoading) {
+      setState(() => isMediaLoading = false);
+    }
   }
 
   Future<void> fetchCourseDetails() async {
@@ -79,17 +87,22 @@ class _MyCourcesState extends State<MyCources> {
               lessonsData = data['lessons'];
             }
 
-            // Extract video URL
             if (data['course_preview_src'] != null && data['course_preview_src'].isNotEmpty) {
               videoUrl = data['course_preview_src'];
-              print('video url: $videoUrl');
+              print('media url: $videoUrl');
 
-              // Dispose old flickManager and create a new one with updated video URL
-              flickManager.dispose();
-              flickManager = FlickManager(
-                videoPlayerController: VideoPlayerController.network(videoUrl),
-                autoPlay: false,
-              );
+              isVideo = !_isImageUrl(videoUrl);
+
+              if (isVideo) {
+                flickManager.dispose();
+                flickManager = FlickManager(
+                  videoPlayerController: VideoPlayerController.network(videoUrl),
+                  autoPlay: false,
+                )..flickControlManager!.addListener(_checkVideoLoading);
+              } else {
+                // For image, we'll set loading to false immediately
+                setState(() => isMediaLoading = false);
+              }
             }
 
             // Initialize pages with course details
@@ -114,11 +127,39 @@ class _MyCourcesState extends State<MyCources> {
     }
   }
 
+  bool _isImageUrl(String url) {
+    final lowerUrl = url.toLowerCase();
+    return lowerUrl.endsWith('.png') ||
+        lowerUrl.endsWith('.jpg') ||
+        lowerUrl.endsWith('.jpeg') ||
+        lowerUrl.endsWith('.gif');
+  }
+
+  // Method to reload media (image or video)
+  void _reloadMedia() {
+    setState(() {
+      isMediaLoading = true; // Show loading indicator
+      if (isVideo) {
+        // Dispose and reinitialize FlickManager for video
+        flickManager.dispose();
+        flickManager = FlickManager(
+          videoPlayerController: VideoPlayerController.network(videoUrl),
+          autoPlay: false,
+        )..flickControlManager!.addListener(_checkVideoLoading);
+      } else {
+        // For images, reset loading state to trigger reload
+        isMediaLoading = false;
+      }
+    });
+  }
+
   @override
   void dispose() {
+    flickManager.flickControlManager?.removeListener(_checkVideoLoading);
     flickManager.dispose();
     super.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -178,13 +219,63 @@ class _MyCourcesState extends State<MyCources> {
                       ],
                       borderRadius: BorderRadius.circular(22.h),
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(22.h),
-                      child: AspectRatio(
-                        aspectRatio: 16 / 9,
-                        child: FlickVideoPlayer(flickManager: flickManager),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(22.h),
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                          // Media content
+                          isMediaLoading
+                          ? const Center(
+                          child: CircularProgressIndicator(
+                              color: Color(0XFF00AFEE),
+                        ),
+                      )
+                          : isVideo
+                      ? FlickVideoPlayer(flickManager: flickManager)
+                      : CachedNetworkImage(
+                  imageUrl: videoUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0XFF00AFEE),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Center(
+                    child: GestureDetector(
+                      onTap: _reloadMedia,
+                      child: const Text(
+                        'Retry',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
+                  ),
+                ),
+            // Retry button for video errors
+            if (isVideo &&
+        !isMediaLoading &&
+        flickManager.flickVideoManager!.errorInVideo)
+        GestureDetector(
+        onTap: _reloadMedia,
+        child: const Text(
+          'Retry',
+          style: TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+      ),
+      ]
+    )
+    )
+    ),
                   ),
                 ),
 

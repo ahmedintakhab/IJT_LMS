@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:learn_megnagmet/home/recent_added_cource_detail.dart';
 import 'package:shimmer/shimmer.dart';
 
 class RecentAddedList extends StatefulWidget {
@@ -97,7 +100,7 @@ class _RecentAddedListState extends State<RecentAddedList> {
           final course = widget.recentAdded[index];
           return GestureDetector(
             onTap: () {
-              // Get.to(RecentCourceDetail(corcedetail: course));
+               Get.to(RecentCourceDetail(corcedetail: widget.recentAdded));
             },
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 4.w,vertical: 10.h),

@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:learn_megnagmet/models/trending_cource.dart';
 import 'package:learn_megnagmet/utils/slider_page_data_model.dart';
-
 import '../utils/screen_size.dart';
 
 class TrendingCource extends StatefulWidget {
@@ -131,13 +129,6 @@ class _TrendingCourceState extends State<TrendingCource> {
                                 decoration: const BoxDecoration(
                                     shape: BoxShape.circle, color: Colors.white),
                                 child: Center(
-                                    // child: index.buttonStatus == true
-                                    //     ? Image(
-                                    //         image:
-                                    //             AssetImage("assets/savebold.png"),height: 13.08.h,width: 13.08.h,)
-                                    //     : Image(
-                                    //         image: AssetImage(
-                                    //             "assets/saveboldblue.png"),height: 13.08.h,width: 13.08.h)
                                         child:Image(
                                       image: const AssetImage("assets/like.png"),
                                       height: 13.08.h,
