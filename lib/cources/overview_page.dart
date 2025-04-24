@@ -12,7 +12,9 @@ import '../widget/button.dart';
 import 'choose_plane_screen.dart';
 
 class Overview extends StatefulWidget {
-  const Overview({Key? key}) : super(key: key);
+  final Map<String, dynamic> overviewData;
+
+  const Overview({Key? key, required this.overviewData}) : super(key: key);
 
   @override
   State<Overview> createState() => _OverviewState();
@@ -41,6 +43,7 @@ class _OverviewState extends State<Overview> {
 
   @override
   Widget build(BuildContext context) {
+     print('Overview page: ${widget.overviewData}');
     initializeScreenSize(context);
     return GetBuilder(
         init: HomeController(),
@@ -52,7 +55,7 @@ class _OverviewState extends State<Overview> {
                   children: [
                     SizedBox(height: 10.h),
                     Text(
-                      'UI UX Design',
+                      widget.overviewData['subtitle'] ?? '',
                       style: TextStyle(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w500,
@@ -60,7 +63,7 @@ class _OverviewState extends State<Overview> {
                           fontFamily: 'Gilroy'),
                     ),
                     ExpandableText(
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed d o eiusmod tempor incididunt ut labore et dolore magna aliqua.Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed d o eiusmod tempor incididunt ut labore et ",
+                      widget.overviewData['description']?? '',
                       expandText: 'Learn more.',
                       style: TextStyle(
                           fontSize: 14.sp,
@@ -75,192 +78,249 @@ class _OverviewState extends State<Overview> {
                           fontWeight: FontWeight.w700,
                           fontFamily: 'Gilroy'),
                     ),
-                    SizedBox(
-                      child: GridView.count(
-                        primary: false,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 4.0,
-                        mainAxisSpacing: 8.0,
-
-                        //reverse: true,
-                        children: grid
-                            .map((e) => Padding(
-                                  padding: EdgeInsets.all(6.0.h),
-                                  child: Container(
-                                      decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(22.h),
-                                          color: const Color(0XFFF3F6FF)),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Image(
-                                            image: AssetImage(e.image!),
-                                            height: 30.h,
-                                            width: 30.w,
-                                            fit: BoxFit.cover,
-                                            color: Color(0xFF00AFEE),
-                                          ),
-                                          SizedBox(height: 10.h),
-                                          Text(
-                                            e.title!,
-                                            style: TextStyle(
-                                                fontSize: 14.sp,
-                                                color: const Color(0XFf000000),
-                                                fontWeight: FontWeight.bold,
-                                                fontFamily: 'Gilroy'),
-                                          )
-                                        ],
-                                      )),
-                                ))
-                            .toList(),
-                      ),
-                    ),
-                    SizedBox(height: 21.sp),
+                    SizedBox(height: 25.h),
+                    // What you will learn section
                     Text(
-                      "Instructor",
+                      "What you will learn",
                       style: TextStyle(
-                          fontFamily: 'Gilroy',
-                          fontSize: 18.sp,
-                          color: const Color(0XFF000000),
-                          fontWeight: FontWeight.w700),
+                          fontSize: 24.sp,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0XFF0091C7),
+                          fontFamily: 'Gilroy'),
                     ),
-                    ListView.builder(
-                        scrollDirection: Axis.vertical,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: instuctor.length,
-                        itemBuilder: (BuildContext, index) {
-                          return Padding(
-                            padding: EdgeInsets.only(
-                                top: index == 0 ? 0.h : 8.h,
-                                bottom: index == 1 ? 0.w : 8.w),
-                            child: Container(
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(6.h),
-                                    color: const Color(0XFFFFFFFF),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(0XFF00AFEE)
-                                            .withOpacity(0.14),
-                                        blurRadius: 20.0.h,
-                                      ),
-                                    ]),
-                                height: 95.h,
-                                width: 374.w,
-                                child: Padding(
-                                  padding:
-                                      EdgeInsets.only(left: 10.w, right: 10.w),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      Image(
-                                          image: AssetImage(
-                                              instuctor[index].image!),
-                                          height: 71.h,
-                                          width: 71.w),
-                                      SizedBox(width: 10.w),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          Text(
-                                            instuctor[index].title!,
-                                            style: TextStyle(
-                                                fontSize: 16.sp,
-                                                color: const Color(0XFF000000),
-                                                fontWeight: FontWeight.bold,
-                                                fontFamily: 'Gilroy'),
-                                          ), //SizedBox(height: 5),
-                                          Text(
-                                            instuctor[index].subtitle!,
-                                            style: TextStyle(
-                                                fontSize: 16.sp,
-                                                color: const Color(0XFF000000),
-                                                fontFamily: 'Gilroy'),
-                                          )
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                )),
-                          );
-                        }),
                     SizedBox(height: 20.h),
-                    Text(
-                      "Skill",
-                      style: TextStyle(
-                          fontFamily: 'Gilroy',
-                          fontSize: 18.sp,
-                          color: Color(0XFF000000),
-                          fontWeight: FontWeight.w700),
-                    ),
-                    SizedBox(height: 12.h),
-                    Wrap(
-                      alignment: WrapAlignment.start,
-                      children: [
-                        for (final i in List.generate(
-                            categoryList.length, (index) => index))
-                          Padding(
-                            padding: EdgeInsets.only(
-                                top: 8.h, bottom: 8.h, right: 8.w),
-                            child: Wrap(
+                    // Key points list with check icons
+                    if (widget.overviewData['key_points'] != null)
+                      ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: (widget.overviewData['key_points'] as List?)?.length ?? 0,
+                        itemBuilder: (context, index) {
+                          final keyPoint = widget.overviewData['key_points'][index];
+                          return Padding(
+                            padding: EdgeInsets.only(bottom: 16.h),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      if (!selectedCategory
-                                          .contains(categoryList[i])) {
-                                        selectedCategory.add(categoryList[i]);
-                                      } else {
-                                        selectedCategory
-                                            .remove(categoryList[i]);
-                                      }
-                                    });
-                                  },
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                        vertical: 6.h, horizontal: 13.w),
-                                    decoration: BoxDecoration(
-                                      color: selectedCategory
-                                              .contains(categoryList[i])
-                                          ? Color(0XFFE5ECFF)
-                                          : Colors.white,
-                                      borderRadius: BorderRadius.circular(6.h),
-                                      border: Border.all(
-                                          color: selectedCategory
-                                                  .contains(categoryList[i])
-                                              ? Color(0XFF00AFEE)
-                                              : Color(0XFF6E758A),
-                                          width: 1.w),
+                                Container(
+                                  width: 28.w,
+                                  height: 28.h,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE5F7E9),
+                                    borderRadius: BorderRadius.circular(14.h),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.check,
+                                      color: Color(0xFF0CAF60),
+                                      size: 16,
                                     ),
-                                    child: Text(
-                                      categoryList[i],
-                                      style: selectedCategory
-                                              .contains(categoryList[i])
-                                          ? const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0XFF00AFEE),
-                                              fontFamily: 'Gilroy')
-                                          : const TextStyle(
-                                              color: Color(0XFF6E758A),
-                                              fontFamily: 'Gilroy'),
+                                  ),
+                                ),
+                                SizedBox(width: 12.w),
+                                Expanded(
+                                  child: Text(
+                                    keyPoint['name'] ?? '',
+                                    style: TextStyle(
+                                      fontSize: 16.sp,
+                                      color: const Color(0XFF000000),
+                                      fontFamily: 'Gilroy',
+                                      height: 1.4,
                                     ),
+                                    textDirection: TextDirection.rtl,
                                   ),
                                 ),
                               ],
                             ),
-                          )
-                      ],
-                    ),
+                          );
+                        },
+                      ),
+                    // SizedBox(
+                    //   child: GridView.count(
+                    //     primary: false,
+                    //     shrinkWrap: true,
+                    //     physics: const NeverScrollableScrollPhysics(),
+                    //     crossAxisCount: 3,
+                    //     crossAxisSpacing: 4.0,
+                    //     mainAxisSpacing: 8.0,
+                    //
+                    //     //reverse: true,
+                    //     children: grid
+                    //         .map((e) => Padding(
+                    //               padding: EdgeInsets.all(6.0.h),
+                    //               child: Container(
+                    //                   decoration: BoxDecoration(
+                    //                       borderRadius:
+                    //                           BorderRadius.circular(22.h),
+                    //                       color: const Color(0XFFF3F6FF)),
+                    //                   child: Column(
+                    //                     mainAxisAlignment:
+                    //                         MainAxisAlignment.center,
+                    //                     crossAxisAlignment:
+                    //                         CrossAxisAlignment.center,
+                    //                     children: [
+                    //                       Image(
+                    //                         image: AssetImage(e.image!),
+                    //                         height: 30.h,
+                    //                         width: 30.w,
+                    //                         fit: BoxFit.cover,
+                    //                         color: Color(0xFF00AFEE),
+                    //                       ),
+                    //                       SizedBox(height: 10.h),
+                    //                       Text(
+                    //                         e.title!,
+                    //                         style: TextStyle(
+                    //                             fontSize: 14.sp,
+                    //                             color: const Color(0XFf000000),
+                    //                             fontWeight: FontWeight.bold,
+                    //                             fontFamily: 'Gilroy'),
+                    //                       )
+                    //                     ],
+                    //                   )),
+                    //             ))
+                    //         .toList(),
+                    //   ),
+                    // ),
+                    SizedBox(height: 21.sp),
+                    // Text(
+                    //   "Instructor",
+                    //   style: TextStyle(
+                    //       fontFamily: 'Gilroy',
+                    //       fontSize: 18.sp,
+                    //       color: const Color(0XFF000000),
+                    //       fontWeight: FontWeight.w700),
+                    // ),
+                    // ListView.builder(
+                    //     scrollDirection: Axis.vertical,
+                    //     shrinkWrap: true,
+                    //     physics: const NeverScrollableScrollPhysics(),
+                    //     itemCount: instuctor.length,
+                    //     itemBuilder: (BuildContext, index) {
+                    //       return Padding(
+                    //         padding: EdgeInsets.only(
+                    //             top: index == 0 ? 0.h : 8.h,
+                    //             bottom: index == 1 ? 0.w : 8.w),
+                    //         child: Container(
+                    //             decoration: BoxDecoration(
+                    //                 borderRadius: BorderRadius.circular(6.h),
+                    //                 color: const Color(0XFFFFFFFF),
+                    //                 boxShadow: [
+                    //                   BoxShadow(
+                    //                     color: const Color(0XFF00AFEE)
+                    //                         .withOpacity(0.14),
+                    //                     blurRadius: 20.0.h,
+                    //                   ),
+                    //                 ]),
+                    //             height: 95.h,
+                    //             width: 374.w,
+                    //             child: Padding(
+                    //               padding:
+                    //                   EdgeInsets.only(left: 10.w, right: 10.w),
+                    //               child: Row(
+                    //                 crossAxisAlignment:
+                    //                     CrossAxisAlignment.center,
+                    //                 children: [
+                    //                   Image(
+                    //                       image: AssetImage(
+                    //                           instuctor[index].image!),
+                    //                       height: 71.h,
+                    //                       width: 71.w),
+                    //                   SizedBox(width: 10.w),
+                    //                   Column(
+                    //                     crossAxisAlignment:
+                    //                         CrossAxisAlignment.start,
+                    //                     mainAxisAlignment:
+                    //                         MainAxisAlignment.spaceEvenly,
+                    //                     children: [
+                    //                       Text(
+                    //                         instuctor[index].title!,
+                    //                         style: TextStyle(
+                    //                             fontSize: 16.sp,
+                    //                             color: const Color(0XFF000000),
+                    //                             fontWeight: FontWeight.bold,
+                    //                             fontFamily: 'Gilroy'),
+                    //                       ), //SizedBox(height: 5),
+                    //                       Text(
+                    //                         instuctor[index].subtitle!,
+                    //                         style: TextStyle(
+                    //                             fontSize: 16.sp,
+                    //                             color: const Color(0XFF000000),
+                    //                             fontFamily: 'Gilroy'),
+                    //                       )
+                    //                     ],
+                    //                   )
+                    //                 ],
+                    //               ),
+                    //             )),
+                    //       );
+                    //     }),
+                    SizedBox(height: 20.h),
+                    // Text(
+                    //   "Skill",
+                    //   style: TextStyle(
+                    //       fontFamily: 'Gilroy',
+                    //       fontSize: 18.sp,
+                    //       color: Color(0XFF000000),
+                    //       fontWeight: FontWeight.w700),
+                    // ),
+                    SizedBox(height: 12.h),
+                    // Wrap(
+                    //   alignment: WrapAlignment.start,
+                    //   children: [
+                    //     for (final i in List.generate(
+                    //         categoryList.length, (index) => index))
+                    //       Padding(
+                    //         padding: EdgeInsets.only(
+                    //             top: 8.h, bottom: 8.h, right: 8.w),
+                    //         child: Wrap(
+                    //           children: [
+                    //             GestureDetector(
+                    //               onTap: () {
+                    //                 setState(() {
+                    //                   if (!selectedCategory
+                    //                       .contains(categoryList[i])) {
+                    //                     selectedCategory.add(categoryList[i]);
+                    //                   } else {
+                    //                     selectedCategory
+                    //                         .remove(categoryList[i]);
+                    //                   }
+                    //                 });
+                    //               },
+                    //               child: Container(
+                    //                 padding: EdgeInsets.symmetric(
+                    //                     vertical: 6.h, horizontal: 13.w),
+                    //                 decoration: BoxDecoration(
+                    //                   color: selectedCategory
+                    //                           .contains(categoryList[i])
+                    //                       ? Color(0XFFE5ECFF)
+                    //                       : Colors.white,
+                    //                   borderRadius: BorderRadius.circular(6.h),
+                    //                   border: Border.all(
+                    //                       color: selectedCategory
+                    //                               .contains(categoryList[i])
+                    //                           ? Color(0XFF00AFEE)
+                    //                           : Color(0XFF6E758A),
+                    //                       width: 1.w),
+                    //                 ),
+                    //                 child: Text(
+                    //                   categoryList[i],
+                    //                   style: selectedCategory
+                    //                           .contains(categoryList[i])
+                    //                       ? const TextStyle(
+                    //                           fontWeight: FontWeight.bold,
+                    //                           color: Color(0XFF00AFEE),
+                    //                           fontFamily: 'Gilroy')
+                    //                       : const TextStyle(
+                    //                           color: Color(0XFF6E758A),
+                    //                           fontFamily: 'Gilroy'),
+                    //                 ),
+                    //               ),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //       )
+                    //   ],
+                    // ),
 
                   ],
                 ),

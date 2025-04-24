@@ -105,12 +105,12 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
   Widget _buildShimmerEffect() {
-    return Shimmer.fromColors(
+    return SingleChildScrollView(
+      child:Shimmer.fromColors(
       baseColor: Colors.grey[300]!,
       highlightColor: Colors.grey[100]!,
       child: Column(
         children: [
-          // Banner Shimmer
           Container(
             height: 150.h,
             margin: EdgeInsets.symmetric(horizontal: 16.w),
@@ -119,9 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          SizedBox(height: 30.h),
-
-          // Design List Shimmer
+          SizedBox(height: 20.h),
           SizedBox(
             height: 100.h,
             child: ListView.builder(
@@ -140,9 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
           ),
-          SizedBox(height: 30.h),
-
-          // Trending Courses Shimmer
+          SizedBox(height: 20.h),
           Container(
             height: 234.h,
             padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -175,9 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
           ),
-          SizedBox(height: 30.h),
-
-          // Recently Added Shimmer
+          SizedBox(height: 20.h),
           Container(
             height: 323.h,
             padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -196,8 +190,10 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
           ),
+          SizedBox(height: 20.h,)
         ],
       ),
+      )
     );
   }
 
@@ -215,10 +211,11 @@ class _HomeScreenState extends State<HomeScreen> {
               init: HomeController(),
               builder: (controller) => isLoading
                   ?_buildShimmerEffect()
-                  : errorMessage != null
-                  ? Center(child: Text(errorMessage!))
-                  : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                  // : errorMessage != null
+                  // ? Center(child: Text(errorMessage!))
+                  : ListView(
+                padding: EdgeInsets.zero,
+                // crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 16.h),
                   Padding(
@@ -244,12 +241,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   SizedBox(height: 30.h),
-                  Expanded(
-                    child: ListView(
-                      shrinkWrap: true,
-                      padding: EdgeInsets.zero,
-                      primary: true,
-                      children: [
                         Container(
                           height: 50.h,
                           child: Padding(
@@ -308,8 +299,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         HorizontalDesignList(design: design),
                         SizedBox(height: 22.h),
                         Padding(
-                          padding:
-                          EdgeInsets.symmetric(horizontal: 20.w),
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
                           child: Row(
                             mainAxisAlignment:
                             MainAxisAlignment.spaceBetween,
@@ -382,9 +372,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           toggleRecent: toggleRecent,
                           isLoading: isLoading,
                         )
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ),

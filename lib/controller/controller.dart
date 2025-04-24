@@ -41,7 +41,7 @@ class CourceController extends GetxController with GetTickerProviderStateMixin {
   @override
   void onInit() {
     // TODO: implement onInit
-    tabController = TabController(length: 3, vsync: this);
+    tabController = TabController(length: 4, vsync: this);
     pController = PageController();
     super.onInit();
   }

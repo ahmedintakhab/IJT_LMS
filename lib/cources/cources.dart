@@ -1,63 +1,122 @@
-
 import 'package:flick_video_player/flick_video_player.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:learn_megnagmet/controller/controller.dart';
+import 'package:learn_megnagmet/cources/discussion_tab.dart';
 import 'package:learn_megnagmet/cources/lessons_screen.dart';
 import 'package:learn_megnagmet/cources/overview_page.dart';
 import 'package:learn_megnagmet/cources/review_screen.dart';
+import 'package:learn_megnagmet/cources/tabbar_section.dart';
+import 'package:learn_megnagmet/utils/screen_size.dart';
+import 'package:learn_megnagmet/widget/button.dart';
 import 'package:video_player/video_player.dart';
-import 'package:flutter/material.dart';
+import 'package:learn_megnagmet/cources/choose_plane_screen.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-import '../utils/screen_size.dart';
-import '../widget/button.dart';
-import 'choose_plane_screen.dart';
+import '../utils/api_constant.dart';
 
 class MyCources extends StatefulWidget {
-  // final Map<String, dynamic> trende;
-  final String slug;  // Add this parameter
+  final String slug;
 
-  const MyCources({Key? key,required this.slug,
-  }) : super(key: key);
-  // final Trending trende;
-
+  const MyCources({Key? key, required this.slug}) : super(key: key);
 
   @override
   State<MyCources> createState() => _MyCourcesState();
 }
 
 class _MyCourcesState extends State<MyCources> {
-  CourceController courceController = Get.put(CourceController());
-  PageController pageController = PageController();
-  int initialvalue = 0;
-
-
-
+  final CourceController courceController = Get.put(CourceController());
   late FlickManager flickManager;
-  bool currentbuttonpos = false;
-  List pageclass = [
-    Overview(),
-    Lesson(),
-    Review(),
+  List<Widget> pageclass = [
+    const SizedBox(), // Temporary empty widgets
+    const SizedBox(),
+    const SizedBox(),
+    const SizedBox(),
   ];
-
+  Map<String, dynamic> courseData = {};
+  Map<String, dynamic> overviewData = {};
+  List<dynamic> lessonsData = [];
+  bool isLoading = true;
+  String courseTitle = "";
+  String videoUrl = "https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4"; // Default video
 
   @override
   void initState() {
-
     super.initState();
+    // Initialize with default video first
     flickManager = FlickManager(
-      videoPlayerController: VideoPlayerController.network(
-          "https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4"),
+      videoPlayerController: VideoPlayerController.network(videoUrl),
       autoPlay: false,
-
     );
+    fetchCourseDetails();
+  }
+
+  Future<void> fetchCourseDetails() async {
+    try {
+      final url = '${ApiConstant.baseUrl}course-details/${widget.slug}';
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        print('Course details API response: ${response.statusCode}');
+        final data = json.decode(response.body);
+        print('Course details API data: $data');
+
+        if (data != null) {
+          setState(() {
+            courseData = data;
+
+            // Extract overview data
+            if (data['overview'] != null) {
+              overviewData = data['overview'];
+              courseTitle = data['overview']['title'] ?? "Course";
+            }
+            print('Course overview data:$overviewData');
+
+            // Extract lessons data
+            if (data['lessons'] != null) {
+              lessonsData = data['lessons'];
+            }
+
+            // Extract video URL
+            if (data['course_preview_src'] != null && data['course_preview_src'].isNotEmpty) {
+              videoUrl = data['course_preview_src'];
+              print('video url: $videoUrl');
+
+              // Dispose old flickManager and create a new one with updated video URL
+              flickManager.dispose();
+              flickManager = FlickManager(
+                videoPlayerController: VideoPlayerController.network(videoUrl),
+                autoPlay: false,
+              );
+            }
+
+            // Initialize pages with course details
+            pageclass = [
+              Overview(overviewData: overviewData),
+              Lesson(),
+              Review(),
+              Discussion(),
+            ];
+            isLoading = false;
+          });
+        }
+      } else {
+        throw Exception('Failed to load course details: ${response.statusCode}');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print('Error fetching data in Course details api: ${e.toString()}');
+      Get.snackbar('Error', 'Failed to fetch course details: ${e.toString()}');
+    }
   }
 
   @override
   void dispose() {
     flickManager.dispose();
-
     super.dispose();
   }
 
@@ -65,153 +124,83 @@ class _MyCourcesState extends State<MyCources> {
   Widget build(BuildContext context) {
     initializeScreenSize(context);
     return WillPopScope(
-      onWillPop: () {
-        return Future.value(false);
-      },
+      onWillPop: () async => false,
       child: Scaffold(
-        body: GetBuilder<CourceController>(
-          init: CourceController(),
-          builder: (CourceController) => SafeArea(
+        body: isLoading
+            ? const Center(child: CircularProgressIndicator(color: Color(0XFF00AFEE)))
+            : GetBuilder<CourceController>(
+          builder: (controller) => SafeArea(
             child: Column(
-              //crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                 SizedBox(height: 20.h),
+                // Header Section
                 Padding(
-                  padding:  EdgeInsets.symmetric(horizontal: 20.w),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
                   child: Row(
                     children: [
                       GestureDetector(
-                          onTap: () {
-                            Get.back();
-                          },
-                          child:  Image(
-                            image: const AssetImage("assets/back_arrow.png"),
-                            height: 24.h,
-                            width: 24.w,
-                          )),
-                       SizedBox(width: 15.w),
-                       Text(
-                        "Courses",
-                        style: TextStyle(fontFamily: 'Gilroy',fontWeight: FontWeight.w700, fontSize: 24.sp),
+                        onTap: () => Get.back(),
+                        child: Image.asset(
+                          "assets/back_arrow.png",
+                          height: 24.h,
+                          width: 24.w,
+                        ),
+                      ),
+                      SizedBox(width: 15.w),
+                      Expanded(
+                        child: Text(
+                          courseTitle,
+                          style: TextStyle(
+                            fontFamily: 'Gilroy',
+                            fontWeight: FontWeight.w700,
+                            fontSize: 20.sp,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          maxLines: 1,
+                          textDirection: TextDirection.rtl,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                 SizedBox(height: 20.h),
-                Padding(
-                  padding:  EdgeInsets.symmetric(horizontal: 15.w),
-                  child: Container(
-                    padding: EdgeInsets.all(12.h),
 
-                    decoration: BoxDecoration(
-                      color:Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Color(0XFF00AFEE).withOpacity(0.1),
-                            blurRadius: 16,
-                          ),
-                        ],
-                        borderRadius: BorderRadius.circular(22.h),
-                        ),
-                    child: Container(
-                      height: 195.h,
-
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(22.h)),
-                        child: ClipRRect(borderRadius: BorderRadius.circular(22),child: FlickVideoPlayer(flickManager: flickManager))),
-                  ),
-                ),
-                 SizedBox(height: 12.h),
+                // Video Player Section
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 15.w),
                   child: Container(
-                    height: 54.h,
-                    width: double.infinity,
+                    padding: EdgeInsets.all(12.h),
                     decoration: BoxDecoration(
+                      color: Colors.white,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF00AFEE).withOpacity(0.20),
+                          color: const Color(0XFF00AFEE).withOpacity(0.1),
                           blurRadius: 16,
                         ),
                       ],
-                      color: const Color(0xFFFFFFFF),
-                      borderRadius: BorderRadius.circular(6.h),
+                      borderRadius: BorderRadius.circular(22.h),
                     ),
-                    child: TabBar(
-                      controller: courceController.tabController,
-                      labelColor: Colors.white, // Selected tab text color
-                      unselectedLabelColor: Colors.black, // Unselected tab text color
-                      labelStyle: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15.sp,
-                        fontFamily: 'Gilroy',
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(22.h),
+                      child: AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: FlickVideoPlayer(flickManager: flickManager),
                       ),
-                      unselectedLabelStyle: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15.sp,
-                        fontFamily: 'Gilroy',
-                      ),
-                      indicator: BoxDecoration(
-                        color: const Color(0xFF00AFEE), // Selected tab background color
-                        borderRadius: BorderRadius.circular(6.h),
-                      ),
-                      indicatorSize: TabBarIndicatorSize.tab, // Makes the indicator span the tab
-                      dividerColor: Colors.transparent, // Removes any divider line
-                      tabs: [
-                        Tab(
-                          child: Container(
-                            width: double.infinity, // Ensures equal width for all tabs (one-third each)
-                            alignment: Alignment.center,
-                            child: const Text("Overview"),
-                          ),
-                        ),
-                        Tab(
-                          child: Container(
-                            width: double.infinity,
-                            alignment: Alignment.center,
-                            child: const Text("Lessons"),
-                          ),
-                        ),
-                        Tab(
-                          child: Container(
-                            width: double.infinity,
-                            alignment: Alignment.center,
-                            child: const Text("Reviews"),
-                          ),
-                        ),
-                      ],
-                      onTap: (value) {
-                        courceController.pController.animateToPage(
-                          value,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.ease,
-                        );
-                      },
                     ),
                   ),
                 ),
-                SizedBox(height: 12.h),
 
+                // Tabbar Section with Expanded
                 Expanded(
-                  child: PageView.builder(
-                    controller: courceController.pController,
-                    onPageChanged: (value) {
-                      courceController.tabController.animateTo(value,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.ease);
-                    },
-                    itemCount: pageclass.length,
-                    itemBuilder: (context, index) {
-                      return pageclass[index];
-                    },
+                  child: TabbarSection(
+                    courceController: controller,
+                    pageclass: pageclass,
                   ),
                 ),
+
+                // Enroll Button
                 Padding(
-                  padding:  EdgeInsets.only(bottom: 30.h),
+                  padding: EdgeInsets.only(bottom: 30.h),
                   child: CustomButton(
-                    onTap: () {
-                      Get.to(const ChoosePlane());
-                    },
+                    onTap: () => Get.to(const ChoosePlane()),
                     buttonText: 'Enroll Now',
                   ),
                 ),

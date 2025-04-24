@@ -100,7 +100,7 @@ class _RecentAddedListState extends State<RecentAddedList> {
               // Get.to(RecentCourceDetail(corcedetail: course));
             },
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 4.w),
+              padding: EdgeInsets.symmetric(horizontal: 4.w,vertical: 10.h),
               child: Container(
                 width: 276.w,
                 decoration: BoxDecoration(
