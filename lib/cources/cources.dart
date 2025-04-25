@@ -14,6 +14,7 @@ import 'package:learn_megnagmet/widget/button.dart';
 import 'package:video_player/video_player.dart';
 import 'package:learn_megnagmet/cources/choose_plane_screen.dart';
 import 'package:http/http.dart' as http;
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'dart:convert';
 
 import '../utils/api_constant.dart';
@@ -44,6 +45,25 @@ class _MyCourcesState extends State<MyCources> {
   bool isVideo = true;
   bool isMediaLoading = true;
   String videoUrl = "https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4"; // Default video
+  // Add this helper method to check if URL is YouTube
+  bool _isYoutubeUrl(String url) {
+    return url.toLowerCase().contains('youtube.com') ||
+        url.toLowerCase().contains('youtu.be');
+  }
+
+// Extract YouTube video ID from URL
+  String? _getYoutubeId(String url) {
+    if (url.contains('youtube.com/embed/')) {
+      return url.split('youtube.com/embed/')[1].split('?')[0];
+    } else if (url.contains('v=')) {
+      return url.split('v=')[1].split('&')[0];
+    } else if (url.contains('youtu.be/')) {
+      return url.split('youtu.be/')[1].split('?')[0];
+    }
+    return null;
+  }
+
+
 
   @override
   void initState() {
@@ -91,19 +111,25 @@ class _MyCourcesState extends State<MyCources> {
               videoUrl = data['course_preview_src'];
               print('media url: $videoUrl');
 
-              isVideo = !_isImageUrl(videoUrl);
-
-              if (isVideo) {
+              if (_isYoutubeUrl(videoUrl)) {
+                isVideo = true;
+                // For YouTube, we'll handle it differently in the UI
+                setState(() => isMediaLoading = false);
+              } else if (_isImageUrl(videoUrl)) {
+                isVideo = false;
+                setState(() => isMediaLoading = false);
+              } else {
+                // Regular video URL
+                isVideo = true;
                 flickManager.dispose();
                 flickManager = FlickManager(
                   videoPlayerController: VideoPlayerController.network(videoUrl),
                   autoPlay: false,
                 )..flickControlManager!.addListener(_checkVideoLoading);
-              } else {
-                // For image, we'll set loading to false immediately
-                setState(() => isMediaLoading = false);
               }
             }
+
+
 
             // Initialize pages with course details
             pageclass = [
@@ -227,52 +253,45 @@ class _MyCourcesState extends State<MyCources> {
                               alignment: Alignment.center,
                               children: [
                           // Media content
-                          isMediaLoading
-                          ? const Center(
-                          child: CircularProgressIndicator(
-                              color: Color(0XFF00AFEE),
-                        ),
-                      )
-                          : isVideo
-                      ? FlickVideoPlayer(flickManager: flickManager)
-                      : CachedNetworkImage(
-                  imageUrl: videoUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0XFF00AFEE),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => Center(
-                    child: GestureDetector(
-                      onTap: _reloadMedia,
-                      child: const Text(
-                        'Retry',
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            // Retry button for video errors
-            if (isVideo &&
-        !isMediaLoading &&
-        flickManager.flickVideoManager!.errorInVideo)
-        GestureDetector(
-        onTap: _reloadMedia,
-        child: const Text(
-          'Retry',
-          style: TextStyle(
-            color: Colors.red,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-      ),
-      ]
+                                isMediaLoading
+                                    ? const Center(child: CircularProgressIndicator(color: Color(0XFF00AFEE)))
+                                    : isVideo
+                                    ? _isYoutubeUrl(videoUrl)
+                                    ? YoutubePlayer(
+                                  controller: YoutubePlayerController(
+                                    initialVideoId: _getYoutubeId(videoUrl)!,
+                                    flags: const YoutubePlayerFlags(
+                                      autoPlay: false,
+                                      mute: false,
+                                    ),
+                                  ),
+                                  aspectRatio: 16/9,
+                                )
+                                    : FlickVideoPlayer(flickManager: flickManager)
+                                    : CachedNetworkImage(
+                                  imageUrl: videoUrl,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => const Center(
+                                    child: CircularProgressIndicator(
+                                      color: Color(0XFF00AFEE),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) => Center(
+                                    child: GestureDetector(
+                                      onTap: _reloadMedia,
+                                      child: const Text(
+                                        'Retry',
+                                        style: TextStyle(
+                                          color: Colors.red,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )
+
+                              ]
     )
     )
     ),
