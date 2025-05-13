@@ -64,7 +64,7 @@ class _EmptyStateState extends State<EmptyState> {
           Get.snackbar(
             'Successful',
             responseData['message'] ?? 'User login successfully',
-            snackPosition: SnackPosition.BOTTOM,
+            snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.green,
             colorText: Colors.white,
           );
@@ -75,7 +75,7 @@ class _EmptyStateState extends State<EmptyState> {
           Get.snackbar(
             'Error',
             'Authentication token not received',
-            snackPosition: SnackPosition.BOTTOM,
+            snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.red,
             colorText: Colors.white,
           );
@@ -85,7 +85,7 @@ class _EmptyStateState extends State<EmptyState> {
         Get.snackbar(
           'Error',
           errorMessage,
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
@@ -94,7 +94,7 @@ class _EmptyStateState extends State<EmptyState> {
       Get.snackbar(
         'Error',
         'An error occurred: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );

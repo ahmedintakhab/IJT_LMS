@@ -139,11 +139,16 @@ class _SlidePageState extends State<SlidePage> {
             padding: const EdgeInsets.only(top: 25, right: 20),
             child: GestureDetector(
                 onTap: () {
-                  setState(() {
-                    controller.nextPage(
-                        duration: const Duration(milliseconds: 100),
-                        curve: Curves.bounceIn);
-                  });
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const EmptyState()),
+                  );
+                  // setState(() {
+                  //   controller.nextPage(
+                  //       duration: const Duration(milliseconds: 100),
+                  //       curve: Curves.bounceIn);
+                  // }
+                  // );
                 },
                 child: Container(
                     height: 32.h,

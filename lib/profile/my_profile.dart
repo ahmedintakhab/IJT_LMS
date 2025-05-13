@@ -4,8 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:learn_megnagmet/home/home_main.dart';
-import 'package:learn_megnagmet/home/home_screen.dart';
 import 'package:learn_megnagmet/profile/edit_screen.dart';
 import 'package:learn_megnagmet/profile/feedback.dart';
 import 'package:learn_megnagmet/profile/help_center.dart';
@@ -15,14 +13,20 @@ import 'package:learn_megnagmet/profile/privacy_policy.dart';
 import 'package:learn_megnagmet/profile/rate_us.dart';
 import 'package:learn_megnagmet/profile/saved_cource.dart';
 import 'package:learn_megnagmet/utils/slider_page_data_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../controller/controller.dart';
 import '../login/login_empty_state.dart';
 import '../models/new_user_detail.dart';
 import '../models/profile_option.dart';
+import '../utils/api_constant.dart';
 import '../utils/screen_size.dart';
 import '../utils/shared_pref.dart';
 import 'certi_payment.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:io';
+
 
 class MyProfile extends StatefulWidget {
   const MyProfile({Key? key, required this.user_detail}) : super(key: key);
@@ -46,13 +50,52 @@ class _MyProfileState extends State<MyProfile> {
     RateUs(),
   ];
   HomeMainController controller = Get.put(HomeMainController());
+  Future<void> logoutApiCall() async {
+    final String apiUrl = "${ApiConstant.baseUrl}logout";
 
+    try {
+      // Assuming the token is saved in shared preferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('authToken') ?? '';
+      print('Token check: $token');
 
-  // Future<bool> rateUsDialog() async {
-  //   return await Get.defaultDialog(
-  //
-  //   ).then((value) => value ?? false);
-  // }
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // Include token in the header
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Successfully logged out
+        Get.snackbar(
+          'Successful', 'User logout successfully',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );        // Clear user data from SharedPreferences
+        prefs.clear(); // Optionally clear all saved data
+      } else {
+        Get.snackbar(
+          'Failed', '${response.body}',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        print("Logout failed: ${response.body}");
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Failed', '$e',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      print(" User logout failed: $e");
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -164,12 +207,6 @@ class _MyProfileState extends State<MyProfile> {
                                                 profileOptionClass[index]);
                                           }
                                         }
-                                        // (index ==
-                                        //     profileOptionClass.length -
-                                        //         1)
-                                        //     ? rateUs_dialogue()
-                                        //     : Get.to(
-                                        //     profileOptionClass[index]);
                                       },
                                       child: Container(
                                           height: 60.h,
@@ -236,19 +273,18 @@ class _MyProfileState extends State<MyProfile> {
                                 }),
                             SizedBox(height: 30.h),
                             Padding(
-                              padding: EdgeInsets.only(bottom: 40.h,left: 20.h,right: 20.h),
+                              padding: EdgeInsets.only(bottom: 40.h, left: 20.h, right: 20.h),
                               child: GestureDetector(
                                 onTap: () {
-                                  log_out_dialogue();
+                                  showLogoutDialog();
                                 },
                                 child: Container(
                                   height: 56.h,
                                   width: 374.w,
-
-                                  //color: Color(0XFF00AFEE),
                                   decoration: BoxDecoration(
+                                    color: Color(0XFF78A03F),
                                     border: Border.all(
-                                      color: const Color(0XFF00AFEE),
+                                      color: const Color(0xFF78A03F),
                                       style: BorderStyle.solid,
                                       width: 1.0.w,
                                     ),
@@ -257,15 +293,19 @@ class _MyProfileState extends State<MyProfile> {
                                   child: Center(
                                     child: Text("Logout",
                                         style: TextStyle(
-                                            color: const Color(0XFF00AFEE),
-                                            fontSize: 18.sp,
+                                            color: Colors.white,
+                                            fontSize: 22.sp,
                                             fontWeight: FontWeight.w700,
                                             fontFamily: 'Gilroy')),
                                   ),
                                 ),
                               ),
                             )
-                              ],
+
+
+
+
+                          ],
                         ),
                       ),
                       //SizedBox(height: 30),
@@ -401,86 +441,95 @@ class _MyProfileState extends State<MyProfile> {
         ));
   }
 
-  Future log_out_dialogue() {
-    return Get.defaultDialog(
-        barrierDismissible: false,
-        title: '',
-        content: Padding(
-          padding:  EdgeInsets.only(left: 10.w, right: 10.w),
-          child: Column(
-            children: [
-               Text(
-                "Are you sure you want to Logout!",
-                style: TextStyle(
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Gilroy'),
-                textAlign: TextAlign.center,
-              ),
 
-              Padding(
-                padding:  EdgeInsets.only(top: 25.h, bottom: 13.h),
-                child: Row(
-                  children: [
-                    Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            PrefData.setLogin(false);
-                                Get.off(EmptyState());
-                          },
-                          child: Container(
-                            height: 56.h,
-                            width: double.infinity.w,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(6.h),
-                              color: const Color(0XFF00AFEE),
-                            ),
-                            child:  Center(
-                                child: Text(
-                                  "Yes",
-                                  style: TextStyle(
-                                      fontFamily: 'Gilroy',
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0XFFFFFFFF),
-                                      fontStyle: FontStyle.normal,
-                                      fontSize: 18.sp),
-                                )),
+  void showLogoutDialog() {
+    Get.defaultDialog(
+      barrierDismissible: false,
+      title: '',
+      content: Padding(
+        padding: EdgeInsets.only(left: 10.w, right: 10.w),
+        child: Column(
+          children: [
+            Text(
+              "Are you sure you want to Logout!",
+              style: TextStyle(
+                  fontSize: 24.sp,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Gilroy'),
+              textAlign: TextAlign.center,
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: 25.h, bottom: 13.h),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                        // Call logout API
+                        await logoutApiCall();
+                        PrefData.setLogin(false);
+                        Get.off(EmptyState());
+                      },
+                      child: Container(
+                        height: 56.h,
+                        width: double.infinity.w,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(22.h),
+                          color: const Color(0XFF78A03F),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "Yes",
+                            style: TextStyle(
+                                fontFamily: 'Gilroy',
+                                fontWeight: FontWeight.bold,
+                                color: Color(0XFFFFFFFF),
+                                fontStyle: FontStyle.normal,
+                                fontSize: 18.sp),
                           ),
-                        )),
-                     SizedBox(width: 10.w),
-                    Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            Get.back();
-                          },
-                          child: Container(
-                              height: 56.h,
-                              width: double.infinity.w,
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: const Color(0XFF00AFEE),
-                                  style: BorderStyle.solid,
-                                  width: 1.0.w,
-                                ),
-                                borderRadius: BorderRadius.circular(6.h),
-                              ),
-                              child:  Center(
-                                  child: Text(
-                                    "No",
-                                    style: TextStyle(
-                                        fontFamily: 'Gilroy',
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0XFF00AFEE),
-                                        fontStyle: FontStyle.normal,
-                                        fontSize: 18.sp),
-                                  ))),
-                        )),
-                  ],
-                ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Get.back();
+                      },
+                      child: Container(
+                        height: 56.h,
+                        width: double.infinity.w,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: const Color(0xFF78A03F),
+                            style: BorderStyle.solid,
+                            width: 1.0.w,
+                          ),
+                          borderRadius: BorderRadius.circular(22.h),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "No",
+                            style: TextStyle(
+                                fontFamily: 'Gilroy',
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF78A03F),
+                                fontStyle: FontStyle.normal,
+                                fontSize: 18.sp),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-
-            ],
-          ),
-        ));
+            ),
+          ],
+        ),
+      ),
+    );
   }
+
+
 }
