@@ -83,7 +83,7 @@ class _RecentlyAddedState extends State<RecentlyAdded> {
                   style: TextStyle(
                     fontSize: 24.sp,
                     color: Color(0XFF000000),
-                    fontFamily: 'Gilroy',
+                    fontFamily: 'Nastaleeq',
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -391,7 +391,7 @@ class _RecentlyAddedState extends State<RecentlyAdded> {
                 //               course['average_rating'] ?? '0.00',
                 //               style: TextStyle(
                 //                 color: Color(0XFFFFC403),
-                //                 fontFamily: 'Gilroy',
+                //                fontFamily: 'Nastaleeq'
                 //                 fontSize: 15.sp,
                 //               ),
                 //             ),
@@ -416,7 +416,7 @@ class _RecentlyAddedState extends State<RecentlyAdded> {
                 //               style: TextStyle(
                 //                 fontSize: 15.sp,
                 //                 color: const Color(0XFF000000),
-                //                 fontFamily: 'Gilroy',
+                //                fontFamily: 'Nastaleeq'
                 //               ),
                 //             ),
                 //           ],
@@ -434,64 +434,65 @@ class _RecentlyAddedState extends State<RecentlyAdded> {
                       Text(
                         course['title'] ?? '',
                         style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15.sp,
-                          fontFamily: 'Gilroy',
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18.sp,
+                          fontFamily: 'Nastaleeq',
                           color: Color(0XFF000000),
                         ),
+                        textDirection: TextDirection.rtl,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       SizedBox(height: 11.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              // CircleAvatar(
-                              //   radius: 20,
-                              //   backgroundColor: Colors.grey[200],
-                              //   child: Text(
-                              //     course['author']?.toString().substring(0, 1) ?? '',
-                              //     style: TextStyle(
-                              //       color: Colors.blue,
-                              //       fontWeight: FontWeight.bold,
-                              //     ),
-                              //   ),
-                              // ),
-                              SizedBox(width: 10.w),
-                              Text(
-                                course['author'] ?? '',
-                                style: TextStyle(
-                                  color: Color(0XFF00AFEE),
-                                  fontSize: 15.sp,
-                                  fontWeight: FontWeight.w400,
-                                  fontFamily: 'Gilroy',
-                                ),
-                              ),
-                            ],
-                          ),
-                          Container(
-                            height: 30.h,
-                            width: 74.w,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(6.h),
-                              color: const Color(0XFFE5ECFF),
-                            ),
-                            child: Center(
-                              child: Text(
-                                course['price'] == '0.00' ? 'Free' : course['price'],
-                                style: TextStyle(
-                                  color: const Color(0XFF00AFEE),
-                                  fontFamily: 'Gilroy',
-                                  fontSize: 19.sp,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      //   children: [
+                      //     Row(
+                      //       children: [
+                      //         // CircleAvatar(
+                      //         //   radius: 20,
+                      //         //   backgroundColor: Colors.grey[200],
+                      //         //   child: Text(
+                      //         //     course['author']?.toString().substring(0, 1) ?? '',
+                      //         //     style: TextStyle(
+                      //         //       color: Colors.blue,
+                      //         //       fontWeight: FontWeight.bold,
+                      //         //     ),
+                      //         //   ),
+                      //         // ),
+                      //         SizedBox(width: 10.w),
+                      //         Text(
+                      //           course['author'] ?? '',
+                      //           style: TextStyle(
+                      //             color: Color(0XFF00AFEE),
+                      //             fontSize: 15.sp,
+                      //             fontWeight: FontWeight.w400,
+                      //           fontFamily: 'Nastaleeq'
+                      //           ),
+                      //         ),
+                      //       ],
+                      //     ),
+                      //     Container(
+                      //       height: 30.h,
+                      //       width: 74.w,
+                      //       decoration: BoxDecoration(
+                      //         borderRadius: BorderRadius.circular(6.h),
+                      //         color: const Color(0XFFE5ECFF),
+                      //       ),
+                      //       child: Center(
+                      //         child: Text(
+                      //           course['price'] == '0.00' ? 'Free' : course['price'],
+                      //           style: TextStyle(
+                      //             color: const Color(0XFF00AFEE),
+                      //              fontFamily: 'Nastaleeq'
+                      //             fontSize: 19.sp,
+                      //             fontWeight: FontWeight.w700,
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
                     ],
                   ),
                 ),

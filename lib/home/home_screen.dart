@@ -233,7 +233,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(
                           "Welcome,${userDetail[0].name}",
                           style: TextStyle(
-                            fontFamily: 'Gilroy',
+                            fontFamily: 'Nastaleeq'
+,
                             color: const Color(0XFF000000),
                             fontSize: 22.sp,
                             fontWeight: FontWeight.w700,
@@ -263,7 +264,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 hintStyle: TextStyle(
                                   color: Color(0XFF9B9B9B),
                                   fontSize: 15.sp,
-                                  fontFamily: 'Gilroy',
+                                  fontFamily: 'Nastaleeq'
+,
                                   fontWeight: FontWeight.w400,
                                 ),
                                 prefixIcon: Image(
@@ -272,19 +274,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                   height: 24.h,
                                   width: 24.w,
                                 ),
-                                suffixIcon: GestureDetector(
-                                  onTap: () {},
-                                  child: Container(
-                                    height: 5.h,
-                                    width: 5.w,
-                                    decoration: const BoxDecoration(
-                                      image: DecorationImage(
-                                        image: AssetImage(
-                                            "assets/filico.png"),
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                // suffixIcon: GestureDetector(
+                                //   onTap: () {},
+                                //   child: Container(
+                                //     height: 5.h,
+                                //     width: 5.w,
+                                //     decoration: const BoxDecoration(
+                                //       image: DecorationImage(
+                                //         image: AssetImage(
+                                //             "assets/filico.png"),
+                                //       ),
+                                //     ),
+                                //   ),
+                                // ),
                                 border: OutlineInputBorder(
                                   borderRadius:
                                   BorderRadius.circular(6),
@@ -311,7 +313,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: TextStyle(
                                   fontSize: 18.sp,
                                   fontWeight: FontWeight.w700,
-                                  fontFamily: 'Gilroy',
+                                                                        fontFamily: 'Nastaleeq'
+,
                                 ),
                               ),
                               TextButton(
@@ -321,7 +324,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   "See All",
                                   style: TextStyle(
                                     fontSize: 18.sp,
-                                    fontFamily: 'Gilroy',
+                                                                          fontFamily: 'Nastaleeq'
+,
                                     color: const Color(0XFF00AFEE),
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -349,7 +353,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: TextStyle(
                                   fontSize: 18.sp,
                                   fontWeight: FontWeight.w700,
-                                  fontFamily: 'Gilroy',
+                                                                        fontFamily: 'Nastaleeq'
+,
                                 ),
                               ),
                               TextButton(
@@ -358,7 +363,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: Text(
                                   "See All",
                                   style: TextStyle(
-                                    fontFamily: 'Gilroy',
+                                                                          fontFamily: 'Nastaleeq'
+,
                                     fontSize: 18.sp,
                                     color: const Color(0XFF00AFEE),
                                     fontWeight: FontWeight.w700,
@@ -432,7 +438,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text(
                     banner['banner_first_line_title'] ?? '',
                     style: TextStyle(
-                      fontFamily: 'Gilroy',
+                                                            fontFamily: 'Nastaleeq'
+,
                       color: Color(0XFF000000),
                       fontSize: 18.sp,
                       fontWeight: FontWeight.w700,
@@ -447,7 +454,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   //   style: TextStyle(
                   //     color: const Color(0XFF00AFEE),
                   //     fontWeight: FontWeight.w700,
-                  //     fontFamily: 'Gilroy',
+                  //      fontFamily: 'Nastaleeq',
                   //     fontSize: 18.sp,
                   //   ),
                   // ),

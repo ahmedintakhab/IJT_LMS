@@ -6,6 +6,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shimmer/shimmer.dart';
 
+import '../cources/cources.dart';
+
 class TrendingCource extends StatefulWidget {
   const TrendingCource({Key? key}) : super(key: key);
 
@@ -98,9 +100,11 @@ class _TrendingCourceState extends State<TrendingCource> {
                       style: TextStyle(
                         fontSize: 24.sp,
                         color: const Color(0XFF000000),
-                        fontFamily: 'Gilroy',
+                        fontFamily: 'Nastaleeq',
                         fontWeight: FontWeight.bold,
                       ),
+                      textDirection: TextDirection.rtl,
+
                     ),
                   ],
                 ),
@@ -260,182 +264,120 @@ class _TrendingCourceState extends State<TrendingCource> {
           ],
           color: const Color(0XFFFFFFFF),
         ),
-        child: Column(
-          children: [
-            Container(
-              height: 165.h,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                image: DecorationImage(
-                  image: NetworkImage(course['image_url'] ?? ''),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Padding(
-                padding: EdgeInsets.only(top: 10.h, left: 10.w),
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: GestureDetector(
-                    onTap: () => toggleLike(course['id']),
-                    child: Container(
-                      height: 30.h,
-                      width: 30.w,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                      ),
-                      child: Center(
-                        child: Image.asset(
-                          "assets/like.png",
-                          height: 13.08.h,
-                          width: 13.08.w,
-                          color: likedCourses[course['id']] ?? false
-                              ? Colors.red
-                              : null,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(6.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 6.h),
-                  Text(
-                    course['title'] ?? '',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w700,
-                      fontFamily: 'Gilroy',
-                      color: const Color(0XFF000000),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  // Padding(
-                  //   padding: EdgeInsets.only(top: 6.h),
-                  //   child: Row(
-                  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //     children: [
-                  //       Container(
-                  //         height: 27.h,
-                  //         width: 50.w,
-                  //         decoration: BoxDecoration(
-                  //           borderRadius: BorderRadius.circular(20),
-                  //           color: const Color(0XFFFAF4E1),
-                  //         ),
-                  //         child: Row(
-                  //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  //           children: [
-                  //             Image.asset(
-                  //               "assets/staricon.png",
-                  //               height: 15.h,
-                  //               width: 15.w,
-                  //             ),
-                  //             Text(
-                  //               course['average_rating'] ?? '0.00',
-                  //               style: TextStyle(
-                  //                 color: Color(0XFFFFC403),
-                  //                 fontFamily: 'Gilroy',
-                  //                 fontSize: 12.sp,
-                  //               ),
-                  //             ),
-                  //           ],
-                  //         ),
-                  //       ),
-                  //       SizedBox(
-                  //         height: 21.h,
-                  //         width: 76.w,
-                  //         child: Row(
-                  //           children: [
-                  //             Image.asset(
-                  //               "assets/clock.png",
-                  //               height: 17.h,
-                  //               width: 17.w,
-                  //             ),
-                  //             SizedBox(width: 4.w),
-                  //             Text(
-                  //               course['learner_accessibility'] == 'free'
-                  //                   ? 'Free'
-                  //                   : 'Paid',
-                  //               style: TextStyle(
-                  //                 fontSize: 12.sp,
-                  //                 color: const Color(0XFF000000),
-                  //                 fontWeight: FontWeight.w400,
-                  //                 fontFamily: 'Gilroy',
-                  //               ),
-                  //             ),
-                  //           ],
-                  //         ),
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
-                  SizedBox(height: 10.h),
-                  Row(
-                    children: [
-                      // CircleAvatar(
-                      //   radius: 15,
-                      //   backgroundColor: Colors.grey[200],
-                      //   child: Text(
-                      //     course['author']?.toString().substring(0, 1) ?? '',
-                      //     style: TextStyle(
-                      //       color: Colors.blue,
-                      //       fontWeight: FontWeight.bold,
-                      //     ),
-                      //   ),
-                      // ),
-                      SizedBox(width: 6.w),
-                      Expanded(
-                        child: Text(
-                          course['author'] ?? '',
-                          style: TextStyle(
-                            color: const Color(0XFF00AFEE),
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: 'Gilroy',
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      SizedBox(
-                        height: 21.h,
-                        width: 50.w,
-                        child: Row(
-                          children: [
-                            Image.asset(
-                              "assets/clock.png",
-                              height: 17.h,
-                              width: 17.w,
-                              color: const Color(0XFF00AFEE),
+        child: GestureDetector(
+          onTap: () {
+            Get.to(MyCources(slug: course['slug'] ?? '',));
 
-                            ),
-                            SizedBox(width: 4.w),
-                            Text(
-                              course['learner_accessibility'] == 'free'
-                                  ? 'Free'
-                                  : 'Paid',
-                              style: TextStyle(
-                                fontSize: 12.sp,
-                                color: const Color(0XFF000000),
-                                fontWeight: FontWeight.w400,
-                                fontFamily: 'Gilroy',
-                              ),
-                            ),
-                          ],
+          },
+          child: Column(
+            children: [
+              Container(
+                height: 165.h,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  image: DecorationImage(
+                    image: NetworkImage(course['image_url'] ?? ''),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.only(top: 10.h, left: 10.w),
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: GestureDetector(
+                      onTap: () => toggleLike(course['id']),
+                      child: Container(
+                        height: 30.h,
+                        width: 30.w,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ),
+                        child: Center(
+                          child: Image.asset(
+                            "assets/like.png",
+                            height: 13.08.h,
+                            width: 13.08.w,
+                            color: likedCourses[course['id']] ?? false
+                                ? Colors.red
+                                : null,
+                          ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ],
+                ),
               ),
-            ),
-          ],
+              Padding(
+                padding: EdgeInsets.only(top: 10.h , right: 8.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 6.h),
+                    Text(
+                      course['title'] ?? '',
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'Nastaleeq',
+                        color: const Color(0XFF000000),
+                      ),
+                      textDirection: TextDirection.rtl,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    // SizedBox(height: 10.h),
+                    // Row(
+                    //   children: [
+                    //
+                    //     SizedBox(width: 6.w),
+                    //     Expanded(
+                    //       child: Text(
+                    //         course['author'] ?? '',
+                    //         style: TextStyle(
+                    //           color: const Color(0XFF00AFEE),
+                    //           fontSize: 14.sp,
+                    //           fontWeight: FontWeight.w500,
+                    //           fontFamily: 'Gilroy',
+                    //         ),
+                    //         overflow: TextOverflow.ellipsis,
+                    //       ),
+                    //     ),
+                    //     SizedBox(
+                    //       height: 21.h,
+                    //       width: 50.w,
+                    //       child: Row(
+                    //         children: [
+                    //           Image.asset(
+                    //             "assets/clock.png",
+                    //             height: 17.h,
+                    //             width: 17.w,
+                    //             color: const Color(0XFF00AFEE),
+                    //
+                    //           ),
+                    //           SizedBox(width: 4.w),
+                    //           Text(
+                    //             course['learner_accessibility'] == 'free'
+                    //                 ? 'Free'
+                    //                 : 'Paid',
+                    //             style: TextStyle(
+                    //               fontSize: 12.sp,
+                    //               color: const Color(0XFF000000),
+                    //               fontWeight: FontWeight.w400,
+                    //               fontFamily: 'Gilroy',
+                    //             ),
+                    //           ),
+                    //         ],
+                    //       ),
+                    //     ),
+                    //   ],
+                    // ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       )).toList(),
     );

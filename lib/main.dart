@@ -14,8 +14,13 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
 
-        theme:  ThemeData(scaffoldBackgroundColor: const Color(0xFFF5F5F5)),
-        home: const Splashscreen(),
+        theme:  ThemeData(
+          fontFamily: 'Nastaleeq',
+            scaffoldBackgroundColor: const Color(0xFFF5F5F5)),
+    home: Directionality(
+    textDirection: TextDirection.rtl, // Force Right-to-Left
+    child: const Splashscreen(),
+    )
     );
   }
 }

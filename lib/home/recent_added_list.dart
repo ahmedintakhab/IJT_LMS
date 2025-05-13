@@ -121,7 +121,7 @@ class _RecentAddedListState extends State<RecentAddedList> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      height: 158.h,
+                      height: 200.h,
                       width: 276.w,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
@@ -168,131 +168,82 @@ class _RecentAddedListState extends State<RecentAddedList> {
                         ),
                       ),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Padding(
-                        //   padding: EdgeInsets.only(left: 10.w, top: 10.h),
-                        //   child: Container(
-                        //     height: 25.h,
-                        //     width: 58.w,
-                        //     decoration: BoxDecoration(
-                        //       borderRadius: BorderRadius.circular(20),
-                        //       color: const Color(0XFFFAF4E1),
-                        //     ),
-                        //     child: Row(
-                        //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        //       children: [
-                        //         Image.asset(
-                        //           "assets/staricon.png",
-                        //           height: 17.h,
-                        //           width: 17.w,
-                        //         ),
-                        //         Text(
-                        //           course['average_rating'] ?? '0.00',
-                        //           style: TextStyle(
-                        //             fontFamily: 'Gilroy',
-                        //             color: const Color(0XFFFFC403),
-                        //             fontSize: 15.sp,
-                        //           ),
-                        //         ),
-                        //       ],
-                        //     ),
-                        //   ),
-                        // ),
-                        // Padding(
-                        //   padding: EdgeInsets.only(right: 5.w),
-                        //   child: Row(
-                        //     children: [
-                        //       Image.asset(
-                        //         "assets/clock.png",
-                        //         height: 17.h,
-                        //         width: 17.w,
-                        //       ),
-                        //       SizedBox(width: 4.w),
-                        //       Text(
-                        //         "00:00", // You can add duration from API if available
-                        //         style: TextStyle(
-                        //           fontSize: 15.sp,
-                        //           color: const Color(0XFF000000),
-                        //           fontFamily: 'Gilroy',
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
-                      ],
-                    ),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //   children: [
+                    //   ],
+                    // ),
                     SizedBox(height: 20.h),
                     Padding(
                       padding: EdgeInsets.only(left: 10.w, right: 10.w),
                       child: Text(
                         course['title'] ?? '',
                         style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18.sp,
                           color: const Color(0XFF000000),
-                          fontFamily: 'Gilroy',
+                          fontFamily: 'Nastaleeq',
                         ),
+                        textDirection: TextDirection.rtl,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    SizedBox(height: 20.h),
-                    Padding(
-                      padding: EdgeInsets.only(left: 10.w, right: 10.w),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              // Container(
-                              //   height: 40.h,
-                              //   width: 40.w,
-                              //   decoration: const BoxDecoration(
-                              //     shape: BoxShape.circle,
-                              //     color: Colors.grey,
-                              //   ),
-                              //   // You can add author image here if available
-                              // ),
-                              SizedBox(width: 10.w),
-                              Text(
-                                course['author'] ?? '',
-                                style: TextStyle(
-                                  fontFamily: 'Gilroy',
-                                  fontWeight: FontWeight.w400,
-                                  color: const Color(0XFF00AFEE),
-                                  fontSize: 15.sp,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                          Container(
-                            height: 33.h,
-                            width: 76.w,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: const Color(0XFFE5ECFF),
-                            ),
-                            child: Center(
-                              child: Text(
-                                course['price'] == "0.00"
-                                    ? "Free"
-                                    : "Rs. ${course['price']}",
-                                style: TextStyle(
-                                  color: const Color(0XFF00AFEE),
-                                  fontFamily: 'Gilroy',
-                                  fontSize: 19.sp,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    // SizedBox(height: 20.h),
+                    // Padding(
+                    //   padding: EdgeInsets.only(left: 10.w, right: 10.w),
+                    //   child: Row(
+                    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //     children: [
+                    //       Row(
+                    //         children: [
+                    //           // Container(
+                    //           //   height: 40.h,
+                    //           //   width: 40.w,
+                    //           //   decoration: const BoxDecoration(
+                    //           //     shape: BoxShape.circle,
+                    //           //     color: Colors.grey,
+                    //           //   ),
+                    //           //   // You can add author image here if available
+                    //           // ),
+                    //           SizedBox(width: 10.w),
+                    //           Text(
+                    //             course['author'] ?? '',
+                    //             style: TextStyle(
+                    //               fontFamily: 'Gilroy',
+                    //               fontWeight: FontWeight.w400,
+                    //               color: const Color(0XFF00AFEE),
+                    //               fontSize: 15.sp,
+                    //             ),
+                    //             maxLines: 1,
+                    //             overflow: TextOverflow.ellipsis,
+                    //           ),
+                    //         ],
+                    //       ),
+                    //       Container(
+                    //         height: 33.h,
+                    //         width: 76.w,
+                    //         decoration: BoxDecoration(
+                    //           borderRadius: BorderRadius.circular(12),
+                    //           color: const Color(0XFFE5ECFF),
+                    //         ),
+                    //         child: Center(
+                    //           child: Text(
+                    //             course['price'] == "0.00"
+                    //                 ? "Free"
+                    //                 : "Rs. ${course['price']}",
+                    //             style: TextStyle(
+                    //               color: const Color(0XFF00AFEE),
+                    //               fontFamily: 'Gilroy',
+                    //               fontSize: 19.sp,
+                    //               fontWeight: FontWeight.bold,
+                    //             ),
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
                   ],
                 ),
               ),

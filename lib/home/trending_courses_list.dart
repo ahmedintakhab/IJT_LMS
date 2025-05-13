@@ -140,15 +140,16 @@ class _TrendingCourceListState extends State<TrendingCourceList> {
                   ),
                   SizedBox(height: 8.h),
                   SizedBox(
-                    width: 177.w,
+                    width: 177.w,height: 20,
                     child: Text(
                       widget.trendingCource[index]['title'] ?? '',
                       style: TextStyle(
-                        fontFamily: 'Gilroy',
+                        fontFamily: 'Nastaleeq',
                         fontWeight: FontWeight.w700,
-                        fontSize: 12.sp,
+                        fontSize: 14.sp,
                         color: const Color(0XFF000000),
                       ),
+                      textDirection: TextDirection.rtl,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),

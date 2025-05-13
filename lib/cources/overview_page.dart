@@ -60,15 +60,18 @@ class _OverviewState extends State<Overview> {
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w500,
                           color: const Color(0XFF000000),
-                          fontFamily: 'Gilroy'),
+                        fontFamily: 'Nastaleeq',
+                      ),
+                      textDirection: TextDirection.rtl,
+
                     ),
                     ExpandableText(
                       widget.overviewData['description']?? '',
                       expandText: 'Learn more.',
                       style: TextStyle(
-                          fontSize: 14.sp,
-                          color: const Color(0XFF6E758A),
-                          fontFamily: 'Gilroy',
+                          fontSize: 18.sp,
+                          color: const Color(0XFF000000),
+                          fontFamily: 'Nastaleeq',
                           fontWeight: FontWeight.w400),
                       collapseText: 'Learn less.',
                       maxLines: 3,
@@ -76,7 +79,9 @@ class _OverviewState extends State<Overview> {
                           color: const Color(0XFF00AFEE),
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w700,
-                          fontFamily: 'Gilroy'),
+                          fontFamily:'Nastaleeq'),
+                      textDirection: TextDirection.rtl,
+
                     ),
                     SizedBox(height: 25.h),
                     // What you will learn section
@@ -86,7 +91,8 @@ class _OverviewState extends State<Overview> {
                           fontSize: 24.sp,
                           fontWeight: FontWeight.bold,
                           color: const Color(0XFF0091C7),
-                          fontFamily: 'Gilroy'),
+                        fontFamily: 'Nastaleeq',
+                      ),
                     ),
                     SizedBox(height: 20.h),
                     // Key points list with check icons
@@ -124,7 +130,7 @@ class _OverviewState extends State<Overview> {
                                     style: TextStyle(
                                       fontSize: 16.sp,
                                       color: const Color(0XFF000000),
-                                      fontFamily: 'Gilroy',
+                                      fontFamily: 'Nastaleeq',
                                       height: 1.4,
                                     ),
                                     textDirection: TextDirection.rtl,

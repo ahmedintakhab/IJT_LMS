@@ -237,7 +237,7 @@ class _MyCourcesState extends State<MyCources> {
                         child: Text(
                           courseTitle,
                           style: TextStyle(
-                            fontFamily: 'Gilroy',
+                            fontFamily: 'Nastaleeq',
                             fontWeight: FontWeight.w700,
                             fontSize: 20.sp,
                             overflow: TextOverflow.ellipsis,

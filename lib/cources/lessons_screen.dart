@@ -85,8 +85,10 @@ class _LessonState extends State<Lesson> {
                                     style: TextStyle(
                                         fontSize: 14.sp,
                                         color: Color(0XFF000000),
-                                        fontFamily: 'Gilroy',
+                                        fontFamily: 'Nastaleeq',
                                         fontWeight: FontWeight.bold),
+                                    textDirection: TextDirection.rtl,
+
                                   ),
                                   SizedBox(height: 4.h),
                                   Container(
