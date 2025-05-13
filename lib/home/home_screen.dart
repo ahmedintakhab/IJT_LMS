@@ -65,11 +65,13 @@ class _HomeScreenState extends State<HomeScreen> {
               banners = [bannerData!]; // Convert to list for carousel
             }
             trendingCource = List<Map<String, dynamic>>.from(
-                featureCategories['Nisab-e-Rukniyat Courses | نصابِ رکنیت کورسز'] ?? []);
+                featureCategories['Nisab-e-Rukniyat Courses'] ?? []);
             trendingButtonStatuses = List<bool>.filled(trendingCource.length, false);
-            print('Check trending courses: ${trendingCource}');
+            // print('Check trending courses: ${trendingCource}');
             recentAdded = List<Map<String, dynamic>>.from(
-                featureCategories['Nisab-e-Rafaqat Courses | نصابِ رفاقت کورسز'] ?? []);
+                featureCategories['Nisab-e-Rafaqat Courses'] ?? []);
+            // print('Check recentAdded courses: ${recentAdded}');
+
             recentButtonStatuses = List<bool>.filled(recentAdded.length, false);
             isLoading = false;
           });

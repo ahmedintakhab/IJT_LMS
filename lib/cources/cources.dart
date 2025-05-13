@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:learn_megnagmet/controller/controller.dart';
-import 'package:learn_megnagmet/cources/discussion_tab.dart';
 import 'package:learn_megnagmet/cources/lessons_screen.dart';
 import 'package:learn_megnagmet/cources/overview_page.dart';
 import 'package:learn_megnagmet/cources/review_screen.dart';
@@ -18,6 +17,7 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'dart:convert';
 
 import '../utils/api_constant.dart';
+import 'instructors_tab.dart';
 
 class MyCources extends StatefulWidget {
   final String slug;
@@ -39,9 +39,12 @@ class _MyCourcesState extends State<MyCources> {
   ];
   Map<String, dynamic> courseData = {};
   Map<String, dynamic> overviewData = {};
+  Map<String, dynamic> reviewsData = {};
   List<dynamic> lessonsData = [];
+  List<dynamic> instructorsData = [];
   bool isLoading = true;
   String courseTitle = "";
+  String courseId = "";
   bool isVideo = true;
   bool isMediaLoading = true;
   String videoUrl = "https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4"; // Default video
@@ -89,11 +92,13 @@ class _MyCourcesState extends State<MyCources> {
       if (response.statusCode == 200) {
         print('Course details API response: ${response.statusCode}');
         final data = json.decode(response.body);
-        print('Course details API data: $data');
+        // print('Course details API data: $data');
 
         if (data != null) {
           setState(() {
             courseData = data;
+            courseId = data['course_id'].toString() ?? '';
+            print('Check the course id on course details screen:$courseId ');
 
             // Extract overview data
             if (data['overview'] != null) {
@@ -105,7 +110,20 @@ class _MyCourcesState extends State<MyCources> {
             // Extract lessons data
             if (data['lessons'] != null) {
               lessonsData = data['lessons'];
+
             }
+            // Extract instructors data
+            if (data['instructors'] != null) {
+              instructorsData = data['instructors'];
+            }
+            print('Course Instructors data:$instructorsData');
+
+            // Extract instructors data
+            if (data['reviews'] != null) {
+              reviewsData = data['reviews'];
+            }
+            print('Course Instructors data:$reviewsData');
+
 
             if (data['course_preview_src'] != null && data['course_preview_src'].isNotEmpty) {
               videoUrl = data['course_preview_src'];
@@ -134,9 +152,11 @@ class _MyCourcesState extends State<MyCources> {
             // Initialize pages with course details
             pageclass = [
               Overview(overviewData: overviewData),
-              Lesson(),
-              Review(),
-              Discussion(),
+              Lesson(lessonsData: lessonsData,),
+              Review(reviewsData: reviewsData,
+                courseId: courseId,
+              ),
+              Instructors(instructorsData: instructorsData),
             ];
             isLoading = false;
           });

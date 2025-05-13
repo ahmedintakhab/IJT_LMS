@@ -57,7 +57,7 @@ class TabbarSection extends StatelessWidget {
                 Tab(text: "Overview"),
                 Tab(text: "Curriculum"),
                 Tab(text: "Reviews"),
-                Tab(text: "Discussion"),
+                Tab(text: "Instructors"),
               ],
               onTap: (value) {
                 courceController.pController.animateToPage(

@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:integration_test/integration_test.dart';
+// import 'package:integration_test/integration_test.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  // IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('enabling and disabling wakelock', (WidgetTester tester) async {
     final wakelockEnabled = await WakelockPlus.enabled;
