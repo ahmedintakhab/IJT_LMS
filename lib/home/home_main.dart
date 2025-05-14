@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:learn_megnagmet/controller/controller.dart';
 import 'package:learn_megnagmet/home/home_screen.dart';
+import '../My_cources/my_learning_courses.dart';
 import '../My_cources/ongoing_completed_main_screen.dart';
 import '../chate/chate_screen.dart';
 import '../profile/my_profile.dart';
@@ -147,7 +148,8 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
         return HomeScreen();
       case 1:
         //return Center(child: Container(child: Text("2")));
-        return const OngoingCompletedScreen();
+        return const MyLearningCourses();
+    // return const OngoingCompletedScreen();
       case 2:
         //return Center(child: Container(child: Text("3")));
         return const ChateScreen();

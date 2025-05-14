@@ -88,8 +88,18 @@ class _MyCourcesState extends State<MyCources> {
 
   Future<void> fetchCourseDetails() async {
     try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('authToken') ?? '';
+
       final url = '${ApiConstant.baseUrl}course-details/${widget.slug}';
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
 
       if (response.statusCode == 200) {
         print('Course details API response: ${response.statusCode}');
@@ -239,9 +249,9 @@ class _MyCourcesState extends State<MyCources> {
         Get.snackbar(
           'Info',
           'You are already enrolled in this course',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.black.withOpacity(0.2),
-          colorText: Colors.black,
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
           borderRadius: 10,
           margin: EdgeInsets.all(15),
           duration: Duration(seconds: 3),
