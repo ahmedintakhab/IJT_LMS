@@ -272,8 +272,9 @@ class _TrendingCourceState extends State<TrendingCource> {
           child: Column(
             children: [
               Container(
-                height: 165.h,
+                height: 155.h,
                 width: double.infinity,
+                margin: EdgeInsets.all(5),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   image: DecorationImage(
@@ -281,99 +282,26 @@ class _TrendingCourceState extends State<TrendingCource> {
                     fit: BoxFit.cover,
                   ),
                 ),
-                child: Padding(
-                  padding: EdgeInsets.only(top: 10.h, left: 10.w),
-                  child: Align(
-                    alignment: Alignment.topLeft,
-                    child: GestureDetector(
-                      onTap: () => toggleLike(course['id']),
-                      child: Container(
-                        height: 30.h,
-                        width: 30.w,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                        ),
-                        child: Center(
-                          child: Image.asset(
-                            "assets/like.png",
-                            height: 13.08.h,
-                            width: 13.08.w,
-                            color: likedCourses[course['id']] ?? false
-                                ? Colors.red
-                                : null,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
               ),
-              Padding(
-                padding: EdgeInsets.only(top: 10.h , right: 8.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 6.h),
-                    Text(
+              Directionality(
+                textDirection: TextDirection.rtl,
+                child: SizedBox(
+                  width: double.infinity, // Take full width
+                  child: Padding(
+                    padding: EdgeInsets.only(right: 10.w), // Consistent right padding
+                    child: Text(
                       course['title'] ?? '',
                       style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 22.sp,
                         fontFamily: 'Nastaleeq',
                         color: const Color(0XFF000000),
                       ),
-                      textDirection: TextDirection.rtl,
+                      textAlign: TextAlign.right, // Force right alignment
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    // SizedBox(height: 10.h),
-                    // Row(
-                    //   children: [
-                    //
-                    //     SizedBox(width: 6.w),
-                    //     Expanded(
-                    //       child: Text(
-                    //         course['author'] ?? '',
-                    //         style: TextStyle(
-                    //           color: const Color(0XFF00AFEE),
-                    //           fontSize: 14.sp,
-                    //           fontWeight: FontWeight.w500,
-                    //           fontFamily: 'Gilroy',
-                    //         ),
-                    //         overflow: TextOverflow.ellipsis,
-                    //       ),
-                    //     ),
-                    //     SizedBox(
-                    //       height: 21.h,
-                    //       width: 50.w,
-                    //       child: Row(
-                    //         children: [
-                    //           Image.asset(
-                    //             "assets/clock.png",
-                    //             height: 17.h,
-                    //             width: 17.w,
-                    //             color: const Color(0XFF00AFEE),
-                    //
-                    //           ),
-                    //           SizedBox(width: 4.w),
-                    //           Text(
-                    //             course['learner_accessibility'] == 'free'
-                    //                 ? 'Free'
-                    //                 : 'Paid',
-                    //             style: TextStyle(
-                    //               fontSize: 12.sp,
-                    //               color: const Color(0XFF000000),
-                    //               fontWeight: FontWeight.w400,
-                    //               fontFamily: 'Gilroy',
-                    //             ),
-                    //           ),
-                    //         ],
-                    //       ),
-                    //     ),
-                    //   ],
-                    // ),
-                  ],
+                  ),
                 ),
               ),
             ],

@@ -33,10 +33,10 @@ class _MyLearningCoursesState extends State<MyLearningCourses> {
       isLoading = true;
       hasError = false;
     });
-    await fetchRecentCourses();
+    await fetchMylearningCourses();
   }
 
-  Future<void> fetchRecentCourses() async {
+  Future<void> fetchMylearningCourses() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String token = prefs.getString('authToken') ?? '';
@@ -351,37 +351,6 @@ class _MyLearningCoursesState extends State<MyLearningCourses> {
                         ),
                       ),
                     ),
-                    // Padding(
-                    //   padding: EdgeInsets.only(left: 10.w, top: 10.h),
-                    //   child: Container(
-                    //     height: 33.h,
-                    //     width: 32.w,
-                    //     decoration: const BoxDecoration(
-                    //       shape: BoxShape.circle,
-                    //       color: Colors.white,
-                    //     ),
-                    //     child: IconButton(
-                    //       splashRadius: 10.h,
-                    //       onPressed: () {},
-                    //       icon: Image.asset("assets/saveicon.png"),
-                    //     ),
-                    //   ),
-                    // ),
-                    // Padding(
-                    //   padding: EdgeInsets.only(left: 55.w, top: 10.h),
-                    //   child: Container(
-                    //     height: 33.h,
-                    //     width: 32.w,
-                    //     decoration: const BoxDecoration(
-                    //       shape: BoxShape.circle,
-                    //       color: Colors.white,
-                    //     ),
-                    //     child: IconButton(
-                    //       onPressed: () {},
-                    //       icon: Image.asset("assets/shareicon.png"),
-                    //     ),
-                    //   ),
-                    // ),
                   ],
                 ),
                 SizedBox(height: 20.h),
@@ -390,18 +359,28 @@ class _MyLearningCoursesState extends State<MyLearningCourses> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        course['course']['title'] ?? '',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 22.sp,
-                          fontFamily: 'Nastaleeq',
-                          color: const Color(0XFF000000),
-                        ),
+                      Directionality(
                         textDirection: TextDirection.rtl,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                        child: SizedBox(
+                          width: double.infinity, // Take full width
+                          child: Padding(
+                            padding: EdgeInsets.only(right: 10.w), // Consistent right padding
+                            child: Text(
+                              course['course']['title'] ?? '',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 22.sp,
+                                fontFamily: 'Nastaleeq',
+                                color: const Color(0XFF000000),
+                              ),
+                              textAlign: TextAlign.right, // Force right alignment
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
                       ),
+
                       SizedBox(height: 11.h),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -413,7 +392,7 @@ class _MyLearningCoursesState extends State<MyLearningCourses> {
                                 authorName,
                                 style: TextStyle(
                                   color: const Color(0XFF00AFEE),
-                                  fontSize: 15.sp,
+                                  fontSize: 18.sp,
                                   fontWeight: FontWeight.w400,
                                   fontFamily: 'Nastaleeq',
                                 ),
