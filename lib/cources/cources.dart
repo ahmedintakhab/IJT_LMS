@@ -10,12 +10,13 @@ import 'package:learn_megnagmet/cources/review_screen.dart';
 import 'package:learn_megnagmet/cources/tabbar_section.dart';
 import 'package:learn_megnagmet/utils/screen_size.dart';
 import 'package:learn_megnagmet/widget/button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
-import 'package:learn_megnagmet/cources/choose_plane_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'dart:convert';
 
+import '../home/home_main.dart';
 import '../utils/api_constant.dart';
 import 'instructors_tab.dart';
 
@@ -45,6 +46,7 @@ class _MyCourcesState extends State<MyCources> {
   bool isLoading = true;
   String courseTitle = "";
   String courseId = "";
+  String btnText = '';
   bool isVideo = true;
   bool isMediaLoading = true;
   String videoUrl = "https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4"; // Default video
@@ -99,6 +101,8 @@ class _MyCourcesState extends State<MyCources> {
             courseData = data;
             courseId = data['course_id'].toString() ?? '';
             print('Check the course id on course details screen:$courseId ');
+            btnText = data['btn_text'] ?? '';
+            print('Check button Text:$btnText');
 
             // Extract overview data
             if (data['overview'] != null) {
@@ -179,6 +183,80 @@ class _MyCourcesState extends State<MyCources> {
         lowerUrl.endsWith('.jpg') ||
         lowerUrl.endsWith('.jpeg') ||
         lowerUrl.endsWith('.gif');
+  }
+
+  Future<void> _enrollCourse() async {
+    try {
+      if (btnText == "Enroll Now") {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String token = prefs.getString('authToken') ?? '';
+        print('Token check: $token');
+
+        final url = '${ApiConstant.baseUrl}student/add-to-cart';
+
+        print("API URL: $url");
+        print("Course ID: $courseId");
+        print("Auth Token: $token");
+
+        final response = await http.post(
+          Uri.parse(url),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'course_id': courseId,
+          }),
+        );
+
+        print("Enroll API Response Code: ${response.statusCode}");
+        print("Enroll API Response Body: ${response.body}");
+
+        if (response.statusCode == 200) {
+          Get.to(() => HomeMainScreen());
+          await fetchCourseDetails();
+
+          print("API Successfully Enroll Course.");
+          Get.snackbar(
+            'Success',
+            'Successfully enrolled in the course',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+            borderRadius: 10,
+            margin: EdgeInsets.all(15),
+            duration: Duration(seconds: 3),
+          );
+
+          // Refresh course details to update button text if needed
+          fetchCourseDetails();
+        } else {
+          throw Exception('Failed to enroll: ${response.statusCode}');
+        }
+      } else if (btnText == "Go to Course") {
+        // Handle Go to Course action here
+        // For now, just show a message
+        Get.snackbar(
+          'Info',
+          'You are already enrolled in this course',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.black.withOpacity(0.2),
+          colorText: Colors.black,
+          borderRadius: 10,
+          margin: EdgeInsets.all(15),
+          duration: Duration(seconds: 3),
+        );
+      }
+    } catch (e) {
+      print('Error in enroll course: ${e.toString()}');
+      Get.snackbar(
+        'Error',
+        'Failed to enroll: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.2),
+        colorText: Colors.red,
+      );
+    }
   }
 
   // Method to reload media (image or video)
@@ -312,9 +390,9 @@ class _MyCourcesState extends State<MyCources> {
                                 )
 
                               ]
-    )
-    )
-    ),
+                               )
+                               )
+                             ),
                   ),
                 ),
 
@@ -328,10 +406,10 @@ class _MyCourcesState extends State<MyCources> {
 
                 // Enroll Button
                 Padding(
-                  padding: EdgeInsets.only(bottom: 30.h),
+                  padding: EdgeInsets.only(bottom: 30.h,left: 10.w, right: 10.w),
                   child: CustomButton(
-                    onTap: () => Get.to(const ChoosePlane()),
-                    buttonText: 'Enroll Now',
+                    onTap: _enrollCourse,
+                    buttonText: btnText ?? '', // Use the dynamic button text
                   ),
                 ),
               ],

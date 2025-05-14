@@ -7,6 +7,7 @@ import 'package:learn_megnagmet/home/home_main.dart';
 import 'package:learn_megnagmet/login/login_empty_state.dart';
 import 'package:learn_megnagmet/onboarding/omboarding.dart';
 import 'package:learn_megnagmet/utils/shared_pref.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/screen_size.dart';
 
@@ -21,25 +22,31 @@ class _SplashscreenState extends State<Splashscreen> {
   @override
   void initState() {
     super.initState();
-    getIntro();
-  }
+    _checkAppState();  }
 
-  getIntro() async {
-    bool isIntro = await PrefData.getIntro();
-    bool isLogin = await PrefData.getLogin();
+  Future<void> _checkAppState() async {
+    try {
+      // Check if onboarding has been completed
+      bool isIntro = await PrefData.getIntro();
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('authToken') ?? '';
 
-
-    if (isIntro == false) {
-      Timer(const Duration(seconds: 3), () => Get.to(const SlidePage()));
-    } else if (isLogin == false) {
-      Get.to(const EmptyState());
-    } else {
-      Get.to(const HomeMainScreen());
+      if (!isIntro) {
+        // Show onboarding for first-time users after a 3-second delay
+        Timer(const Duration(seconds: 3), () => Get.off(() => const SlidePage()));
+      } else if (token.isEmpty) {
+        // No token, go to login screen
+        Get.off(() => const EmptyState());
+      } else {
+        // Token exists, go to home screen
+        Get.off(() => const HomeMainScreen());
+      }
+    } catch (e) {
+      print('Error checking app state: $e');
+      // Fallback to login screen on error
+      Get.off(() => const EmptyState());
     }
   }
-
-  // PrefData.setVarification(true);
-
   @override
   Widget build(BuildContext context) {
     initializeScreenSize(context);

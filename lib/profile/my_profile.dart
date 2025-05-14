@@ -245,7 +245,7 @@ class _MyProfileState extends State<MyProfile> {
                                                       profileoption[index].title!,
                                                       style:  TextStyle(
                                                           fontSize: 15.sp,
-                                                          fontFamily: 'Gilroy',
+                                                          fontFamily: 'Nastaleeq',
                                                           fontWeight: FontWeight.bold),
                                                     ),
                                                   ],
@@ -282,9 +282,9 @@ class _MyProfileState extends State<MyProfile> {
                                   height: 56.h,
                                   width: 374.w,
                                   decoration: BoxDecoration(
-                                    color: Color(0XFF78A03F),
+                                    color: Color(0XFF00AFEE),
                                     border: Border.all(
-                                      color: const Color(0xFF78A03F),
+                                      color: const Color(0xFF00AFEE),
                                       style: BorderStyle.solid,
                                       width: 1.0.w,
                                     ),
@@ -296,7 +296,7 @@ class _MyProfileState extends State<MyProfile> {
                                             color: Colors.white,
                                             fontSize: 22.sp,
                                             fontWeight: FontWeight.w700,
-                                            fontFamily: 'Gilroy')),
+                                            fontFamily: 'Nastaleeq')),
                                   ),
                                 ),
                               ),
@@ -475,13 +475,13 @@ class _MyProfileState extends State<MyProfile> {
                         width: double.infinity.w,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(22.h),
-                          color: const Color(0XFF78A03F),
+                          color: const Color(0XFF00AFEE),
                         ),
                         child: Center(
                           child: Text(
                             "Yes",
                             style: TextStyle(
-                                fontFamily: 'Gilroy',
+                                fontFamily: 'Nastaleeq',
                                 fontWeight: FontWeight.bold,
                                 color: Color(0XFFFFFFFF),
                                 fontStyle: FontStyle.normal,
@@ -502,7 +502,7 @@ class _MyProfileState extends State<MyProfile> {
                         width: double.infinity.w,
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: const Color(0xFF78A03F),
+                            color: const Color(0XFF00AFEE),
                             style: BorderStyle.solid,
                             width: 1.0.w,
                           ),
@@ -512,9 +512,9 @@ class _MyProfileState extends State<MyProfile> {
                           child: Text(
                             "No",
                             style: TextStyle(
-                                fontFamily: 'Gilroy',
+                                fontFamily: 'Nastaleeq',
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF78A03F),
+                                color: Color(0xFF00AFEE),
                                 fontStyle: FontStyle.normal,
                                 fontSize: 18.sp),
                           ),
