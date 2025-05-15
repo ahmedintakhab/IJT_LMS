@@ -8,6 +8,7 @@ import 'package:learn_megnagmet/cources/lessons_screen.dart';
 import 'package:learn_megnagmet/cources/overview_page.dart';
 import 'package:learn_megnagmet/cources/review_screen.dart';
 import 'package:learn_megnagmet/cources/tabbar_section.dart';
+import 'package:learn_megnagmet/student/student_tabbar_screen.dart';
 import 'package:learn_megnagmet/utils/screen_size.dart';
 import 'package:learn_megnagmet/widget/button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -46,6 +47,7 @@ class _MyCourcesState extends State<MyCources> {
   bool isLoading = true;
   String courseTitle = "";
   String courseId = "";
+  String courseSlug = "";
   String btnText = '';
   bool isVideo = true;
   bool isMediaLoading = true;
@@ -110,6 +112,9 @@ class _MyCourcesState extends State<MyCources> {
           setState(() {
             courseData = data;
             courseId = data['course_id'].toString() ?? '';
+            courseSlug = data['course_slug'] ?? ''; // Add this line
+            print('Course slug: $courseSlug');
+
             print('Check the course id on course details screen:$courseId ');
             btnText = data['btn_text'] ?? '';
             print('Check button Text:$btnText');
@@ -245,17 +250,7 @@ class _MyCourcesState extends State<MyCources> {
         }
       } else if (btnText == "Go to Course") {
         // Handle Go to Course action here
-        // For now, just show a message
-        Get.snackbar(
-          'Info',
-          'You are already enrolled in this course',
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-          borderRadius: 10,
-          margin: EdgeInsets.all(15),
-          duration: Duration(seconds: 3),
-        );
+        Get.to(() => TabBarDetails(slug: courseSlug));
       }
     } catch (e) {
       print('Error in enroll course: ${e.toString()}');

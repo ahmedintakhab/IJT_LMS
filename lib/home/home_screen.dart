@@ -300,7 +300,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         SizedBox(height: 20.h),
                         indicator(),
                         SizedBox(height: 20.h),
-                        HorizontalDesignList(design: design),
+                        HorizontalDesignList(),
                         SizedBox(height: 22.h),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 20.w),

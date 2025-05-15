@@ -50,7 +50,7 @@ class _TabBarDetailsState extends State<TabBarDetails> with SingleTickerProvider
   Map<String, dynamic> overviewData = {};
   List<dynamic> noticeData = [];
   List<dynamic> discussionData = [];
-  Map<String, dynamic> reviewData = {};
+  Map<String, dynamic> reviewsData = {};
   List<dynamic> quizData = [];
   List<dynamic> assignmentData = [];
   Map<String, dynamic> liveClassData = {};
@@ -101,7 +101,7 @@ class _TabBarDetailsState extends State<TabBarDetails> with SingleTickerProvider
           overviewData = apiData?['data']['overview'] ?? {'description': apiData?['data']['description'] ?? '', 'key_points': []};
           noticeData = apiData?['data']['notices'] ?? [];
           discussionData = apiData?['data']['discussions'] ?? [];
-          reviewData = apiData?['data']['reviews'] ?? {
+          reviewsData = apiData?['data']['reviews'] ?? {
             'average_rating': apiData?['data']['average_rating'] ?? '0.0',
             'total_user_reviews': apiData?['data']['total_review'] ?? 0,
             'user_reviews': apiData?['data']['reviews']?['reviews']?['data'] ?? [],
@@ -150,7 +150,7 @@ class _TabBarDetailsState extends State<TabBarDetails> with SingleTickerProvider
           LiveClassPage(liveClassData: liveClassData),
           DiscussionPage(discussionData: discussionData, courseId: courseId),
           Container(), // CertificatePage placeholder
-          ReviewPage(reviewData: reviewData, courseId: courseId),
+          ReviewPage(reviewsData: reviewsData, courseId: courseId),
         ];
       });
     }
