@@ -1,0 +1,230 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'text_content_screen.dart';
+
+class ResourcesScreen extends StatelessWidget {
+  final List<dynamic> courseContent;
+  final Function? onLectureOpen;
+
+  const ResourcesScreen({
+    Key? key,
+    required this.courseContent,
+    this.onLectureOpen,
+  }) : super(key: key);
+
+  // Function to handle content opening based on type
+  Future<void> _openContent(BuildContext context, Map<String, dynamic> lecture) async {
+    final Map<String, dynamic> data = lecture['data'] ?? {};
+    final String type = data['type']?.toString() ?? '';
+    final String source = data['source']?.toString() ?? '';
+    final String title = lecture['title']?.toString() ?? 'Untitled Lecture';
+
+    try {
+      if (type.isEmpty || source.isEmpty) {
+        Get.snackbar('Error', 'Invalid content type or source');
+        return;
+      }
+
+      if (type == 'text') {
+        // Navigate to TextContentScreen for HTML text
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TextContentScreen(
+              title: title,
+              htmlContent: source,
+            ),
+          ),
+        );
+        if (onLectureOpen != null) onLectureOpen!();
+      } else if (['pdf', 'video', 'youtube', 'audio', 'image'].contains(type)) {
+        // Open URL in new tab for other types
+        if (await canLaunchUrl(Uri.parse(source))) {
+          await launchUrl(
+            Uri.parse(source),
+            mode: LaunchMode.externalApplication,
+          );
+          if (onLectureOpen != null) onLectureOpen!();
+        } else {
+          Get.snackbar('Error', 'Could not open $type content');
+        }
+      } else {
+        Get.snackbar('Error', 'Unsupported content type: $type');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to open content: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: courseContent.isEmpty
+              ? const Center(child: Text('No lessons available'))
+              : ListView.builder(
+            itemCount: courseContent.length,
+            itemBuilder: (context, index) {
+              var lesson = courseContent[index];
+              List<dynamic> lectures = lesson['lectures'] ?? [];
+
+              return Padding(
+                padding: EdgeInsets.only(
+                  left: 20.w,
+                  right: 20.w,
+                  top: 8.h,
+                  bottom: 8.h,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Display the lesson name
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 20.h),
+                      child: Directionality(
+                        textDirection: TextDirection.rtl,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              lesson['name']?.toString() ?? 'Lesson',
+                              style: TextStyle(
+                                fontFamily: 'Nastaleeq',
+                                color: Colors.black,
+                                fontSize: 22.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Display the lectures
+                    ...lectures.map((lecture) {
+                      return Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Container(
+                          height: 80.h,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(22.h),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF23408F).withOpacity(0.14),
+                                offset: const Offset(-4, 5),
+                                blurRadius: 16,
+                              ),
+                            ],
+                            color: Colors.white,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // Lecture number
+                                Container(
+                                  height: 55.h,
+                                  width: 33.w,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(22.h),
+                                    color: const Color(0xFF00AFEE),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      lecture['lecture_no']?.toString() ?? '',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 17.sp,
+                                        fontFamily: 'Nastaleeq',
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                // Lecture title
+                                Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 18.h, horizontal: 10),
+                                    child: Center(
+                                      child: Directionality(
+                                        textDirection: TextDirection.rtl,
+                                        child: Text(
+                                          lecture['title']?.toString() ?? 'Untitled Lecture',
+                                          style: TextStyle(
+                                            color: const Color(0xFF000000),
+                                            fontSize: 18.sp,
+                                            fontFamily: 'Nastaleeq',
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                // Open icon
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    GestureDetector(
+                                      child: Icon(
+                                        Icons.open_in_new,
+                                        color: const Color(0xFF00AFEE),
+                                        size: 26.w,
+                                      ),
+                                      onTap: () => _openContent(context, lecture),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Padding(
+            padding: EdgeInsets.only(bottom: 40.h, top: 15.h),
+            child: Container(
+              height: 56.h,
+              width: 374.w,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20.h),
+                color: const Color(0xFF00AFEE),
+              ),
+              child: Center(
+                child: Text(
+                  "Continue Course",
+                  style: TextStyle(
+                    color: const Color(0xFFFFFFFF),
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Gilroy',
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}

@@ -47,7 +47,7 @@ class _ReviewState extends State<Review> {
                   Text("View All",
                       style: TextStyle(
                           fontSize: 18.sp,
-                          fontFamily: 'Gilroy',
+                                fontFamily: 'Nastaleeq',
                           color: const Color(0XFF000000))),
                 ],
               ),
@@ -60,7 +60,7 @@ class _ReviewState extends State<Review> {
                       Text(
                         widget.reviewsData['average_rating']?.toString() ?? '0.0',
                         style: TextStyle(
-                            fontFamily: 'Gilroy',
+                                  fontFamily: 'Nastaleeq',
                             fontSize: 36.sp,
                             color: const Color(0XFF000000),
                             fontWeight: FontWeight.w700),
@@ -68,7 +68,7 @@ class _ReviewState extends State<Review> {
                       Text(
                         "out of 5",
                         style: TextStyle(
-                            fontFamily: 'Gilroy',
+                                  fontFamily: 'Nastaleeq',
                             fontSize: 15.sp,
                             color: Color(0XFF000000),
                             fontWeight: FontWeight.normal),
@@ -136,7 +136,7 @@ class _ReviewState extends State<Review> {
                     child:Text(
                       "Write A Review",
                       style: TextStyle(
-                          fontFamily: 'Gilroy',
+                                fontFamily: 'Nastaleeq',
                           fontSize: 18.sp,
                           color: const Color(0XFF000000),
                           fontWeight: FontWeight.bold),
@@ -202,7 +202,7 @@ class _ReviewState extends State<Review> {
                                         style: TextStyle(
                                           fontSize: 14.sp,
                                           color: const Color(0XFF292929),
-                                          fontFamily: 'Gilroy',
+                                                fontFamily: 'Nastaleeq',
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
@@ -212,7 +212,7 @@ class _ReviewState extends State<Review> {
                                         style: TextStyle(
                                           fontSize: 14.sp,
                                           color: const Color(0XFF292929),
-                                          fontFamily: 'Gilroy',
+                                                fontFamily: 'Nastaleeq',
                                           fontStyle: FontStyle.normal,
                                           fontWeight: FontWeight.w400,
                                         ),
@@ -226,7 +226,7 @@ class _ReviewState extends State<Review> {
                                   style: TextStyle(
                                     fontSize: 12.sp,
                                     color: Color(0XFF5E8421),
-                                    fontFamily: 'Gilroy',
+                                          fontFamily: 'Nastaleeq',
                                   ),
                                 ),
                             ],

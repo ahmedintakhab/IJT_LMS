@@ -30,7 +30,7 @@ class RatingRowWidget extends StatelessWidget {
           itemPadding: EdgeInsets.symmetric(horizontal: 2.17.w),
           itemBuilder: (context, _) => const Icon(
             Icons.star_border,
-            color: Color(0XFF78A03F),
+            color: Color(0XFF00AFEE),
           ),
           onRatingUpdate: (rating) {
             // Handle rating update

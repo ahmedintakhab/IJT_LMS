@@ -194,7 +194,7 @@ class _WriteReviewDialogState extends State<WriteReviewDialog> {
                 TextFormField(
                   controller: _feedbackController,
                   maxLines: 5,
-                  cursorColor: const Color(0xFF78A03F),
+                  cursorColor: const Color(0XFF00AFEE),
                   decoration: InputDecoration(
                     hintText: "Please write your feedback here",
                     hintStyle: const TextStyle(color: Colors.grey),
@@ -202,7 +202,7 @@ class _WriteReviewDialogState extends State<WriteReviewDialog> {
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
                         color: _feedbackController.text.isNotEmpty
-                            ? const Color(0XFF8CC13F)
+                            ? const Color(0XFF00AFEE)
                             : Colors.red,
                         width: 1,
                       ),
@@ -243,7 +243,7 @@ class _WriteReviewDialogState extends State<WriteReviewDialog> {
                     ),
                     TextButton(
                       style: TextButton.styleFrom(
-                        backgroundColor: const Color(0xFF8CC13F),
+                        backgroundColor: const Color(0XFF00AFEE),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),

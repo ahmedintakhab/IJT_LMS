@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:learn_megnagmet/student/student_tabbar_screen.dart';
 import 'package:learn_megnagmet/utils/api_constant.dart';
 import 'package:http/http.dart' as http;
 import 'package:percent_indicator/linear_percent_indicator.dart';
@@ -313,10 +314,11 @@ class _MyLearningCoursesState extends State<MyLearningCourses> {
         final instructor = course['course']['instructor'];
         final authorName = '${instructor['first_name']} ${instructor['last_name']}';
         final progress = (course['progress'] ?? 0) / 100.0; // API returns 0-100
+        print('Check the slug on my learning courses: ${course['course']['slug']}');
 
         return GestureDetector(
           onTap: () {
-            // Get.to(() => MyCources(slug: course['course']['slug']));
+             Get.to(() =>TabBarDetails( slug: course['course']['slug']));
           },
           child: Container(
             margin: EdgeInsets.only(bottom: 10.h),
