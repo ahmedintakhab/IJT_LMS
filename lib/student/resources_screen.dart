@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'content_display_screen.dart';
 import 'text_content_screen.dart';
 
 class ResourcesScreen extends StatelessWidget {
@@ -38,21 +38,24 @@ class ResourcesScreen extends StatelessWidget {
             ),
           ),
         );
-        if (onLectureOpen != null) onLectureOpen!();
       } else if (['pdf', 'video', 'youtube', 'audio', 'image'].contains(type)) {
-        // Open URL in new tab for other types
-        if (await canLaunchUrl(Uri.parse(source))) {
-          await launchUrl(
-            Uri.parse(source),
-            mode: LaunchMode.externalApplication,
-          );
-          if (onLectureOpen != null) onLectureOpen!();
-        } else {
-          Get.snackbar('Error', 'Could not open $type content');
-        }
+        // Navigate to ContentDisplayScreen for other types
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ContentDisplayScreen(
+              title: title,
+              contentType: type,
+              source: source,
+            ),
+          ),
+        );
       } else {
         Get.snackbar('Error', 'Unsupported content type: $type');
+        return;
       }
+
+      if (onLectureOpen != null) onLectureOpen!();
     } catch (e) {
       Get.snackbar('Error', 'Failed to open content: $e');
     }
