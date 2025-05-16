@@ -313,8 +313,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: TextStyle(
                                   fontSize: 18.sp,
                                   fontWeight: FontWeight.w700,
-                                                                        fontFamily: 'Nastaleeq'
-,
+                                  fontFamily: 'Nastaleeq',
                                 ),
                               ),
                               TextButton(
@@ -324,9 +323,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   "See All",
                                   style: TextStyle(
                                     fontSize: 18.sp,
-                                                                          fontFamily: 'Nastaleeq'
-,
-                                    color: const Color(0XFF00AFEE),
+                                    fontFamily: 'Nastaleeq',
+                                      color: const Color(0XFF00AFEE),
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -353,7 +351,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: TextStyle(
                                   fontSize: 18.sp,
                                   fontWeight: FontWeight.w700,
-                                                                        fontFamily: 'Nastaleeq'
+                                  fontFamily: 'Nastaleeq'
 ,
                                 ),
                               ),
@@ -363,8 +361,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: Text(
                                   "See All",
                                   style: TextStyle(
-                                                                          fontFamily: 'Nastaleeq'
-,
+                                    fontFamily: 'Nastaleeq',
                                     fontSize: 18.sp,
                                     color: const Color(0XFF00AFEE),
                                     fontWeight: FontWeight.w700,
