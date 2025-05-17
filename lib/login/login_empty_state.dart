@@ -28,7 +28,7 @@ class _EmptyStateState extends State<EmptyState> {
   final formkey = GlobalKey<FormState>();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  bool ispassHiden = false;
+  bool ispassHiden = true;
   bool isLoading = false;
   String authToken = '';
 

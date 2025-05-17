@@ -31,10 +31,7 @@ class _SplashscreenState extends State<Splashscreen> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('authToken') ?? '';
 
-      if (!isIntro) {
-        // Show onboarding for first-time users after a 3-second delay
-        Timer(const Duration(seconds: 3), () => Get.off(() => const SlidePage()));
-      } else if (token.isEmpty) {
+      if (token.isEmpty) {
         // No token, go to login screen
         Get.off(() => const EmptyState());
       } else {

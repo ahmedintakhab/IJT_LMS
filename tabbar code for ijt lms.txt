@@ -1,1512 +1,41 @@
-tabbar details
-
-
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http; // Add this import
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert'; // For JSON parsing
-import '../utils/api_constants.dart';
-import 'overview_page.dart';
-import 'content_page.dart';
-import 'quiz_page.dart';
-import 'assignment_page.dart';
-import 'notice_page.dart';
-import 'live_class_page.dart';
-import 'discussion_page.dart';
-import 'certificate_page.dart';
-import 'review_page.dart';
-
-class TabBarDetails extends StatefulWidget {
-  final String courseType;
-  final String slug;
-  TabBarDetails({Key? key, required this.courseType, required this.slug}) : super(key: key);
-
-  @override
-  State<TabBarDetails> createState() => _TabBarDetailsState();
-}
-
-class _TabBarDetailsState extends State<TabBarDetails> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  late PageController _pageController;
-
-  // Initialize tabs based on courseType
-  late List<String> tabs;
-  late List<Widget> pages;
-  List<dynamic> liveCourses = [];
-  List<dynamic> nonLiveCourses = [];
-  String courseId = '';
-
-
-  // API Data
-  Map<String, dynamic>? apiData;
-  bool isLoading = true;
-
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Initialize tabs and pages
-    initializeTabsAndPages();
-
-    // Fetch data after the page is fully loaded
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      StudentCourseDetails();
-    });
-  }
-
-  void initializeTabsAndPages() {
-    // Set tabs and pages based on courseType
-    if (widget.courseType == 'Live') {
-      tabs = [
-        'Overview',
-        'Content',
-        'Notice',
-        'Live Class',
-        'Discussion',
-        // 'Certificate',
-        'Review',
-      ];
-    } else {
-      tabs = [
-        'Overview',
-        'Content',
-        'Quiz',
-        'Assignment',
-        'Notice',
-        'Live Class',
-        'Discussion',
-        'Certificate',
-        'Review',
-      ];
-    }
-
-    _tabController = TabController(length: tabs.length, vsync: this);
-    _pageController = PageController();
-
-    // Fetch API data
-  }
-
-  // Fetch data from API
-  Future<void> StudentCourseDetails() async {
-    final String apiUrl = '${ApiConstants.baseUrl}student/my-course/${widget.slug}';
-
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String token = prefs.getString('auth_token') ?? '';
-
-      final response = await http.get(
-          Uri.parse(apiUrl),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token',
-          }
-      );
-
-      if (response.statusCode == 200) {
-        print("Student course details Api response: ${response.statusCode}");
-        setState(() {
-          apiData = json.decode(response.body);
-          courseId = apiData!['course_id'].toString();
-          print("Discussion Data: ${apiData!['course_discussion_tab']}");
-
-
-          // Extract course content data
-          if (widget.courseType == 'Live') {
-            liveCourses = apiData?['course_content_tab']?['course_content_list_section'] ?? [];
-            print('Live Courses: $liveCourses');
-
-          } else {
-            nonLiveCourses = apiData?['course_content_tab']?['course_content_list_section'] ?? [];
-            print('Non Live Courses: $nonLiveCourses');
-
-          }
-
-          isLoading = false;
-        });
-        updatePages();
-      } else {
-        throw Exception('Failed to load data');
-      }
-    } catch (e) {
-      print('Error fetching data: $e');
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-  void handleLectureOpen() {
-    // Refresh the data when a lecture is opened
-    StudentCourseDetails();
-  }
-
-  // Update pages with fetched data
-  void updatePages() {
-    if (apiData != null) {
-      setState(() {
-        pages = [
-          OverviewPage(overviewData: apiData!['course_overview_tab']),
-          ContentPage(
-            courseType: widget.courseType,
-            courseContent: widget.courseType == 'Live' ? liveCourses : nonLiveCourses,
-            onLectureOpen: handleLectureOpen,
-          ),
-          if (widget.courseType != 'Live') QuizPage(),
-          if (widget.courseType != 'Live') AssignmentPage(),
-          NoticePage(noticeData: apiData!['course_notice_tab']),
-          LiveClassPage(),
-          DiscussionPage(discussionData: apiData!['course_discussion_tab'],courseId:courseId), // Pass the list
-          // CertificatePage(),
-          ReviewPage(reviewData: apiData!['course_review_tab'],courseId :courseId),
-        ];
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          const SizedBox(height: 50),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25),
-              child: Text(
-                apiData?['pageTitle'] ?? '',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          _buildTabBar(),
-          Expanded(
-            child: isLoading
-                ? Center(child: CircularProgressIndicator()) // Show loader while loading
-                : _buildTabBarPages(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTabBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15),
-      child: Container(
-        height: 74,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0XFF23408F).withOpacity(0.20),
-              blurRadius: 16,
-            ),
-          ],
-          color: const Color(0XFFFFFFFF),
-          borderRadius: BorderRadius.circular(22),
-        ),
-        child: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          unselectedLabelColor: const Color(0XFF6E758A),
-          labelColor: const Color(0XFF78A03F),
-          indicator: ShapeDecoration(
-            color: const Color(0XFFEBF2C2),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(22),
-            ),
-          ),
-          indicatorPadding: const EdgeInsets.symmetric(horizontal: 3, vertical: 7),
-          indicatorSize: TabBarIndicatorSize.tab,
-          tabAlignment: TabAlignment.start,
-          tabs: tabs.map((tab) => Tab(
-            child: Text(
-              tab,
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-            ),
-          )).toList(),
-          onTap: (index) {
-            _pageController.jumpToPage(index);
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTabBarPages() {
-    return PageView(
-      controller: _pageController,
-      onPageChanged: (index) {
-        _tabController.animateTo(index);
-      },
-      children: pages,
-    );
-  }
-}
+change password 
 
 
 
-
-
-overview screen
-
-
-
-
-// overview_page.dart
-import 'package:flutter/material.dart';
-import 'package:expandable_text/expandable_text.dart';
-import 'package:learn_megnagmet/Course_details_tabbar/course_footer.dart';
-
-class OverviewPage extends StatelessWidget {
-  final Map<String, dynamic> overviewData;
-
-  const OverviewPage({Key? key, required this.overviewData}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    // print("Check the new overview data:$overviewData");
-    // Static data for now
-    final String title = 'Overview Page';
-    final List<String> keyPoints = [
-      'Key Point 1: This is the first key point.',
-      'Key Point 2: This is the second key point.',
-      'Key Point 3: This is the third key point.',
-    ];
-
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Title
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 10),
-
-            // Key Points
-            ...keyPoints.map((point) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('• ', style: TextStyle(fontSize: 16)), // Bullet point
-                  Expanded(
-                    child: Text(
-                      point,
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ],
-              ),
-            )),
-            SizedBox(height: 20),
-
-            // Expandable Description
-            ExpandableText(
-              overviewData['description'],
-              expandText: 'Learn more',
-              collapseText: 'Learn less',
-              maxLines: 4,
-              linkColor: Colors.green, // Customize the link color
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[700],
-              ),
-            ),
-            // SizedBox(height: 50),
-            Spacer(),
-
-            // Using the footer with footerData
-            overviewData.containsKey('footer_section')
-                ? CourseFooter(footerData: overviewData['footer_section'])
-                : CourseFooter(), // Fallback to static data if API data not available
-             SizedBox(height: 20),
-
-          ]
-        )
-      ),
-    );
-  }
-}
-
-
-
-
-
-
-Review screen
-
-
-
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:learn_megnagmet/cources/rating_row_widget.dart';
-import 'package:learn_megnagmet/cources/review_dialog_box.dart';
-import 'package:learn_megnagmet/models/riview_data.dart';
-import 'package:learn_megnagmet/utils/slider_page_data_model.dart';
-import '../controller/controller.dart';
-import '../utils/screen_size.dart';
-import 'course_footer.dart'; // Import CourseFooter
-
-class ReviewPage extends StatefulWidget {
-  final String courseId;
-  final Map<String, dynamic> reviewData;
-  const ReviewPage({Key? key, required this.reviewData, required this.courseId}) : super(key: key);
-
-  @override
-  State<ReviewPage> createState() => _ReviewPageState();
-}
-
-class _ReviewPageState extends State<ReviewPage> {
-  HomeController homecontroller = Get.put(HomeController());
-  List<ReviewList> review = Utils.getReviewList();
-
-  @override
-  Widget build(BuildContext context) {
-    initializeScreenSize(context);
-
-    return Scaffold(
-      body: GetBuilder(
-        init: HomeController(),
-        builder: (controller) => Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Rating & Reviews",
-                            style: TextStyle(
-                                fontSize: 18.sp,
-                                fontFamily: 'Gilroy',
-                                color: const Color(0XFF000000),
-                                fontWeight: FontWeight.w500),
-                          ),
-                          Text("View All",
-                              style: TextStyle(
-                                  fontSize: 18.sp,
-                                  fontFamily: 'Gilroy',
-                                  color: const Color(0XFF000000))),
-                        ],
-                      ),
-                      SizedBox(height: 15.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            children: [
-                              Text(
-                                widget.reviewData['average_rating']?.toString() ?? '0.0',
-                                style: TextStyle(
-                                    fontFamily: 'Gilroy',
-                                    fontSize: 36.sp,
-                                    color: const Color(0XFF000000),
-                                    fontWeight: FontWeight.w700),
-                              ),
-                              Text(
-                                "out of 5",
-                                style: TextStyle(
-                                    fontFamily: 'Gilroy',
-                                    fontSize: 15.sp,
-                                    color: Color(0XFF000000),
-                                    fontWeight: FontWeight.normal),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              RatingRowWidget(
-                                initialRating: 5,
-                                itemCount: 5,
-                                percent: (widget.reviewData['five_star_percentage'] ?? 0) / 100,
-                              ),
-                              SizedBox(height: 10.h),
-                              RatingRowWidget(
-                                initialRating: 4,
-                                itemCount: 4,
-                                percent: (widget.reviewData['four_star_percentage'] ?? 0) / 100,
-                              ),
-                              SizedBox(height: 10.h),
-                              RatingRowWidget(
-                                initialRating: 3,
-                                itemCount: 3,
-                                percent: (widget.reviewData['three_star_percentage'] ?? 0) / 100,
-                              ),
-                              SizedBox(height: 10.h),
-                              RatingRowWidget(
-                                initialRating: 2,
-                                itemCount: 2,
-                                percent: (widget.reviewData['two_star_percentage'] ?? 0) / 100,
-                              ),
-                              SizedBox(height: 10.h),
-                              RatingRowWidget(
-                                initialRating: 1,
-                                itemCount: 1,
-                                percent: (widget.reviewData['first_star_percentage'] ?? 0) / 100,
-                              ),
-                            ],
-                          )
-                        ],
-                      ),
-                      SizedBox(height: 8.h),
-                      Align(
-                          child: Text(
-                            '${widget.reviewData['total_user_reviews']} Reviews',
-                            style: TextStyle(
-                                fontFamily: 'Gilroy',
-                                fontSize: 14.sp,
-                                color: Color(0XFF000000),
-                                fontWeight: FontWeight.normal),
-                          ),
-                          alignment: Alignment.centerRight),
-                      SizedBox(height: 12.h),
-
-                      Row(
-                        children: [
-                          GestureDetector(onTap: (){
-                            showDialog(context: context,
-                              builder: (BuildContext context){
-                                return WriteReviewDialog(courseId: widget.courseId); // Pass courseID here
-                              }, );
-                          },
-                            child:Text(
-                              "Write A Review",
-                              style: TextStyle(
-                                  fontFamily: 'Gilroy',
-                                  fontSize: 18.sp,
-                                  color: const Color(0XFF000000),
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ),
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: widget.reviewData['user_reviews']?.length ?? 0,
-                        itemBuilder: (context, index) {
-                          final userReviews = widget.reviewData['user_reviews'];
-                          if (userReviews == null) return const SizedBox.shrink();
-
-                          final userReview = userReviews[index];
-                          if (userReview == null) return const SizedBox.shrink();
-
-                          return Padding(
-                            padding: EdgeInsets.only(left: 15.5.w),
-                            child: SizedBox(
-                              height: 62.h,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(16),
-                                        child: userReview['user_image'] != null
-                                            ? Image.network(
-                                          userReview['user_image'].toString(),
-                                          height: 32.h,
-                                          width: 32.w,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return Container(
-                                              height: 32.h,
-                                              width: 32.w,
-                                              color: Colors.grey[300],
-                                              child: Icon(Icons.person, color: Colors.grey[600]),
-                                            );
-                                          },
-                                        )
-                                            : Container(
-                                          height: 32.h,
-                                          width: 32.w,
-                                          color: Colors.grey[300],
-                                          child: Icon(Icons.person, color: Colors.grey[600]),
-                                        ),
-                                      ),
-                                      SizedBox(width: 15.w),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            if (userReview['user_name'] != null)
-                                              Text(
-                                                userReview['user_name'].toString(),
-                                                style: TextStyle(
-                                                  fontSize: 14.sp,
-                                                  color: const Color(0XFF292929),
-                                                  fontFamily: 'Gilroy',
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            if (userReview['comment'] != null)
-                                              Text(
-                                                userReview['comment'].toString(),
-                                                style: TextStyle(
-                                                  fontSize: 14.sp,
-                                                  color: const Color(0XFF292929),
-                                                  fontFamily: 'Gilroy',
-                                                  fontStyle: FontStyle.normal,
-                                                  fontWeight: FontWeight.w400,
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                      if (userReview['created_at'] != null)
-                                        Text(
-                                          userReview['created_at'].toString(),
-                                          style: TextStyle(
-                                            fontSize: 12.sp,
-                                            color: Color(0XFF5E8421),
-                                            fontFamily: 'Gilroy',
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            // Spacer(),
-            Padding(padding: EdgeInsets.symmetric(horizontal: 20.w),
-            // Using the footer with footerData
-           child:  widget.reviewData.containsKey('footer_section')
-                ? CourseFooter(footerData: widget.reviewData['footer_section'])
-                : CourseFooter(), // Fallback to static data if API data not available
-    ),
-            SizedBox(height: 30,)
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-
-
-
-
-Quiz screen
-
-
-// quiz_page.dart
-import 'package:flutter/material.dart';
-
-class QuizPage extends StatelessWidget {
-  const QuizPage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Quiz Page',
-        style: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-}
-
-
-Assignment Screen
-
-
-// assignment_page.dart
-import 'package:flutter/material.dart';
-
-class AssignmentPage extends StatelessWidget {
-  const AssignmentPage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Assignment Page',
-        style: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-}
-
-
-
-
-
-Notice SCreen
-
-
-
-
-
-import 'package:flutter/material.dart';
-import 'package:learn_megnagmet/Course_details_tabbar/course_footer.dart';
-
-class NoticePage extends StatelessWidget {
-  final List<dynamic> noticeData;
-
-  const NoticePage({Key? key, required this.noticeData}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    // print("Check the notice data: $noticeData");
-    return Scaffold(
-      body: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              const Text(
-                'Notice Board',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A237E), // Dark blue color
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Notice List
-              Expanded(
-                child: ListView.builder(
-                  itemCount: noticeData.length,
-                  itemBuilder: (context, index) {
-                    final notice = noticeData[index];
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFF3E0), // Light orange background
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: Colors.grey.shade300,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  notice['notice_topic'],
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            notice['notice_details'],
-                            style: const TextStyle(
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            notice['created_at'],
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[700],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 20),
-              // const CourseFooter(),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-
-
-
-
-
-Live screen
-
-
-
-// live_class_page.dart
-import 'package:flutter/material.dart';
-import 'current_screen.dart';
-import 'past_screen.dart';
-import 'upcoming_screen.dart';
-
-class LiveClassPage extends StatelessWidget {
-  const LiveClassPage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3, // Number of tabs
-      initialIndex: 0, // Default selected tab (Upcoming)
-      child: Column(
-        children: [
-        SizedBox(height: 10,),
-
-      // Scrollable TabBar
-          Container(
-            color: Colors.white,
-            child: TabBar(
-              tabAlignment: TabAlignment.center,
-              labelPadding: EdgeInsets.symmetric(horizontal: 30),
-              labelStyle: TextStyle(fontSize: 16),
-              isScrollable: true, // Make the TabBar scrollable
-              labelColor: Color(0XFF8CC13F), // Text color of the selected tab
-              unselectedLabelColor: Colors.grey, // Text color of unselected tabs
-              indicatorColor: const Color(0xFF8CC13F), // Indicator color
-              indicatorSize: TabBarIndicatorSize.label,
-              indicatorWeight: 5,
-              tabs: const [
-                Tab(text: 'Upcoming'), // First tab
-                Tab(text: 'Current'), // Second tab
-                Tab(text: 'Past'), // Third tab
-              ],
-            ),
-          ),
-          // TabBarView to display the corresponding screens
-          Expanded(
-            child: TabBarView(
-              children: [
-                UpcomingScreen(), // Screen for Upcoming tab
-                CurrentScreen(), // Screen for Current tab
-                PastScreen(), // Screen for Past tab
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-
-
-
-Discussion screen 
-
-
-
-import 'package:flutter/material.dart';
-import 'package:learn_megnagmet/Course_details_tabbar/conversation_container.dart';
-import 'package:learn_megnagmet/Course_details_tabbar/instructor_container.dart';
-
-class DiscussionPage extends StatefulWidget {
-  final List<dynamic> discussionData;
-  final String courseId;
-
-  const DiscussionPage({
-    Key? key,
-    required this.discussionData,
-    required this.courseId,
-  }) : super(key: key);
-
-  @override
-  State<DiscussionPage> createState() => _DiscussionPageState();
-}
-
-class _DiscussionPageState extends State<DiscussionPage> {
-  late List<dynamic> _discussionList;
-  final TextEditingController _replyController = TextEditingController();
-  final TextEditingController _messageController = TextEditingController();
-  late Map<String, dynamic> _authUserImages;
-  // Track the selected discussion for reply
-  int? _selectedDiscussionId;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Extract discussion items and auth_user_images
-    _discussionList = [];
-    _authUserImages = {};
-
-    for (var item in widget.discussionData) {
-      if (item is Map<String, dynamic> && item.containsKey('auth_user_images')) {
-        _authUserImages = item['auth_user_images'];
-      } else if (item is Map<String, dynamic> && item.containsKey('discussion_id')) {
-        _discussionList.add(item);
-      }
-    }
-
-    // Set the initially selected discussion if any exists
-    if (_discussionList.isNotEmpty) {
-      _selectedDiscussionId = _discussionList.first['discussion_id'];
-    }
-  }
-
-  @override
-  void dispose() {
-    _replyController.dispose();
-    _messageController.dispose();
-    super.dispose();
-  }
-
-  // Method to handle new discussion being posted
-  void _onMessagePosted(Map<String, dynamic> newDiscussion) {
-    setState(() {
-      // Add the new discussion to the top of the list
-      _discussionList.insert(0, newDiscussion);
-      // Set this as the selected discussion
-      _selectedDiscussionId = newDiscussion['discussion_id'];
-    });
-  }
-
-  // Method to handle new reply being posted
-  void _onReplyPosted(Map<String, dynamic> replyData) {
-    setState(() {
-      // Find the discussion that this reply belongs to
-      for (int i = 0; i < _discussionList.length; i++) {
-        if (_discussionList[i]['discussion_id'] == _selectedDiscussionId) {
-          // Initialize the replies list if it doesn't exist
-          if (_discussionList[i]['discussion_replies_list'] == null) {
-            _discussionList[i]['discussion_replies_list'] = [];
-          }
-
-          // Add the new reply to the discussion's replies list
-          _discussionList[i]['discussion_replies_list'].add(replyData);
-
-          // Update the total replies count
-          _discussionList[i]['discussion_total_replies'] =
-              (_discussionList[i]['discussion_total_replies'] ?? 0) + 1;
-
-          break;
-        }
-      }
-    });
-  }
-
-  // Method to select a discussion for replying
-  void _selectDiscussionForReply(int discussionId) {
-    setState(() {
-      _selectedDiscussionId = discussionId;
-      // Optionally scroll to the reply container
-      // Or focus the reply text field
-      _replyController.clear();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // First container with Start Conversation
-              ConversationContainer(
-                messageController: _messageController,
-                courseId: widget.courseId,
-                onMessagePosted: _onMessagePosted, // Pass the callback
-              ),
-              const SizedBox(height: 20),
-
-              // Message container (only show if discussionData is not empty)
-              if (_discussionList.isNotEmpty)
-                ..._discussionList.map((discussion) {
-                  final isSelected = discussion['discussion_id'] == _selectedDiscussionId;
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: isSelected ? BoxDecoration(
-                      border: Border.all(color: const Color(0XFF78A03F), width: 1),
-                      borderRadius: BorderRadius.circular(12),
-                      color: Colors.grey[50],
-                    ) : null,
-                    padding: isSelected ? const EdgeInsets.all(8) : EdgeInsets.zero,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            _selectDiscussionForReply(discussion['discussion_id']);
-                          },
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CircleAvatar(
-                                backgroundImage: _getImageProvider(
-                                  discussion['discussion_user_image'],
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[200],
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  padding: const EdgeInsets.all(12),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                            discussion['discussion_user_name'] ?? 'Unknown User',
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          if (discussion['discussion_user_type'] == "Instructor")
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 8,
-                                                vertical: 2,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: Colors.blue[100],
-                                                borderRadius: BorderRadius.circular(12),
-                                              ),
-                                              child: Text(
-                                                "Instructor",
-                                                style: TextStyle(
-                                                  color: Colors.blue[800],
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(discussion['discussion_comment'] ?? 'No comment'),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 56, top: 8),
-                          child: Row(
-                            children: [
-                              Text(
-                                discussion['discussion_created_at'] ?? 'Unknown date',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 12,
-                                ),
-                              ),
-                              const Spacer(),
-                              Row(
-                                children: [
-                                  Icon(Icons.message, size: 16, color: Colors.grey[600]),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    (discussion['discussion_total_replies'] ?? 0).toString(),
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Reply message (indented) - only show if discussion_replies_list is not empty
-                        if (discussion['discussion_replies_list'] != null &&
-                            discussion['discussion_replies_list'].isNotEmpty)
-                          ...(discussion['discussion_replies_list'] ?? []).map((reply) {
-                            return Container(
-                              margin: const EdgeInsets.only(left: 40, top: 16, bottom: 8),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  CircleAvatar(
-                                    backgroundImage: _getImageProvider(
-                                      reply['reply_user_image'],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[200],
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      padding: const EdgeInsets.all(12),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Text(
-                                                reply['reply_user_name'] ?? 'Unknown User',
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 16,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              if (reply['reply_user_type'] == "Student")
-                                                Container(
-                                                  padding: const EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 2,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.blue[100],
-                                                    borderRadius: BorderRadius.circular(12),
-                                                  ),
-                                                  child: Text(
-                                                    "Instructor",
-                                                    style: TextStyle(
-                                                      color: Colors.blue[800],
-                                                      fontSize: 12,
-                                                    ),
-                                                  ),
-                                                ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(reply['reply_comment'] ?? 'No comment'),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            reply['reply_created_at'] ?? '',
-                                            style: TextStyle(
-                                              color: Colors.grey[600],
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                      ],
-                    ),
-                  );
-                }).toList(),
-
-              // Leave a reply container
-              if (_selectedDiscussionId != null)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 12, bottom: 8),
-                      child: Text(
-                        'Reply to discussion',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                    ),
-                    InstructorContainer(
-                      replyController: _replyController,
-                      courseId: widget.courseId,
-                      discussionId: _selectedDiscussionId,
-                      onReplyPosted: _onReplyPosted,
-                    ),
-                  ],
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Helper function to handle image URLs
-  ImageProvider _getImageProvider(String? imageUrl) {
-    if (imageUrl == null || imageUrl.isEmpty || !Uri.parse(imageUrl).isAbsolute) {
-      // Use a local fallback image if the URL is invalid
-      return const AssetImage('assets/avatar.png');
-    } else {
-      // Use the provided image URL
-      return NetworkImage(imageUrl);
-    }
-  }
-}
-
-
-
-Certificate screen
-
-
-// certificate_page.dart
-import 'package:flutter/material.dart';
-
-class CertificatePage extends StatelessWidget {
-  const CertificatePage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Certificate Page',
-        style: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-}
-
-
-
-
-
-conversation container screen
-
-
-
-import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:get/get_core/src/get_main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/api_constants.dart';
-
-class ConversationContainer extends StatefulWidget {
-  final TextEditingController messageController;
-  final String courseId;
-  final Function(Map<String, dynamic>) onMessagePosted;
-
-  const ConversationContainer({
-    Key? key,
-    required this.messageController,
-    required this.courseId,
-    required this.onMessagePosted,
-  }) : super(key: key);
-
-  @override
-  _ConversationContainerState createState() => _ConversationContainerState();
-}
-
-class _ConversationContainerState extends State<ConversationContainer> {
-  bool isExpanded = false;
-  bool isLoading = false;
-
-  Future<void> _postDiscussion() async {
-    if (widget.messageController.text.isEmpty) return;
-
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token') ?? '';
-
-      if (token.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('You need to be logged in to post a discussion')),
-        );
-        setState(() {
-          isLoading = false;
-        });
-        return;
-      }
-
-      final url = '${ApiConstants.baseUrl}student/course/create-discussion';
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'course_id': widget.courseId,
-          'discussion_comment': widget.messageController.text,
-        }),
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final responseData = jsonDecode(response.body);
-        print("API successfully post data");
-        print("API status code: ${response.statusCode}");
-
-        widget.messageController.clear();
-        setState(() {
-          isExpanded = false;
-        });
-
-        if (responseData != null && responseData['discussion'] != null) {
-          widget.onMessagePosted(responseData['discussion']);
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Discussion posted successfully'),
-            backgroundColor: Colors.green,),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to post discussion: ${response.reasonPhrase}')),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              const CircleAvatar(
-                backgroundColor: Colors.grey,
-                child: Icon(Icons.person, color: Colors.white),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextButton(
-                  onPressed: () {
-                    setState(() {
-                      isExpanded = !isExpanded;
-                    });
-                  },
-                  style: TextButton.styleFrom(
-                    backgroundColor: const Color(0xFF78A03F),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.people, color: Colors.white),
-                      SizedBox(width: 8),
-                      Text(
-                        'Start a Conversation',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (isExpanded) ...[
-            const SizedBox(height: 12),
-            TextField(
-              controller: widget.messageController,
-              cursorColor: const Color(0XFF8CC13F),
-              maxLines: 3,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-                hintText: 'Write your message here...',
-              ),
-            ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0XFF78A03F),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onPressed: isLoading ? null : _postDiscussion,
-                child: isLoading
-                    ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                )
-                    : const Text(
-                  'Post',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-
-
-
-
-
-
-Instuctor container
-
-
-import 'package:flutter/material.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import '../widget/button.dart';
+import '../widget/custom_text_form_field.dart';
 
-import '../utils/api_constants.dart';
-
-class InstructorContainer extends StatefulWidget {
-  final TextEditingController replyController;
-  final String courseId;
-  final int? discussionId;
-  final Function(Map<String, dynamic>)? onReplyPosted;
-
-  const InstructorContainer({
-    Key? key,
-    required this.replyController,
-    required this.courseId,
-    required this.discussionId,
-    this.onReplyPosted,
-  }) : super(key: key);
+class ChangePassword extends StatefulWidget {
+  const ChangePassword({Key? key}) : super(key: key);
 
   @override
-  State<InstructorContainer> createState() => _InstructorContainerState();
+  State<ChangePassword> createState() => _ChangePasswordState();
 }
 
-class _InstructorContainerState extends State<InstructorContainer> {
+class _ChangePasswordState extends State<ChangePassword> {
+  final TextEditingController _oldPasswordController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
   bool _isLoading = false;
-  String _replyText = '';
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Add listener to the controller to keep track of text changes
-    widget.replyController.addListener(_updateReplyText);
-  }
 
   @override
   void dispose() {
-    // Remove listener when widget is disposed
-    widget.replyController.removeListener(_updateReplyText);
+    _oldPasswordController.dispose();
+    _newPasswordController.dispose();
     super.dispose();
   }
-
-  // Keep track of text changes
-  void _updateReplyText() {
-    _replyText = widget.replyController.text;
-  }
-
-  // Clear text field with multiple safety measures
-  void _clearTextField() {
-    // Method 1: Set empty text directly
-    widget.replyController.text = '';
-
-    // Method 2: Use the clear method
-    widget.replyController.clear();
-
-    // Method 3: Update the UI
-    setState(() {
-      _replyText = '';
-    });
-
-    // Method 4: Force a rebuild with post-frame callback
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {
-          // Double-check it's cleared
-          if (widget.replyController.text.isNotEmpty) {
-            widget.replyController.clear();
-          }
-        });
-      }
-    });
-  }
-
-  Future<void> _postReply() async {
-    if (widget.discussionId == null) {
+  Future<void> _changePassword() async {
+    if (_oldPasswordController.text.isEmpty || _newPasswordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No discussion found to reply to')),
-      );
-      return;
-    }
-
-    // Capture the text input before any operations
-    final String replyText = _replyText.trim();
-
-    if (replyText.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a reply')),
+        const SnackBar(content: Text('Please fill in all fields')),
       );
       return;
     }
@@ -1516,142 +45,2145 @@ class _InstructorContainerState extends State<InstructorContainer> {
     });
 
     try {
-      // Clear the text field immediately - IMPORTANT: This happens BEFORE the API call
-      _clearTextField();
+      // Retrieve the token from SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('auth_token') ?? '';
 
-      // Get auth token from SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      final authToken = prefs.getString('auth_token');
+      // API endpoint for changing password (adjust the endpoint as per your API)
+      final url = Uri.parse("${ApiConstants.baseUrl}student/update-password");
 
-      if (authToken == null || authToken.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('You need to log in to post a reply')),
-        );
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
+      // Prepare the request body
+      final body = jsonEncode({
+        'old_password': _oldPasswordController.text,
+        'new_password': _newPasswordController.text,
+      });
 
-      // Prepare API request
-      final url = Uri.parse('${ApiConstants.baseUrl}student/course/create-discussion-reply');
-
+      // Make the POST API request
       final response = await http.post(
         url,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $authToken',
+          'Authorization': 'Bearer $token',
         },
-        body: json.encode({
-          'discussion_id': widget.discussionId,
-          'course_id': widget.courseId,
-          'reply_comment': replyText,
-        }),
+        body: body,
       );
 
+      // Handle the response
       if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
+        print('Change Password Api response: ${response.statusCode}');
+        Get.snackbar('Password Change','Password Update Successfully', snackPosition: SnackPosition.BOTTOM);
 
-        if (responseData['status'] == true) {
-          // Clear text field again (for extra safety)
-          _clearTextField();
-
-          // Notify parent widget about the new reply if callback is provided
-          if (widget.onReplyPosted != null && responseData['data'] != null) {
-            widget.onReplyPosted!(responseData['data']);
-          }
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Reply posted successfully'),backgroundColor: Colors.green,),
-          );
-        } else {
-          // API returned success status code but with error in response body
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(responseData['message'] ?? 'Failed to post reply')),
-          );
-        }
+        // Clear the fields
+        _oldPasswordController.clear();
+        _newPasswordController.clear();
       } else {
-        // Failed to post reply
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to post reply. Please try again.')),
-        );
+        final error = jsonDecode(response.body);
+        Get.snackbar('Failed Update Password',error['message'] , snackPosition: SnackPosition.BOTTOM);
+
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(content: Text(error['message'] ?? 'Failed to update password')),
+        // );
       }
     } catch (e) {
-      // Handle any exceptions
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
+      print('API error: $e');
+      Get.snackbar('Failed Update Password', 'Error: $e', snackPosition: SnackPosition.BOTTOM);
+
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text('Error: $e')),
+      // );
     } finally {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+  // Add this new void function
+  // void _handleUpdate() {
+  //   _changePassword(); // Call the async function without awaiting
+  // }
 
-      // One final attempt to clear the text
-      _clearTextField();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 20.h),
+                Center(
+                  child: Text(
+                    "Change Password",
+                    style: TextStyle(
+                      fontSize: 26.sp,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Gilroy',
+                      color: Color(0XFF78A03F),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                Container(
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10.r,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 16.h),
+                      Text(
+                        "Old Password",
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Gilroy',
+                          color: const Color(0xFF000080),
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+                      customTextFormField(
+                        controller: _oldPasswordController,
+                        hintText: "Old Password",
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Old password is required";
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 16.h),
+                      Text(
+                        "New Password",
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Gilroy',
+                          color: const Color(0xFF000080),
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+                      customTextFormField(
+                        controller: _newPasswordController,
+                        hintText: "New Password",
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "New password is required";
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 24.h),
+                      CustomButton(
+                        onTap: _isLoading ? () {} : _changePassword,
+                        buttonText: _isLoading ? 'Updating...' : 'Update',
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+
+
+
+
+Instructor panel 
+
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'package:learn_megnagmet/home/home_screen.dart';
+import 'package:learn_megnagmet/instructor/all_students.dart';
+import 'package:learn_megnagmet/instructor/instructor_basic_information.dart';
+import 'package:learn_megnagmet/instructor/instructor_classes_history.dart';
+import 'package:learn_megnagmet/instructor/instructor_classes_schedule.dart';
+import 'package:learn_megnagmet/instructor/instructor_courses.dart';
+import 'package:learn_megnagmet/instructor/instructor_notice_board.dart';
+import 'package:learn_megnagmet/instructor/live_class_screen.dart';
+import 'package:learn_megnagmet/profile/profile_field_container.dart';
+import 'package:learn_megnagmet/profile/rateus_dialogue_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:learn_megnagmet/profile/edit_screen.dart';
+import 'package:learn_megnagmet/utils/api_constants.dart';
+import 'package:learn_megnagmet/utils/screen_size.dart';
+import 'package:learn_megnagmet/utils/shared_pref.dart';
+
+import '../controller/controller.dart';
+import '../login/login_empty_state.dart';
+import '../models/new_user_detail.dart';
+import '../models/profile_option.dart';
+import '../utils/slider_page_data_model.dart';
+import '../widget/button.dart';
+import 'instructor_address_and_location.dart';
+
+class InstructorPanel extends StatefulWidget {
+  const InstructorPanel({Key? key, required this.user_detail}) : super(key: key);
+  final User user_detail;
+
+  @override
+  State<InstructorPanel> createState() => _InstructorPanelState();
+}
+
+class _InstructorPanelState extends State<InstructorPanel> {
+  String userName = "User Name"; // Default placeholder
+  String email = "Email"; // Default placeholder
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      userName = prefs.getString('user_name') ?? "User Name";
+      email = prefs.getString('email') ?? "Email";
+    });
+  }
+  Future<void> logoutApiCall() async {
+    final String apiUrl = "${ApiConstants.baseUrl}logoutApi";
+
+    try {
+      // Assuming the token is saved in shared preferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('auth_token') ?? '';
+      print('Token check: $token');
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // Include token in the header
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Successfully logged out
+        print("Logout successful");
+        // Clear user data from SharedPreferences
+        prefs.clear(); // Optionally clear all saved data
+      } else {
+        print("Logout failed: ${response.body}");
+      }
+    } catch (e) {
+      print("Error: $e");
+    }
+  }
+
+  MyProfileController myProfileController = Get.put(MyProfileController());
+  List<ProfileOption> profileoption = Utils.getProfileOption();
+  HomeMainController controller = Get.put(HomeMainController());
+
+  @override
+  Widget build(BuildContext context) {
+    initializeScreenSize(context);
+    return WillPopScope(
+      onWillPop: (){
+        return Future.value(false);
+      },
+      child: Scaffold(
+        body: GetBuilder(
+            init: MyProfileController(),
+            builder: (MyProfileController) =>
+                SafeArea(
+                  child: Column(
+                    children: [
+                      SizedBox(height: 20.h),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: Row(
+                          children: [
+                            GestureDetector(
+                                onTap: () {
+                                  SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+                                },
+                                child: Image(
+                                  image: AssetImage("assets/back_arrow.png"),
+                                  height: 24.h,
+                                  width: 24.w,
+                                )),
+                            SizedBox(width: 15.w),
+                            Text(
+                              "My Profile",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w700, fontSize: 24.sp, fontFamily: 'Gilroy'),
+                            ),
+                            SizedBox(width: 40.w),
+                            SizedBox(width: 180.w, height: 35.h,
+                                child: CustomButton(onTap: (){}, buttonText: 'Instructor Panel'))
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 20.h),
+                      Image(
+                        image: AssetImage(widget.user_detail.image!), height: 100.h,
+                        width: 100.w,
+                      ),
+                      SizedBox(height: 12.h),
+                      Text(
+                        userName,
+                        style: TextStyle(
+                            fontSize: 18.sp,
+                            fontFamily: 'Gilroy',
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0XFF000000)),
+                      ),
+                      SizedBox(height: 2.h),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      EditScreen(
+                                        user: widget.user_detail,
+                                      )));
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Edit Profile",
+                                style: TextStyle(
+                                    fontSize: 15.sp,
+                                    fontFamily: 'Gilroy',
+                                    fontWeight: FontWeight.w400,
+                                    color: Color(0XFF000000))),
+                            Image(
+                              image: AssetImage("assets/editsymbol.png"),
+                              height: 16.h,
+                              width: 16.w,
+                            )
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      Expanded(
+                        child: ListView(
+                          primary: true,
+                          shrinkWrap: false,
+                          children: [
+                            // My Certification
+                            ProfileFieldContainer(
+                              title: 'Home',
+                              icon: Icon(Icons.home, color: Color(0XFF78A03F)),
+                              onTap: () {
+                                Get.to(HomeScreen());
+                                // Get.to(MyCertification());
+                              },
+                            ),
+                            // My Project
+                            ProfileFieldContainer(
+                              title: 'My Courses',
+                              icon: Icon(Icons.book, color: Color(0XFF78A03F)),
+                              onTap: () {
+                                Get.to(InstructorCourses());
+                              },
+                            ),
+                            // Saved Course
+                            ProfileFieldContainer(
+                              title: 'All Students',
+                              icon: Icon(Icons.storefront, color: Color(0XFF78A03F)),
+                              onTap: () {
+                                Get.to(AllStudents());
+
+                              },
+                            ),
+                            // Certificate Payment
+                            ProfileFieldContainer(
+                              title: 'Classes Schedule',
+                              icon: Icon(Icons.calendar_month, color: Color(0XFF78A03F)),
+                              onTap: () {
+                                Get.to(InstructorClassesSchedule());
+                                // Get.to(FeedBack());
+                              },
+                            ),
+                            // Help Center
+                            ProfileFieldContainer(
+                              title: 'Classes History',
+                              icon: Icon(Icons.history, color: Color(0XFF78A03F)),
+                              onTap: () {
+                                Get.to(InstructorClassesHistory());
+                                // Get.to(PrivacyPolicy());
+                              },
+                            ),
+                            // Privacy Policy
+                            ProfileFieldContainer(
+                              title: 'Notice Board',
+                              icon: Icon(Icons.pending_actions, color: Color(0XFF78A03F)),
+                              onTap: () {
+                                Get.to(InstructorNoticeBoard());
+                                // Get.to(CertificatePayment());
+
+                                // Disabled as per original code
+                              },
+                            ),
+                            ProfileFieldContainer(
+                              title: 'Live Class',
+                              icon: Icon(Icons.class_, color: Color(0XFF78A03F)),
+                              onTap: () {
+                                Get.to(LiveClassScreen());
+
+                              },
+                            ),
+                            ProfileFieldContainer(
+                              title: 'Discussion',
+                              icon: Icon(Icons.message, color: Color(0XFF78A03F)),
+                              onTap: () {
+                                // Navigator.push(context,
+                                //     MaterialPageRoute(builder: (context)=>ChangePassword()));
+                              },
+                            ),
+                            // Feedback
+                            ProfileFieldContainer(
+                              title: 'Basic Information',
+                              icon: Icon(Icons.person, color: Color(0XFF78A03F)),
+                              onTap: () {
+                                Get.to(InstructorEditScreen(user: widget.user_detail));
+                              },
+                            ),
+                            // Rate Us
+                            ProfileFieldContainer(
+                              title: 'Address & Location',
+                              icon: Icon(Icons.location_on_outlined, color: Color(0XFF78A03F)),
+                              onTap: () {
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (context)=>InstructorAddressAndLocation()));
+                              },
+                            ),
+
+                            SizedBox(height: 30.h),
+                            Padding(
+                              padding: EdgeInsets.only(bottom: 40.h, left: 20.h, right: 20.h),
+                              child: GestureDetector(
+                                onTap: () {
+                                  showLogoutDialog();
+                                },
+                                child: Container(
+                                  height: 56.h,
+                                  width: 374.w,
+                                  decoration: BoxDecoration(
+                                    color: Color(0XFF78A03F),
+                                    border: Border.all(
+                                      color: const Color(0xFF78A03F),
+                                      style: BorderStyle.solid,
+                                      width: 1.0.w,
+                                    ),
+                                    borderRadius: BorderRadius.circular(20.h),
+                                  ),
+                                  child: Center(
+                                    child: Text("Logout",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 22.sp,
+                                            fontWeight: FontWeight.w700,
+                                            fontFamily: 'Gilroy')),
+                                  ),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+      ),
+    );
+  }
+
+  void showRateUsDialog() {
+    RateUsDialog.show(
+      onSubmit: () {
+        Get.back();
+        controller.onChange(0);
+      },
+      onCancel: () {
+        Get.back();
+      },
+    );
+  }
+
+  void showLogoutDialog() {
+    Get.defaultDialog(
+      barrierDismissible: false,
+      title: '',
+      content: Padding(
+        padding: EdgeInsets.only(left: 10.w, right: 10.w),
+        child: Column(
+          children: [
+            Text(
+              "Are you sure you want to Logout!",
+              style: TextStyle(
+                  fontSize: 24.sp,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Gilroy'),
+              textAlign: TextAlign.center,
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: 25.h, bottom: 13.h),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                        // Call logout API
+                        await logoutApiCall();
+                        PrefData.setLogin(false);
+                        Get.off(EmptyState());
+                      },
+                      child: Container(
+                        height: 56.h,
+                        width: double.infinity.w,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(22.h),
+                          color: const Color(0XFF78A03F),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "Yes",
+                            style: TextStyle(
+                                fontFamily: 'Gilroy',
+                                fontWeight: FontWeight.bold,
+                                color: Color(0XFFFFFFFF),
+                                fontStyle: FontStyle.normal,
+                                fontSize: 18.sp),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Get.back();
+                      },
+                      child: Container(
+                        height: 56.h,
+                        width: double.infinity.w,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: const Color(0xFF78A03F),
+                            style: BorderStyle.solid,
+                            width: 1.0.w,
+                          ),
+                          borderRadius: BorderRadius.circular(22.h),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "No",
+                            style: TextStyle(
+                                fontFamily: 'Gilroy',
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF78A03F),
+                                fontStyle: FontStyle.normal,
+                                fontSize: 18.sp),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+
+
+Instructor courses
+
+
+
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import '../utils/api_constants.dart';
+
+class InstructorCourses extends StatefulWidget {
+  const InstructorCourses({Key? key}) : super(key: key);
+
+  @override
+  State<InstructorCourses> createState() => _InstructorCoursesState();
+}
+
+class _InstructorCoursesState extends State<InstructorCourses> {
+  List<dynamic> courses = [];
+
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCourses();
+  }
+  Future<void> fetchCourses() async {
+    String apiUrl = "${ApiConstants.baseUrl}instructor/my-courses";
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('auth_token') ?? '';
+
+    try {
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print('Instructor Courses API response: ${response.statusCode}');
+        final data = jsonDecode(response.body);
+        // print('Instructor Courses API data: $data');
+
+        if (data['success'] == true) {
+          setState(() {
+            courses = data['data'];
+            isLoading = false;
+          });
+        } else {
+          throw Exception('Failed to load courses');
+        }
+      } else {
+        throw Exception('Failed to load courses');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print('Error fetching instructor courses: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching courses: $e')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(8),
+    // Initialize screen size for responsive design
+    ScreenUtil.init(
+      context,
+      designSize: const Size(375, 812), // Standard mobile design size
+    );
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Instructor Courses',
+          style: TextStyle(
+            fontFamily: 'Gilroy',
+            fontWeight: FontWeight.w700,
+            fontSize: 24,color: Color(0XFF78A03f)
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      padding: const EdgeInsets.all(12),
-      child: Column(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0XFF8CC13F)))
+          : courses.isEmpty
+          ? const Center(child: Text('No courses found'))
+          :SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+          child: Column(
+            children: courses.map((course) => _buildCourseCard(course)).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCourseCard(Map<String, dynamic> course) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 15.h),
+      padding: EdgeInsets.all(10.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22.r),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF23408F).withOpacity(0.14),
+            offset: const Offset(-4, 5),
+            blurRadius: 16,
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextField(
-            controller: widget.replyController,
-            cursorColor: const Color(0XFF8CC13F),
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              hintText: 'Leave a reply...',
-              hintStyle: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 16,
-              ),
-              prefixIcon: const Padding(
-                padding: EdgeInsets.only(right: 12),
-                child: CircleAvatar(
-                  backgroundColor: Colors.grey,
-                  child: Icon(Icons.person, color: Colors.white),
+          // Left Side: Course Image and Details
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12.r),
+                child: Image.network(
+                  course['image'],
+                  height: 150.h,
+                  width: 200.w,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.broken_image,
+                    size: 80,
+                    color: Colors.grey,
+                  ),
                 ),
+              ),
+              SizedBox(height: 10.h),
+              // Course Name
+              SizedBox(
+                width: 190.w, // Adjust width to fit mobile screen
+                child: Text(
+                  course['title'] ?? '',
+                  style: TextStyle(
+                    fontFamily: 'Gilroy',
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              SizedBox(height: 5.h),
+              // Price and Rating
+              Row(
+                children: [
+                  Text(
+                    ' Rs${course['price']}' ?? '',
+                    style: TextStyle(
+                      fontFamily: 'Gilroy',
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Row(
+                    children: [
+                      Text(
+                        course['average_rating'].toString(),
+                        style: TextStyle(
+                          fontFamily: 'Gilroy',
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      SizedBox(width: 2.w),
+                      Row(
+                        children: List.generate(
+                          5,
+                              (index) => Icon(
+                                index < double.parse(course['average_rating']).floor()
+                                ? Icons.star
+                                : Icons.star_border,
+                            color: Colors.amber,
+                            size: 16.sp,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 2.w),
+                      Text(
+                        '(${course['review_count']})',
+                        style: TextStyle(
+                          fontFamily: 'Gilroy',
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(height: 5.h),
+              // Status
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8CC13F),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Text(
+                  course['status'] == 1 ? 'Published' : 'Unpublished',
+                  style: TextStyle(
+                    fontFamily: 'Gilroy',
+                    fontSize: 12.sp,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          // Right Side: Buttons
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildButton(
+                text: 'Resources',
+                color: const Color(0xFF23408F),
+                onTap: () {
+                  // Add functionality for Resources button
+                  print('Resources button tapped');
+                },
+              ),
+              SizedBox(height: 18.h),
+              _buildButton(
+                text: 'Quiz',
+                color: const Color(0xFF8CC13F),
+                onTap: () {
+                  // Add functionality for Quiz button
+                  print('Quiz button tapped');
+                },
+              ),
+              SizedBox(height: 18.h),
+              _buildButton(
+                text: 'Assignment',
+                color: const Color(0xFF7B3F8C),
+                onTap: () {
+                  // Add functionality for Assignment button
+                  print('Assignment button tapped');
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildButton({
+    required String text,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 100.w,
+        padding: EdgeInsets.symmetric(vertical: 8.h),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Center(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontFamily: 'Gilroy',
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+
+
+
+all students screen
+
+
+
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:learn_megnagmet/instructor/student_information_dialog.dart';
+import 'package:learn_megnagmet/widget/button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import '../utils/api_constants.dart';
+
+class AllStudents extends StatefulWidget {
+  const AllStudents({super.key});
+
+  @override
+  _AllStudentsState createState() => _AllStudentsState();
+}
+
+class _AllStudentsState extends State<AllStudents> {
+  List<dynamic> students = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchStudents();
+  }
+
+  Future<void> fetchStudents() async {
+    String apiUrl = "${ApiConstants.baseUrl}instructor/all-students";
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('auth_token') ?? '';
+
+    try {
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print('All students API response: ${response.statusCode}');
+        final data = jsonDecode(response.body);
+        // print('All students API data: $data');
+
+        if (data['success'] == true) {
+          setState(() {
+            students = data['data'];
+            isLoading = false;
+          });
+        } else {
+          throw Exception('Failed to load students');
+        }
+      } else {
+        throw Exception('Failed to load students');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print('Error fetching student: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching students: $e')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('All Students', style: TextStyle(fontWeight:
+        FontWeight.bold,fontSize: 24, color: Color(0XFF78A03f),),)
+        // backgroundColor: Colors.blue[900],
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0XFF8CC13F),))
+          : students.isEmpty
+          ? const Center(child: Text('No students found'))
+          : ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: students.length,
+        itemBuilder: (context, index) {
+          final student = students[index];
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text('Image', style: TextStyle(fontWeight: FontWeight.bold)),
+                            SizedBox(height: 20),
+                            Text('Name', style: TextStyle(fontWeight: FontWeight.bold),
+
+                            ),
+                            SizedBox(height: 15),
+                            Text('Email', style: TextStyle(fontWeight: FontWeight.bold)),
+                            SizedBox(height: 25),
+                            Text('Course Name', style: TextStyle(fontWeight: FontWeight.bold),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+
+                            ),
+                            SizedBox(height: 25),
+                            Text('Enroll Date', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              radius: 20,
+                              backgroundImage: student['image'] != null
+                                  ? NetworkImage(student['image'])
+                                  : null,
+                              child: student['image'] == null
+                                  ? const Icon(Icons.person, size: 20)
+                                  : null,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(student['name']),
+                            const SizedBox(height: 8),
+                            Text(student['email']),
+                            const SizedBox(height: 4),
+                            Text(student['course_title']),
+                            const SizedBox(height: 8),
+                            Text(student['enrolled_date']),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: CustomButton(onTap: (){
+                      showDialog(context: context, builder: (context) => StudentInformationDialog(student: student),);
+                    }, buttonText: 'View Details'),
+                    // child: ElevatedButton(
+                    //   onPressed: () {
+                    //     showDialog(
+                    //       context: context,
+                    //       builder: (context) => StudentInformationDialog(student: student),
+                    //     );
+                    //   },
+                    //   style: ElevatedButton.styleFrom(
+                    //     backgroundColor: Color(0XFF78A03F),
+                    //     shape: RoundedRectangleBorder(
+                    //       borderRadius: BorderRadius.circular(8),
+                    //       // side: const BorderSide(color: Colors.green, width: 2),
+                    //     ),
+                    //   ),
+                    //   child: const Text('VIEW', style: TextStyle(color: Colors.white)),
+                    // ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+
+
+
+Student Information dialog
+
+
+
+import 'package:flutter/material.dart';
+
+class StudentInformationDialog extends StatelessWidget {
+  final Map<String, dynamic> student;
+
+  const StudentInformationDialog({super.key, required this.student});
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Student Information',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: CircleAvatar(
+                radius: 40,
+                backgroundImage: student['image'] != null
+                    ? NetworkImage(student['image'])
+                    : null,
+                child: student['image'] == null
+                    ? const Icon(Icons.person, size: 40)
+                    : null,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: Text(
+                student['name'],
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildInfoRow('Course Name', student['course_title'],),
+            _buildInfoRow('Course Join Date', student['enrolled_date']),
+            _buildInfoRow('Email', student['email']),
+            _buildInfoRow('Phone', '03335616823'), // Hardcoded as per image, not in API
+            _buildInfoRow('Country', 'Pakistan'), // Hardcoded as per image, not in API
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0XFF78A03F),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('BACK', style: TextStyle(color: Colors.white)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text('$title :', style: const TextStyle(fontWeight: FontWeight.bold),
+              maxLines: 2,overflow: TextOverflow.ellipsis,),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(value),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+
+
+
+
+
+Basic Iformation
+
+
+
+
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:learn_megnagmet/cart/custom_dropdown.dart';
+import 'package:learn_megnagmet/models/new_user_detail.dart';
+import 'package:learn_megnagmet/widget/button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../controller/controller.dart';
+import '../utils/api_constants.dart';
+import '../utils/screen_size.dart';
+import '../widget/custom_text_form_field.dart';
+
+class InstructorEditScreen extends StatefulWidget {
+  const InstructorEditScreen({Key? key, required User user}) : super(key: key);
+
+  @override
+  State<InstructorEditScreen> createState() => _InstructorEditScreenState();
+}
+
+class _InstructorEditScreenState extends State<InstructorEditScreen> {
+  EditScreenController editScreenController = Get.put(EditScreenController());
+  late TextEditingController firstnameController;
+  late TextEditingController emailController;
+  late TextEditingController phoneController;
+  late TextEditingController lastNameController;
+  late TextEditingController professionalTitleController;
+  late TextEditingController avatarUrlController;
+  late TextEditingController phoneNumberController;
+  late TextEditingController bioController;
+  late TextEditingController skillsController;
+  late TextEditingController facebookController;
+  late TextEditingController twitterController;
+  late TextEditingController linkedinController;
+  late TextEditingController pinterestController;
+  String? avatarUrl;
+  File? _selectedImage;
+  String? _selectedGender;
+  final List<String> _gender = ['Male', 'Female', 'Others'];
+  final ImagePicker _picker = ImagePicker();
+  bool isLoading = true; // Loading state
+  bool isUpdating = false;
+  String? instructorUuid;
+
+  @override
+  void initState() {
+    super.initState();
+    firstnameController = TextEditingController();
+    emailController = TextEditingController();
+    phoneController = TextEditingController();
+    lastNameController = TextEditingController();
+    professionalTitleController = TextEditingController();
+    avatarUrlController = TextEditingController();
+    phoneNumberController = TextEditingController();
+    bioController = TextEditingController();
+    skillsController = TextEditingController();
+    skillsController = TextEditingController();
+    facebookController = TextEditingController();
+    twitterController = TextEditingController();
+    linkedinController = TextEditingController();
+    pinterestController = TextEditingController();
+    _fetchProfileData();
+  }
+  Future<void> _fetchProfileData() async {
+    final String apiUrl = "${ApiConstants.baseUrl}instructor/profile";
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('auth_token') ?? '';
+
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        print("Fetch Instructor Profile data API response: ${response.statusCode}");
+
+        final jsonResponse = jsonDecode(response.body);
+        if (jsonResponse['success'] == true) {
+          final instructorData = jsonResponse['data']['instructor'];
+          setState(() {
+            instructorUuid = instructorData['uuid']; // Fetch and store UUID
+            firstnameController.text = instructorData['first_name'] ?? '';
+            lastNameController.text = instructorData['last_name'] ?? '';
+            emailController.text = instructorData['email'] ?? '';
+            phoneNumberController.text = instructorData['phone'] ?? '';
+            professionalTitleController.text = instructorData['professional_title'] ?? '';
+            bioController.text = instructorData['bio'] ?? '';
+            _selectedGender = instructorData['gender'] ?? '';
+            avatarUrl = instructorData['image_url'] ?? '';
+            // facebookController.text = instructorData['social_link']['facebook'] ?? '';
+            // twitterController.text = instructorData['social_link']['twitter'] ?? '';
+            // linkedinController.text = instructorData['social_link']['linkedin'] ?? '';
+            // pinterestController.text = instructorData['social_link']['pinterest'] ?? '';
+            // skillsController.text = (instructorData['skills'] as List<dynamic>?)?.join(', ') ?? '';
+            isLoading = false; // Data fetched, stop loading
+          });
+        } else {
+          print("API Error: ${jsonResponse['message']}");
+          setState(() {
+            isLoading = false; // Stop loading even if there's an error
+          });
+        }
+      } else {
+        print("HTTP Error: ${response.statusCode}");
+        setState(() {
+          isLoading = false; // Stop loading even if there's an error
+        });
+      }
+    } catch (e) {
+      print("Error fetching profile data: $e");
+    }setState(() {
+      isLoading = false; // Stop loading even if there's an error
+    });
+  }
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+        });
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('avatar', image.path);
+      }
+    } catch (e) {
+      print("Error picking image: $e");
+    }
+  }
+  Future<void> _updateProfile() async {
+    if (instructorUuid == null) {
+      print("Instructor UUID is not available");
+      return;
+    }
+
+    setState(() {
+      isUpdating = true; // Start loading
+    });
+
+    final String apiUrl = "${ApiConstants.baseUrl}instructor/profile/update/$instructorUuid";
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('auth_token') ?? '';
+
+      var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+      });
+
+      // Add text fields
+      request.fields['email'] = emailController.text;
+      request.fields['first_name'] = firstnameController.text;
+      request.fields['last_name'] = lastNameController.text;
+      request.fields['professional_title'] = professionalTitleController.text;
+      request.fields['phone_number'] = phoneNumberController.text;
+      request.fields['about_me'] = bioController.text;
+      request.fields['gender'] = _selectedGender ?? '';
+
+      // Add image if selected
+      if (_selectedImage != null) {
+        request.files.add(await http.MultipartFile.fromPath('image', _selectedImage!.path));
+      }
+
+      final response = await request.send();
+      final respStr = await response.stream.bytesToString();
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(respStr);
+        if (jsonResponse['success'] == true) {
+          print("Profile updated successfully: ${jsonResponse['message']}");
+          Get.snackbar("Success", "Profile updated successfully");
+        } else {
+          print("API Error: ${jsonResponse['message']}");
+        }
+      } else {
+        print("HTTP Error: ${response.statusCode}, Response: $respStr");
+      }
+    } catch (e) {
+      print("Error updating profile: $e");
+    } finally {
+      setState(() {
+        isUpdating = false; // Stop loading
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    initializeScreenSize(context);
+    return WillPopScope(
+      onWillPop: () {
+        return Future.value(false);
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        body: Stack(
+          children: [
+           SafeArea(
+            child: Padding(
+              padding: EdgeInsets.only(left: 20.w, right: 20.w),
+              child: SingleChildScrollView(
+                child:Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 20.h),
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Get.back();
+                          },
+                          child: const Icon(Icons.arrow_back_ios),
+                        ),
+                        SizedBox(width: 16.w),
+                        Text(
+                          "Edit Profile",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 24.sp,
+                            fontFamily: 'Gilroy',
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20.h),
+                    Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 10.h),
+                    Center(
+                      child: Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          CircleAvatar(
+                            radius: 50.h,
+                            backgroundImage: _selectedImage != null
+                                ? FileImage(_selectedImage!)
+                                : (avatarUrl != null && avatarUrl!.isNotEmpty
+                                ? NetworkImage(avatarUrl!)
+                                : const AssetImage("assets/person.png")) as ImageProvider,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: _pickImage,
+                              child: CircleAvatar(
+                                radius: 17.h,
+                                backgroundColor: Color(0XFF78A03F),
+                                child: Icon(
+                                  Icons.edit,
+                                  color: Colors.white,
+                                  size: 20.h,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 5.h),
+                    Center(
+                      child: Text(
+                        "Accepted image files: .JPEG, .JPG, .PNG\nAccepted Size: 300 x 300 (1MB)",
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontFamily: 'Gilroy',
+                          color: Colors.black54,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    SizedBox(height: 20.h),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel("First Name", true),
+                              SizedBox(height: 10.h),
+                              customTextFormField(
+                                controller: firstnameController,
+                                hintText: "First Name",
+                                validator: (value) => value!.isEmpty ? "Enter your name" : null,
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Column(
+                            children: [
+                              _buildLabel("Last Name", true),
+                              SizedBox(height: 10.h),
+                              customTextFormField(
+                                controller: lastNameController,
+                                hintText: "Last Name",
+                                validator: (value) => value!.isEmpty ? "Enter your last name" : null,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20.h),
+                    _buildLabel("Email", true),
+                    SizedBox(height: 10.h),
+                    customTextFormField(
+                      controller: emailController,
+                      hintText: "Email",
+                      validator: (value) => value!.isEmpty ? "Enter your email" : null,
+                    ),
+                    SizedBox(height: 20.h),
+                    _buildLabel("Professional Title", false),
+                    SizedBox(height: 10.h),
+                    customTextFormField(
+                      controller: professionalTitleController,
+                      hintText: "Title",
+                      validator: (value) => null,
+                    ),
+                    SizedBox(height: 20.h),
+                    _buildLabel("Phone Number", true),
+                    SizedBox(height: 10.h),
+                    customTextFormField(
+                      controller: phoneNumberController,
+                      hintText: "3035454888",
+                      validator: (value) => value!.isEmpty ? "Enter your phone number" : null,
+                    ),
+                    SizedBox(height: 20.h),
+                    _buildLabel("Bio", false),
+                    SizedBox(height: 10.h),
+                    customTextFormField(
+                      controller: bioController,
+                      hintText: "Bio",
+                      validator: (value) => null,
+                    ),
+                    SizedBox(height: 20.h),
+                    _buildLabel("Gender", false),
+                    SizedBox(height: 10.h),
+                    CustomDropdown(
+                      hint: 'Select Gender',
+                      value: _selectedGender,
+                      items: _gender,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedGender = newValue;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 20.h),
+                    _buildLabel("Social Links", false),
+                    _buildLabel("Facebook", false),
+                    SizedBox(height: 10.h),
+                    customTextFormField(
+                      controller: TextEditingController(),
+                      hintText: "https://facebook.com",
+                      validator: (value) => null,
+                    ),
+                    SizedBox(height: 20.h),
+                    _buildLabel("Linkedin", false),
+                    SizedBox(height: 10.h),
+                    customTextFormField(
+                      controller: TextEditingController(),
+                      hintText: "https://linkedin.com",
+                      validator: (value) => null,
+                    ),
+                    SizedBox(height: 20.h),
+                    _buildLabel("Twitter", false),
+                    SizedBox(height: 10.h),
+                    customTextFormField(
+                      controller: TextEditingController(),
+                      hintText: "https://twitter.com",
+                      validator: (value) => null,
+                    ),
+                    SizedBox(height: 20.h),
+                    _buildLabel("Pinterest", false),
+                    SizedBox(height: 10.h),
+                    customTextFormField(
+                      controller: TextEditingController(),
+                      hintText: "https://pinterest.com",
+                      validator: (value) => null,
+                    ),
+                    SizedBox(height: 20.h),
+                    _buildLabel("Skills", false),
+                    SizedBox(height: 10.h),
+                    customTextFormField(
+                      controller: skillsController,
+                      hintText: "",
+                      validator: (value) => null,
+                    ),
+                    SizedBox(height: 40.h),
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        CustomButton(
+                          onTap: _updateProfile,
+                          buttonText: isUpdating ? '' : 'Update Profile',
+                        ),
+                        if (isUpdating)
+                          const CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 3,
+                          ),
+                      ],
+                    ),
+              SizedBox(height: 20.h),
+                  ],
+                ),
+                ]
+              )
+
               ),
             ),
           ),
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0XFF78A03F),
+    ]
+        ),
+      ),
+    );
+  }
+}
+
+Widget _buildLabel(String label, bool isRequired) {
+  return Row(
+    children: [
+      Text(
+        label,
+        style: TextStyle(
+          fontSize: 16.sp,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'Gilroy',
+          color: const Color(0xFF000080),
+        ),
+      ),
+      if (isRequired)
+        Text(
+          " *",
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Gilroy',
+            color: Colors.red,
+          ),
+        ),
+    ],
+  );
+}
+
+
+
+
+Instructor Address and location
+
+
+
+import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:learn_megnagmet/widget/button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../cart/custom_dropdown.dart';
+import '../utils/api_constants.dart';
+import '../widget/custom_text_form_field.dart';
+
+class InstructorAddressAndLocation extends StatefulWidget {
+  const InstructorAddressAndLocation({Key? key}) : super(key: key);
+
+  @override
+  State<InstructorAddressAndLocation> createState() => _InstructorAddressAndLocationState();
+}
+
+class _InstructorAddressAndLocationState extends State<InstructorAddressAndLocation> {
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _zipCodeController = TextEditingController();
+
+  String? _selectedCountry;
+  String? _selectedState;
+  String? _selectedCity;
+
+  final Map<String, int> _countryMap = {};
+  final List<String> _states = ['Select state'];
+  final List<String> _cities = ['Select city'];
+
+  bool _isLoading = true;
+  bool _isUpdating = false;
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCheckoutData();
+  }
+
+  Future<void> _fetchCheckoutData() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('auth_token') ?? '';
+
+      final response = await http.get(
+        Uri.parse('${ApiConstants.baseUrl}student/checkout/1'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        print('Checkout API response status code: ${response.statusCode}');
+
+        if (data['success'] == true) {
+          setState(() {
+            List<dynamic> countries = data['data']['countries'];
+            _countryMap.clear();
+            for (var country in countries) {
+              _countryMap[country['country_name']] = country['id'];
+            }
+            _selectedCountry = data['data']['userInfo']['country_name'] ?? null;
+
+            _addressController.text = data['data']['userInfo']['address'] ?? '';
+            _zipCodeController.text = data['data']['userInfo']['postal_code'] ?? '';
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _errorMessage = data['message'] ?? 'Failed to load data';
+            _isLoading = false;
+          });
+        }
+      } else {
+        setState(() {
+          _errorMessage = 'Request failed with status: ${response.statusCode}';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _updateAddress() async {
+    if (_selectedCountry == null || _addressController.text.isEmpty) {
+      Get.snackbar('Failed','Please fill in all required fields',
+          snackPosition: SnackPosition.TOP);
+      return;
+    }
+
+    setState(() {
+      _isUpdating = true;
+    });
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('auth_token') ?? '';
+
+      final url = Uri.parse("${ApiConstants.baseUrl}instructor/address");
+      final body = jsonEncode({
+        'country_id': _countryMap[_selectedCountry],
+        'postal_code': _zipCodeController.text,
+        'address': _addressController.text,
+      });
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        print('Address and Location API response: ${response.statusCode}');
+        Get.snackbar('Address & Location','Address & Location Update Successfully',
+            snackPosition: SnackPosition.TOP);
+        // Clear all fields after successful update
+        setState(() {
+          _selectedCity = null;
+          _selectedCountry = null;
+          _selectedState = null ;
+          _addressController.clear();
+          _zipCodeController.clear();
+        });
+      } else {
+        final error = jsonDecode(response.body);
+        Get.snackbar('Failed Update Address',error['message'] , snackPosition: SnackPosition.BOTTOM);
+
+      }
+    } catch (e) {
+      print('Failed Address and Location Api: $e');
+      Get.snackbar('Failed Update Address', 'Error: $e', snackPosition: SnackPosition.BOTTOM);
+
+    } finally {
+      setState(() {
+        _isUpdating = false;
+      });
+    }
+  }
+  //
+  // void _handleUpdate() {
+  //   _updateAddress();
+  // }
+
+  @override
+  void dispose() {
+    _addressController.dispose();
+    _zipCodeController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator(color: Color(0XFF78A03F)))
+            : _errorMessage.isNotEmpty
+            ? Center(child: Text(_errorMessage, style: TextStyle(color: Colors.red)))
+            : SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 20.h),
+                Center(
+                  child: Text(
+                    "Address & Location",
+                    style: TextStyle(
+                      fontSize: 26.sp,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Gilroy',
+                      color: Color(0XFF78A03F),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                Container(
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10.r,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildLabel("Country", true),
+                      SizedBox(height: 8.h),
+                      DropdownSearch<String>(
+                        popupProps: PopupProps.menu(
+                          showSearchBox: true,
+                          searchFieldProps: TextFieldProps(
+                            decoration: InputDecoration(
+                              hintText: "Search country...",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8.r),
+                                borderSide: BorderSide(color: Colors.grey),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(8)),
+                                borderSide: BorderSide(color: Color(0xFF8CC13F), width: 2.0), // Focused border color
+                              ),
+
+                            ),
+                          ),
+                        ),
+                        items: _countryMap.keys.toList(),
+                        dropdownDecoratorProps: DropDownDecoratorProps(
+                          dropdownSearchDecoration: InputDecoration(
+                            hintText: "Select Country",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.r),
+                              borderSide: BorderSide(color: Colors.grey), // Default border color
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(8)),
+                              borderSide: BorderSide(color: Color(0xFF8CC13F), width: 2.0), // Focused border color
+                            ),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                          ),
+                        ),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedCountry = newValue;
+                          });
+                        },
+                        selectedItem: _selectedCountry,
+                      ),
+
+                      SizedBox(height: 16.h),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildLabel("State", false),
+                                SizedBox(height: 8.h),
+                                CustomDropdown(
+                                  hint: "Select",
+                                  value: _selectedState,
+                                  items: _states,
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      _selectedState = newValue;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 16.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildLabel("City", false),
+                                SizedBox(height: 8.h),
+                                CustomDropdown(
+                                  hint: "Select",
+                                  value: _selectedCity,
+                                  items: _cities,
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      _selectedCity = newValue;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 16.h),
+                      _buildLabel("Postal Code", true),
+                      SizedBox(height: 8.h),
+                      customTextFormField(
+                        controller: _zipCodeController,
+                        hintText: "Postal code",
+                        validator: (value) => null,
+                      ),
+                      SizedBox(height: 16.h),
+                      _buildLabel("Address", true),
+                      SizedBox(height: 8.h),
+                      customTextFormField(
+                        controller: _addressController,
+                        hintText: "Address",
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "Address is required";
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 24.h),
+                      CustomButton(
+                        onTap: _isUpdating ? () {} : _updateAddress,
+                        buttonText: _isUpdating ? 'Updating...' : 'Update',
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLabel(String label, bool isRequired) {
+    return Row(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Gilroy',
+            color: const Color(0xFF000080),
+          ),
+        ),
+        if (isRequired)
+          Text(
+            " *",
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Gilroy',
+              color: Colors.red,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+
+
+Notic board screen
+
+
+
+
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:http/http.dart' as http;
+import 'package:learn_megnagmet/instructor/view_notice_list_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import '../utils/api_constants.dart';
+import 'add_notice_screen.dart';
+
+class InstructorNoticeBoard extends StatefulWidget {
+  const InstructorNoticeBoard({Key? key}) : super(key: key);
+
+  @override
+  State<InstructorNoticeBoard> createState() => _InstructorNoticeBoardState();
+}
+
+class _InstructorNoticeBoardState extends State<InstructorNoticeBoard> {
+  List<CourseNotice> _courseNotices = [];
+  String noticeBoardTitle = '';
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchNoticeBoardData();
+  }
+
+  Future<void> fetchNoticeBoardData() async {
+    String apiUrl = "${ApiConstants.baseUrl}instructor/notice-board";
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('auth_token') ?? '';
+
+    try {
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          setState(() {
+            noticeBoardTitle = data['data']['title'];
+            _courseNotices = (data['data']['courses'] as List).map((course) {
+              return CourseNotice(
+                id: course['id'].toString(),
+                courseName: course['title'],
+                courseImage: course['image'],
+                uuid: course['uuid'],
+                totalNotices: course['total_notices'] ?? 0, // Fetch total_notices from API
+              );
+            }).toList();
+            isLoading = false;
+          });
+        } else {
+          throw Exception('Failed to load notice board data');
+        }
+      } else {
+        throw Exception('Failed to load notice board data');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching notice board data: $e')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[100],
+      appBar: AppBar(
+        title: Center(
+          child: Text(
+            noticeBoardTitle,
+            style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF78A03F), fontSize: 22),
+          ),
+        ),
+        elevation: 0,
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF8CC13F)))
+          : _courseNotices.isEmpty
+          ? const Center(child: Text('No courses found'))
+          : Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Card(
+                elevation: 2,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              ),
-              onPressed: _isLoading ? null : () {
-                // First check if there's text to submit
-                if (widget.replyController.text.trim().isNotEmpty) {
-                  _postReply();
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please enter a reply')),
-                  );
-                }
-              },
-              child: _isLoading
-                  ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Course Notices',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      const Divider(),
+                      Expanded(
+                        child: ListView.separated(
+                          itemCount: _courseNotices.length,
+                          separatorBuilder: (context, index) => const Divider(),
+                          itemBuilder: (context, index) {
+                            return CourseNoticeItem(
+                              courseNotice: _courseNotices[index],
+                              onAddNotice: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AddNoticeScreen(course: _courseNotices[index]),
+                                  ),
+                                );
+                              },
+                              onViewList: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ViewNoticesScreen(course: _courseNotices[index]),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              )
-                  : const Text(
-                'Reply',
-                style: TextStyle(color: Colors.white),
               ),
             ),
           ),
@@ -1660,6 +2192,618 @@ class _InstructorContainerState extends State<InstructorContainer> {
     );
   }
 }
+
+class CourseNoticeItem extends StatelessWidget {
+  final CourseNotice courseNotice;
+  final VoidCallback onAddNotice;
+  final VoidCallback onViewList;
+
+  const CourseNoticeItem({
+    Key? key,
+    required this.courseNotice,
+    required this.onAddNotice,
+    required this.onViewList,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 160.h,
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isSmallScreen = constraints.maxWidth < 400;
+
+          if (isSmallScreen) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildCourseImage(),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildCourseName(),
+                            const SizedBox(height: 6),
+                            _buildNoticesInfo(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(child: _buildAddButton()),
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildViewButton()),
+                  ],
+                ),
+              ],
+            );
+          } else {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildCourseImage(),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildCourseName(),
+                            const SizedBox(height: 6),
+                            _buildNoticesInfo(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(child: _buildAddButton()),
+                    const SizedBox(width: 16),
+                    Expanded(child: _buildViewButton()),
+                  ],
+                ),
+              ],
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildCourseImage() {
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: Colors.grey[200],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.network(
+          courseNotice.courseImage,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: Colors.grey[300],
+              child: Icon(
+                Icons.book,
+                color: Colors.grey[600],
+                size: 40,
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCourseName() {
+    return Text(
+      courseNotice.courseName,
+      style: const TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 14,
+      ),
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  Widget _buildNoticesInfo() {
+    return Row(
+      children: [
+        const Icon(
+          Icons.notifications,
+          size: 16,
+          color: Colors.grey,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          'Notices: ${courseNotice.totalNotices}',
+          style: TextStyle(
+            color: Colors.grey[700],
+            fontSize: 14,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAddButton() {
+    return ElevatedButton(
+      onPressed: onAddNotice,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF78A03F),
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        minimumSize: const Size(0, 38),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+      child: const Text('ADD NOTICE', style: TextStyle(fontSize: 13)),
+    );
+  }
+
+  Widget _buildViewButton() {
+    return OutlinedButton(
+      onPressed: onViewList,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: const Color(0xFF78A03F),
+        side: const BorderSide(color: Color(0xFF78A03F)),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        minimumSize: const Size(0, 38),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+      child: const Text('VIEW LIST', style: TextStyle(fontSize: 13)),
+    );
+  }
+}
+
+class CourseNotice {
+  final String id;
+  final String courseName;
+  final String courseImage;
+  final String uuid;
+  final int totalNotices; // Add totalNotices field
+
+  CourseNotice({
+    required this.id,
+    required this.courseName,
+    required this.courseImage,
+    required this.uuid,
+    required this.totalNotices, // Make totalNotices a required parameter
+  });
+}
+
+
+
+View Ntice dalog screen 
+
+
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import '../utils/api_constants.dart';
+import 'instructor_notice_board.dart';
+
+class ViewNoticesScreen extends StatefulWidget {
+  final CourseNotice course;
+
+  const ViewNoticesScreen({Key? key, required this.course}) : super(key: key);
+
+  @override
+  _ViewNoticesScreenState createState() => _ViewNoticesScreenState();
+}
+
+class _ViewNoticesScreenState extends State<ViewNoticesScreen> {
+  List<dynamic> notices = [];
+  String courseTitle = '';
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchNotices();
+  }
+
+  Future<void> fetchNotices() async {
+    String apiUrl = "${ApiConstants.baseUrl}instructor/notice-board-list/${widget.course.uuid}";
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('auth_token') ?? '';
+
+    try {
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print('View Notices Api response: ${response.statusCode}');
+        final data = jsonDecode(response.body);
+        print('View Notices Api data: $data');
+
+        if (data['success'] == true) {
+          setState(() {
+            courseTitle = data['data']['course_title'];
+            notices = data['data']['notices'];
+            isLoading = false;
+          });
+        } else {
+          throw Exception('Failed to load notices');
+        }
+      } else {
+        throw Exception('Failed to load notices');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching notices: $e')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          '$courseTitle',
+          style: const TextStyle(fontWeight: FontWeight.bold,
+              color: Color(0XFF78A03F), fontSize: 22),
+          maxLines: 2,
+        ),
+        backgroundColor: Colors.grey[100],
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0XFF8CC13F)))
+          : notices.isEmpty
+          ? const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text('No notices available for this course.'),
+        ),
+      )
+          : ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: notices.length,
+        itemBuilder: (context, index) {
+          final notice = notices[index];
+          return Container(
+            margin: const EdgeInsets.symmetric(vertical: 8.0),
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Title',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        notice['topic'],
+                        style: const TextStyle(fontSize: 16),
+                        textAlign: TextAlign.end,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Date',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        notice['date'],
+                        style: const TextStyle(fontSize: 16),
+                        textAlign: TextAlign.end,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('View notice ${notice['topic']} for $courseTitle')),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0XFF78A03F),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text('View'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Edit notice ${notice['topic']} for $courseTitle')),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text('Edit'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Delete notice ${notice['topic']} for $courseTitle')),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text('Delete'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+
+
+
+ADD NOtice screen
+
+
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:http/http.dart' as http;
+import 'package:learn_megnagmet/widget/button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import '../utils/api_constants.dart';
+import 'instructor_notice_board.dart';
+
+class AddNoticeScreen extends StatefulWidget {
+  final CourseNotice course;
+
+  const AddNoticeScreen({Key? key, required this.course}) : super(key: key);
+
+  @override
+  State<AddNoticeScreen> createState() => _AddNoticeScreenState();
+}
+
+class _AddNoticeScreenState extends State<AddNoticeScreen> {
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  bool isSubmitting = false;
+
+  Future<void> _addNotice() async {
+    setState(() {
+      isSubmitting = true;
+    });
+
+    final String apiUrl = "${ApiConstants.baseUrl}instructor/notice/${widget.course.uuid}/store";
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('auth_token') ?? '';
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          // 'course_uuid': widget.course.uuid,
+          'topic': _titleController.text,
+          'details': _descriptionController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Notice added successfully')),
+          );
+          Navigator.pop(context); // Go back to the notice board screen
+        } else {
+          throw Exception('Failed to add notice: ${data['message']}');
+        }
+      } else {
+        throw Exception('Failed to add notice');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error adding notice: $e')),
+      );
+    } finally {
+      setState(() {
+        isSubmitting = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          widget.course.courseName,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF78A03F),
+            fontSize: 22,
+          ),
+        ),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _titleController,
+              decoration: InputDecoration(
+                labelText: 'Notice Title',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            TextField(
+              controller: _descriptionController,
+              decoration: InputDecoration(
+                labelText: 'Notice Description',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              maxLines: 5,
+            ),
+            const Spacer(),
+            Row(
+              children: [
+                Expanded(child: CustomButton(onTap: (){}, buttonText: 'Back')),
+                Expanded(
+
+                  child: ElevatedButton(
+                    onPressed: isSubmitting ? null : _addNotice,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF78A03F),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      minimumSize: const Size(0, 38),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: isSubmitting
+                        ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 3,
+                      ),
+                    )
+                        : const Text('Add Notice', style: TextStyle(fontSize: 13)),
+                  ),
+                ),
+                SizedBox(width: 16.w),
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF78A03F),
+                      side: const BorderSide(color: Color(0xFF78A03F)),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                      minimumSize: const Size(0, 38),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('Back', style: TextStyle(fontSize: 13)),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 
 
 

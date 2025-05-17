@@ -1,17 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:learn_megnagmet/profile/edit_screen.dart';
-import 'package:learn_megnagmet/profile/feedback.dart';
 import 'package:learn_megnagmet/profile/help_center.dart';
-import 'package:learn_megnagmet/profile/my_certification.dart';
-import 'package:learn_megnagmet/profile/my_project.dart';
 import 'package:learn_megnagmet/profile/privacy_policy.dart';
-import 'package:learn_megnagmet/profile/rate_us.dart';
-import 'package:learn_megnagmet/profile/saved_cource.dart';
+import 'package:learn_megnagmet/profile/profile_field_container.dart';
+import 'package:learn_megnagmet/profile/student_change_password.dart';
+import 'package:learn_megnagmet/profile/student_update_profile.dart';
 import 'package:learn_megnagmet/utils/slider_page_data_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,10 +19,7 @@ import '../models/profile_option.dart';
 import '../utils/api_constant.dart';
 import '../utils/screen_size.dart';
 import '../utils/shared_pref.dart';
-import 'certi_payment.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'dart:io';
 
 
 class MyProfile extends StatefulWidget {
@@ -39,16 +33,6 @@ class MyProfile extends StatefulWidget {
 class _MyProfileState extends State<MyProfile> {
   MyProfileController myProfileController = Get.put(MyProfileController());
   List<ProfileOption> profileoption = Utils.getProfileOption();
-  List profileOptionClass = [
-    MyCertification(),
-    MyProject(),
-    SavedCourse(),
-    CertificatePayment(),
-    HelpCenter(),
-    PrivacyPolicy(),
-    FeedBack(),
-    RateUs(),
-  ];
   HomeMainController controller = Get.put(HomeMainController());
   Future<void> logoutApiCall() async {
     final String apiUrl = "${ApiConstant.baseUrl}logout";
@@ -87,7 +71,7 @@ class _MyProfileState extends State<MyProfile> {
       }
     } catch (e) {
       Get.snackbar(
-        'Failed', '$e',
+        'Failed', 'Logged out failed',
         snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -185,92 +169,35 @@ class _MyProfileState extends State<MyProfile> {
                           primary: true,
                           shrinkWrap: false,
                           children: [
-                                ListView.builder(
-                                  primary: false,
-                                shrinkWrap: true,
-                                itemCount: profileoption.length,
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                    padding:  EdgeInsets.only(
-                                        bottom: 10.h,top: index==0? 0.h:10.h, left: 20.w, right: 20.w),
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        if((index ==
-                                            profileOptionClass.length -
-                                                1)){rateUs_dialogue();}
-                                        else{
-                                          if(index==1||index==2){
-                                            return;
-                                          }
-                                          else{
-                                            Get.to(
-                                                profileOptionClass[index]);
-                                          }
-                                        }
-                                      },
-                                      child: Container(
-                                          height: 60.h,
-                                          width: double.infinity.w,
-                                          decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(6.h),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: const Color(0XFF00AFEE)
-                                                        .withOpacity(0.14),
-                                                    offset: const Offset(-4, 5),
-                                                    blurRadius: 16.h),
-                                              ],
-                                              color: Colors.white),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                            crossAxisAlignment: CrossAxisAlignment
-                                                .center,
-                                            children: [
-                                              Column(
-                                                mainAxisAlignment: MainAxisAlignment
-                                                    .center, children: [
+                            ProfileFieldContainer(
+                              title: 'Edit Profile',
+                              icon: Icon(Icons.edit, color: Color(0XFF00AFEE)),
+                              onTap: () {
+                                Get.to(StudentUpdateProfile());
+                              },
+                            ),
+                            ProfileFieldContainer(
+                              title: 'Privacy Policy',
+                              icon: Icon(Icons.lock, color: Color(0XFF00AFEE)),
+                              onTap: () {
+                                Get.to(PrivacyPolicy());
+                              },
+                            ),
+                            ProfileFieldContainer(
+                              title: 'Help Center',
+                              icon: Icon(Icons.help_center, color: Color(0XFF00AFEE)),
+                              onTap: () {
+                                Get.to(HelpCenter());
+                              },
+                            ),
+                            ProfileFieldContainer(
+                              title: 'Change Password',
+                              icon: Icon(Icons.password, color: Color(0XFF00AFEE)),
+                              onTap: () {
+                                Get.to(StudentChangePassword());
+                              },
+                            ),
 
-                                                Row(
-                                                  children: [
-                                                    SizedBox(width: 15.w),
-                                                    Image(
-                                                      image: AssetImage(
-                                                          profileoption[index].icon!),
-                                                      height: 24.h,
-                                                      width: 24.w,
-                                                    ),
-                                                    SizedBox(width: 15.w),
-                                                    Text(
-                                                      profileoption[index].title!,
-                                                      style:  TextStyle(
-                                                          fontSize: 15.sp,
-                                                          fontFamily: 'Nastaleeq',
-                                                          fontWeight: FontWeight.bold),
-                                                    ),
-                                                  ],
-                                                )
-                                              ],),
-                                              Column(
-                                                mainAxisAlignment: MainAxisAlignment
-                                                    .center, children: [
-                                                Padding(
-                                                  padding:  EdgeInsets.only(right: 15.w),
-                                                  child: Row(
-                                                    children: [
-                                                       Image(image: const AssetImage("assets/right_arrow.png"),height:24.h ,width: 24.w,)
-
-                                                    ],
-                                                  ),
-                                                )
-                                              ],),
-
-
-                                            ],
-                                          )),
-                                    ),
-                                  );
-                                }),
                             SizedBox(height: 30.h),
                             Padding(
                               padding: EdgeInsets.only(bottom: 40.h, left: 20.h, right: 20.h),
@@ -316,129 +243,6 @@ class _MyProfileState extends State<MyProfile> {
                 )),
       ),
     );
-  }
-
-  Future rateUs_dialogue() {
-    return Get.defaultDialog(
-        barrierDismissible: false,
-        title: '',
-        content: Column(
-          children: [
-             Padding(
-               padding:  EdgeInsets.symmetric(horizontal: 42.w),
-               child: Image(
-                image: const AssetImage('assets/rateUs.png'),
-                height: 174.h,
-            ),
-             ),
-             SizedBox(height: 40.h),
-             Padding(
-               padding:  EdgeInsets.symmetric(horizontal: 42.w),
-               child: Text(
-                "Give Your Opinion",
-                style: TextStyle(
-                    fontSize: 22.sp,
-                    fontFamily: 'Gilroy',
-                    fontWeight: FontWeight.bold,
-                    fontStyle: FontStyle.normal,
-                    color: Color(0XFF000000)),
-            ),
-             ),
-             SizedBox(height: 15.h),
-             Padding(
-               padding:  EdgeInsets.symmetric(horizontal: 20.w),
-               child: Text(
-                  'Make better math goal for you, and would love to know how would rate our app?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: 14.sp,
-                      fontFamily: 'Gilroy',
-                      fontWeight: FontWeight.w500,
-                      color: Color(0XFF000000))),
-             ),
-             SizedBox(height: 15.h),
-        RatingBar(
-        initialRating: 3,
-        direction: Axis.horizontal,
-        allowHalfRating: true,
-        itemCount: 5,
-        itemSize: 40,
-        glow: false,
-
-        ratingWidget: RatingWidget(
-            full: Image(image: AssetImage("assets/fidbackfillicon.png"),),
-            half: Image(image: AssetImage("assets/fidbackemptyicon.png"),),
-            empty:Image(image: AssetImage("assets/fidbackemptyicon.png"),)
-        ),
-        itemPadding: EdgeInsets.symmetric(horizontal: 10),
-        onRatingUpdate: (rating) {
-          print(rating);
-        },
-        ),
-            SizedBox(height: 30.h,),
-            Padding(
-              padding:  EdgeInsets.only(left: 20.w,right: 20.w,bottom: 20.h),
-              child: Row(
-                children: [
-                  Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          Get.back();
-                        },
-                        child: Container(
-                          height: 56.h,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(6.h),
-                            color: const Color(0XFF00AFEE),
-                          ),
-                          child:  Center(
-                              child: Text(
-                                "Cancel",
-                                style: TextStyle(
-                                    fontFamily: 'Gilroy',
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0XFFFFFFFF),
-                                    fontStyle: FontStyle.normal,
-                                    fontSize: 18.sp),
-                              )),
-                        ),
-                      )),
-                   SizedBox(width: 10.w),
-                  Expanded(
-                      child: GestureDetector(
-                        onTap: (){
-                          // Get.off(HomeMainScreen());
-                          Get.back();
-                          controller.onChange(0);
-                        },
-                        child: Container(
-                            height: 56.h,
-                            width: double.infinity.w,
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: const Color(0XFF00AFEE),
-                                style: BorderStyle.solid,
-                                width: 1.0.w,
-                              ),
-                              borderRadius: BorderRadius.circular(6.h),
-                            ),
-                            child:  Center(
-                                child: Text(
-                                  "Submit",
-                                  style: TextStyle(
-                                      fontFamily: 'Gilroy',
-                                      fontWeight: FontWeight.bold,
-                                      color: const Color(0XFF00AFEE),
-                                      fontStyle: FontStyle.normal,
-                                      fontSize: 18.sp),
-                                ))),
-                      )),
-                ],
-              ),
-            )
-          ],
-        ));
   }
 
 
