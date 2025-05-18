@@ -3,57 +3,50 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:learn_megnagmet/profile/help_center.dart';
-import 'package:learn_megnagmet/profile/privacy_policy.dart';
+import 'package:http/http.dart' as http;
+import 'package:learn_megnagmet/home/home_screen.dart';
+import 'package:learn_megnagmet/instructor/all_students.dart';
+import 'package:learn_megnagmet/instructor/instructor_courses.dart';
+import 'package:learn_megnagmet/instructor/instructor_notice_board.dart';
 import 'package:learn_megnagmet/profile/profile_field_container.dart';
-import 'package:learn_megnagmet/profile/student_change_password.dart';
-import 'package:learn_megnagmet/profile/student_update_profile.dart';
-import 'package:learn_megnagmet/utils/slider_page_data_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:learn_megnagmet/utils/screen_size.dart';
+import 'package:learn_megnagmet/utils/shared_pref.dart';
 
 import '../controller/controller.dart';
 import '../login/login_empty_state.dart';
 import '../models/new_user_detail.dart';
 import '../models/profile_option.dart';
 import '../utils/api_constant.dart';
-import '../utils/screen_size.dart';
-import '../utils/shared_pref.dart';
-import 'package:http/http.dart' as http;
-
+import '../utils/slider_page_data_model.dart';
 import '../widget/button.dart';
+import 'instructor_edit_profile.dart';
+import 'live_class_screen.dart';
 
-
-class MyProfile extends StatefulWidget {
-  const MyProfile({Key? key, required this.user_detail}) : super(key: key);
+class InstructorPanel extends StatefulWidget {
+  const InstructorPanel({Key? key, required this.user_detail}) : super(key: key);
   final User user_detail;
 
-
   @override
-  State<MyProfile> createState() => _MyProfileState();
+  State<InstructorPanel> createState() => _InstructorPanelState();
 }
 
-class _MyProfileState extends State<MyProfile> {
-  MyProfileController myProfileController = Get.put(MyProfileController());
-  List<ProfileOption> profileoption = Utils.getProfileOption();
-  HomeMainController controller = Get.put(HomeMainController());
-  String? userName;
-  String? userEmail;
-
+class _InstructorPanelState extends State<InstructorPanel> {
+  String userName = "User Name"; // Default placeholder
+  String email = "Email"; // Default placeholder
   @override
   void initState() {
     super.initState();
-    _fetchUserData();
+    _loadUserData();
   }
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
 
-  Future<void> _fetchUserData() async {
-    final prefs = await SharedPreferences.getInstance();
     setState(() {
-      userName = prefs.getString('userName') ?? 'Guest';
-      userEmail = prefs.getString('userEmail') ?? 'guest@gmail.com';
+      userName = prefs.getString('userName') ?? "User Name";
+      email = prefs.getString('userEmail') ?? "Email";
     });
   }
-
-
   Future<void> logoutApiCall() async {
     final String apiUrl = "${ApiConstant.baseUrl}logout";
 
@@ -73,33 +66,33 @@ class _MyProfileState extends State<MyProfile> {
 
       if (response.statusCode == 200) {
         // Successfully logged out
+        print("Logout successful");
         Get.snackbar(
           'Successful', 'User logout successfully',
           snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );        // Clear user data from SharedPreferences
+        prefs.clear();
+        // Clear user data from SharedPreferences
         prefs.clear(); // Optionally clear all saved data
       } else {
+        print("Logout failed: ${response.body}");
         Get.snackbar(
           'Failed', '${response.body}',
           snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
-        print("Logout failed: ${response.body}");
       }
     } catch (e) {
-      Get.snackbar(
-        'Failed', 'Logged out failed',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      print(" User logout failed: $e");
+      print("Error: $e");
     }
   }
 
+  MyProfileController myProfileController = Get.put(MyProfileController());
+  List<ProfileOption> profileoption = Utils.getProfileOption();
+  HomeMainController controller = Get.put(HomeMainController());
 
   @override
   Widget build(BuildContext context) {
@@ -115,43 +108,41 @@ class _MyProfileState extends State<MyProfile> {
                 SafeArea(
                   child: Column(
                     children: [
-                       SizedBox(height: 20.h),
+                      SizedBox(height: 20.h),
                       Padding(
-                        padding:  EdgeInsets.symmetric(horizontal: 20.w),
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
                         child: Row(
                           children: [
                             GestureDetector(
                                 onTap: () {
                                   SystemChannels.platform.invokeMethod('SystemNavigator.pop');
                                 },
-                                child:  Image(
+                                child: Image(
                                   image: AssetImage("assets/back_arrow.png"),
                                   height: 24.h,
                                   width: 24.w,
                                 )),
-                             SizedBox(width: 15.w),
-                             Text(
+                            SizedBox(width: 15.w),
+                            Text(
                               "My Profile",
                               style: TextStyle(
-                                  fontWeight: FontWeight.w700, fontSize: 24.sp,fontFamily: 'Gilroy'),
+                                  fontWeight: FontWeight.w700, fontSize: 24.sp, fontFamily: 'Gilroy'),
                             ),
                             SizedBox(width: 40.w),
                             SizedBox(width: 180.w, height: 35.h,
-                                child: CustomButton(onTap: (){}, buttonText: 'Student Panel'))
+                                child: CustomButton(onTap: (){}, buttonText: 'Instructor Panel'))
                           ],
                         ),
                       ),
-                       SizedBox(height: 20.h),
+                      SizedBox(height: 20.h),
                       Image(
                         image: AssetImage(widget.user_detail.image!), height: 100.h,
                         width: 100.w,
-
-                        //fit: BoxFit.cover,
                       ),
-                       SizedBox(height: 12.h),
+                      SizedBox(height: 12.h),
                       Text(
-                        userName ?? 'Guest',
-                        style:  TextStyle(
+                        userName,
+                        style: TextStyle(
                             fontSize: 18.sp,
                             fontFamily: 'Gilroy',
                             fontWeight: FontWeight.w700,
@@ -159,17 +150,16 @@ class _MyProfileState extends State<MyProfile> {
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        userEmail ?? 'guest@gmail.com',
+                        email,
                         style: TextStyle(
-                          fontSize: 14.sp,
-                          fontFamily: 'Gilroy',
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF000000),
-                        ),
+                            fontSize: 14.sp,
+                            fontFamily: 'Gilroy',
+                            fontWeight: FontWeight.w400,
+                            color: const Color(0XFF000000)),
                       ),
+                      SizedBox(height: 2.h),
                       // GestureDetector(
                       //   onTap: () {
-                      //
                       //     Navigator.push(
                       //         context,
                       //         MaterialPageRoute(
@@ -180,7 +170,7 @@ class _MyProfileState extends State<MyProfile> {
                       //   },
                       //   child: Row(
                       //     mainAxisAlignment: MainAxisAlignment.center,
-                      //     children:  [
+                      //     children: [
                       //       Text("Edit Profile",
                       //           style: TextStyle(
                       //               fontSize: 15.sp,
@@ -195,38 +185,96 @@ class _MyProfileState extends State<MyProfile> {
                       //     ],
                       //   ),
                       // ),
-                      SizedBox(height: 20,),
+                      SizedBox(height: 20),
                       Expanded(
                         child: ListView(
                           primary: true,
                           shrinkWrap: false,
                           children: [
+                            // My Certification
                             ProfileFieldContainer(
-                              title: 'Edit Profile',
-                              icon: Icon(Icons.edit, color: Color(0XFF00AFEE)),
+                              title: 'Home',
+                              icon: Icon(Icons.home, color: Color(0XFF00AFEE)),
                               onTap: () {
-                                Get.to(StudentUpdateProfile());
+                                Get.to(HomeScreen());
+                                // Get.to(MyCertification());
+                              },
+                            ),
+                            // My Project
+                            ProfileFieldContainer(
+                              title: 'My Courses',
+                              icon: Icon(Icons.book, color: Color(0XFF00AFEE)),
+                              onTap: () {
+                                Get.to(InstructorCourses());
+                              },
+                            ),
+                            // Saved Course
+                            ProfileFieldContainer(
+                              title: 'All Students',
+                              icon: Icon(Icons.storefront, color: Color(0XFF00AFEE)),
+                              onTap: () {
+                                Get.to(AllStudents());
+
+                              },
+                            ),
+                            // Certificate Payment
+                            // ProfileFieldContainer(
+                            //   title: 'Classes Schedule',
+                            //   icon: Icon(Icons.calendar_month, color: Color(0XFF00AFEE)),
+                            //   onTap: () {
+                            //     Get.to(InstructorClassesSchedule());
+                            //     // Get.to(FeedBack());
+                            //   },
+                            // ),
+                            // // Help Center
+                            // ProfileFieldContainer(
+                            //   title: 'Classes History',
+                            //   icon: Icon(Icons.history, color: Color(0XFF00AFEE)),
+                            //   onTap: () {
+                            //     Get.to(InstructorClassesHistory());
+                            //     // Get.to(PrivacyPolicy());
+                            //   },
+                            // ),
+                            // Privacy Policy
+                            ProfileFieldContainer(
+                              title: 'Notice Board',
+                              icon: Icon(Icons.pending_actions, color: Color(0XFF00AFEE)),
+                              onTap: () {
+                                Get.to(InstructorNoticeBoard());
+                                // Get.to(CertificatePayment());
+
+                                // Disabled as per original code
                               },
                             ),
                             ProfileFieldContainer(
-                              title: 'Privacy Policy',
-                              icon: Icon(Icons.lock, color: Color(0XFF00AFEE)),
+                              title: 'Live Class',
+                              icon: Icon(Icons.class_, color: Color(0XFF00AFEE)),
                               onTap: () {
-                                Get.to(PrivacyPolicy());
+                                Get.to(LiveClassScreen());
+
                               },
                             ),
                             ProfileFieldContainer(
-                              title: 'Help Center',
-                              icon: Icon(Icons.help_center, color: Color(0XFF00AFEE)),
+                              title: 'Discussion',
+                              icon: Icon(Icons.message, color: Color(0XFF00AFEE)),
                               onTap: () {
-                                Get.to(HelpCenter());
+                                // Navigator.push(context,
+                                //     MaterialPageRoute(builder: (context)=>ChangePassword()));
                               },
                             ),
+                            // Feedback
                             ProfileFieldContainer(
-                              title: 'Change Password',
-                              icon: Icon(Icons.password, color: Color(0XFF00AFEE)),
+                              title: 'Basic Information',
+                              icon: Icon(Icons.person, color: Color(0XFF00AFEE)),
                               onTap: () {
-                                Get.to(StudentChangePassword());
+                                Get.to(InstructorEditScreen(user: widget.user_detail));
+                              },
+                            ),
+                            // Rate Us
+                            ProfileFieldContainer(
+                              title: 'Address & Location',
+                              icon: Icon(Icons.location_on_outlined, color: Color(0XFF00AFEE)),
+                              onTap: () {
                               },
                             ),
 
@@ -255,21 +303,14 @@ class _MyProfileState extends State<MyProfile> {
                                             color: Colors.white,
                                             fontSize: 22.sp,
                                             fontWeight: FontWeight.w700,
-                                            fontFamily: 'Nastaleeq')),
+                                            fontFamily: 'Gilroy')),
                                   ),
                                 ),
                               ),
                             )
-
-
-
-
                           ],
                         ),
                       ),
-                      //SizedBox(height: 30),
-
-
                     ],
                   ),
                 )),
@@ -277,6 +318,17 @@ class _MyProfileState extends State<MyProfile> {
     );
   }
 
+  // void showRateUsDialog() {
+  //   RateUsDialog.show(
+  //     onSubmit: () {
+  //       Get.back();
+  //       controller.onChange(0);
+  //     },
+  //     onCancel: () {
+  //       Get.back();
+  //     },
+  //   );
+  // }
 
   void showLogoutDialog() {
     Get.defaultDialog(
@@ -311,13 +363,13 @@ class _MyProfileState extends State<MyProfile> {
                         width: double.infinity.w,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(22.h),
-                          color: const Color(0XFF00AFEE),
+                          color: const Color(0XFF78A03F),
                         ),
                         child: Center(
                           child: Text(
                             "Yes",
                             style: TextStyle(
-                                fontFamily: 'Nastaleeq',
+                                fontFamily: 'Gilroy',
                                 fontWeight: FontWeight.bold,
                                 color: Color(0XFFFFFFFF),
                                 fontStyle: FontStyle.normal,
@@ -338,7 +390,7 @@ class _MyProfileState extends State<MyProfile> {
                         width: double.infinity.w,
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: const Color(0XFF00AFEE),
+                            color: const Color(0xFF78A03F),
                             style: BorderStyle.solid,
                             width: 1.0.w,
                           ),
@@ -348,9 +400,9 @@ class _MyProfileState extends State<MyProfile> {
                           child: Text(
                             "No",
                             style: TextStyle(
-                                fontFamily: 'Nastaleeq',
+                                fontFamily: 'Gilroy',
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF00AFEE),
+                                color: Color(0XFF00AFEE),
                                 fontStyle: FontStyle.normal,
                                 fontSize: 18.sp),
                           ),
@@ -366,6 +418,4 @@ class _MyProfileState extends State<MyProfile> {
       ),
     );
   }
-
-
 }

@@ -13,6 +13,7 @@ import 'package:learn_megnagmet/home/trending_courses_list.dart';
 import 'package:learn_megnagmet/models/design_list.dart';
 import 'package:learn_megnagmet/models/home_slider.dart';
 import 'package:learn_megnagmet/utils/slider_page_data_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 import '../utils/api_constant.dart';
 import '../utils/screen_size.dart';
@@ -39,12 +40,22 @@ class _HomeScreenState extends State<HomeScreen> {
   List userDetail = Utils.getUser();
   bool isLoading = true;
   String? errorMessage;
+  String? userName;
+
 
   @override
   void initState() {
     pages = Utils.getHomeSliderPages();
     fetchCourses();
     super.initState();
+    _fetchUserData();
+  }
+
+  Future<void> _fetchUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('userName') ?? 'User';
+    });
   }
 
   Future<void> fetchCourses() async {
@@ -202,9 +213,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     initializeScreenSize(context);
-    return WillPopScope(
-      onWillPop: () => Future.value(false),
-      child: Scaffold(
+    // return WillPopScope(
+    //   onWillPop: () => Future.value(false),
+    //   child:
+
+     return Scaffold(
         body: SafeArea(
           child: SizedBox(
             height: double.infinity,
@@ -231,10 +244,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         SizedBox(width: 10.w),
                         Text(
-                          "Welcome,${userDetail[0].name}",
+                          "Welcome,${userName}",
                           style: TextStyle(
-                            fontFamily: 'Nastaleeq'
-,
+                            fontFamily: 'Nastaleeq',
                             color: const Color(0XFF000000),
                             fontSize: 22.sp,
                             fontWeight: FontWeight.w700,
@@ -264,8 +276,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 hintStyle: TextStyle(
                                   color: Color(0XFF9B9B9B),
                                   fontSize: 15.sp,
-                                  fontFamily: 'Nastaleeq'
-,
+                                  fontFamily: 'Nastaleeq',
                                   fontWeight: FontWeight.w400,
                                 ),
                                 prefixIcon: Image(
@@ -351,8 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: TextStyle(
                                   fontSize: 18.sp,
                                   fontWeight: FontWeight.w700,
-                                  fontFamily: 'Nastaleeq'
-,
+                                  fontFamily: 'Nastaleeq',
                                 ),
                               ),
                               TextButton(
@@ -382,8 +392,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   Widget generatepage() {

@@ -55,11 +55,18 @@ class _EmptyStateState extends State<EmptyState> {
       if (response.statusCode == 200 && responseData['success'] == true) {
         // Extract token from nested data object
         final token = responseData['data']['token'];
+        final role = responseData['data']['role'].toString();
+        final userName = responseData['data']['user_name'];
+        final userEmail = responseData['data']['user_email'];
+        print('Check name email and role:$userName$userEmail$role');
 
         if (token != null && token.isNotEmpty) {
           authToken = token;
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('authToken', token);
+          await prefs.setString('role', role);
+          await prefs.setString('userName', userName);
+          await prefs.setString('userEmail', userEmail);
 
           Get.snackbar(
             'Successful',
@@ -173,9 +180,9 @@ class _EmptyStateState extends State<EmptyState> {
                         isLoading: isLoading,
                       ),
                       SizedBox(height: 40.h),
-                      CustomButton(onTap: (){
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=>HomeMainScreen()));
-                      }, buttonText: 'Skip'),
+                      // CustomButton(onTap: (){
+                      //   Navigator.push(context, MaterialPageRoute(builder: (context)=>HomeMainScreen()));
+                      // }, buttonText: 'Skip'),
                       SizedBox(height: 40.h),
                       or_sign_in_with_text(),
                       SizedBox(height: 41.h),

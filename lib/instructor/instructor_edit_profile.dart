@@ -1,9 +1,10 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:learn_megnagmet/models/new_user_detail.dart';
 import 'package:learn_megnagmet/widget/button.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
@@ -14,14 +15,14 @@ import '../utils/screen_size.dart';
 import '../widget/custom_dropdown.dart';
 import '../widget/custom_text_form_field.dart';
 
-class StudentUpdateProfile extends StatefulWidget {
-  const StudentUpdateProfile({Key? key}) : super(key: key);
+class InstructorEditScreen extends StatefulWidget {
+  const InstructorEditScreen({Key? key, required User user}) : super(key: key);
 
   @override
-  State<StudentUpdateProfile> createState() => _StudentUpdateProfileState();
+  State<InstructorEditScreen> createState() => _InstructorEditScreenState();
 }
 
-class _StudentUpdateProfileState extends State<StudentUpdateProfile> {
+class _InstructorEditScreenState extends State<InstructorEditScreen> {
   EditScreenController editScreenController = Get.put(EditScreenController());
   late TextEditingController firstnameController;
   late TextEditingController emailController;
@@ -32,7 +33,10 @@ class _StudentUpdateProfileState extends State<StudentUpdateProfile> {
   late TextEditingController phoneNumberController;
   late TextEditingController bioController;
   late TextEditingController skillsController;
-
+  late TextEditingController facebookController;
+  late TextEditingController twitterController;
+  late TextEditingController linkedinController;
+  late TextEditingController pinterestController;
   String? avatarUrl;
   File? _selectedImage;
   String? _selectedGender;
@@ -40,7 +44,7 @@ class _StudentUpdateProfileState extends State<StudentUpdateProfile> {
   final ImagePicker _picker = ImagePicker();
   bool isLoading = true; // Loading state
   bool isUpdating = false;
-  String? studentUuid;
+  String? instructorUuid;
 
   @override
   void initState() {
@@ -54,14 +58,18 @@ class _StudentUpdateProfileState extends State<StudentUpdateProfile> {
     phoneNumberController = TextEditingController();
     bioController = TextEditingController();
     skillsController = TextEditingController();
-
+    skillsController = TextEditingController();
+    facebookController = TextEditingController();
+    twitterController = TextEditingController();
+    linkedinController = TextEditingController();
+    pinterestController = TextEditingController();
     _fetchProfileData();
   }
   Future<void> _fetchProfileData() async {
-    final String apiUrl = "${ApiConstant.baseUrl}student/profile";
+    final String apiUrl = "${ApiConstant.baseUrl}instructor/profile";
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String token = prefs.getString('authToken') ?? '';
+      String token = prefs.getString('auth_token') ?? '';
 
       final response = await http.get(
         Uri.parse(apiUrl),
@@ -75,24 +83,23 @@ class _StudentUpdateProfileState extends State<StudentUpdateProfile> {
 
         final jsonResponse = jsonDecode(response.body);
         if (jsonResponse['success'] == true) {
-          final studentData = jsonResponse['data']['student'];
+          final instructorData = jsonResponse['data']['instructor'];
           setState(() {
-            studentUuid = studentData['uuid']; // Fetch and store UUID
-            firstnameController.text = studentData['first_name'] ?? '';
-            lastNameController.text = studentData['last_name'] ?? '';
-            emailController.text = studentData['email'] ?? '';
-            phoneNumberController.text = studentData['phone'] ?? '';
-            professionalTitleController.text = studentData['professional_title'] ?? '';
-            bioController.text = studentData['bio'] ?? '';
-            // Set _selectedGender to null if gender is null or empty
-            _selectedGender = (studentData['gender'] != null && studentData['gender'].isNotEmpty)
-                ? studentData['gender']
-                : null;
-            // Set avatarUrl to null if image_url is null or empty
-            avatarUrl = (studentData['image_url'] != null && studentData['image_url'].isNotEmpty)
-                ? studentData['image_url']
-                : null;
-            isLoading = false;
+            instructorUuid = instructorData['uuid']; // Fetch and store UUID
+            firstnameController.text = instructorData['first_name'] ?? '';
+            lastNameController.text = instructorData['last_name'] ?? '';
+            emailController.text = instructorData['email'] ?? '';
+            phoneNumberController.text = instructorData['phone'] ?? '';
+            professionalTitleController.text = instructorData['professional_title'] ?? '';
+            bioController.text = instructorData['bio'] ?? '';
+            _selectedGender = instructorData['gender'] ?? '';
+            avatarUrl = instructorData['image_url'] ?? '';
+            // facebookController.text = instructorData['social_link']['facebook'] ?? '';
+            // twitterController.text = instructorData['social_link']['twitter'] ?? '';
+            // linkedinController.text = instructorData['social_link']['linkedin'] ?? '';
+            // pinterestController.text = instructorData['social_link']['pinterest'] ?? '';
+            // skillsController.text = (instructorData['skills'] as List<dynamic>?)?.join(', ') ?? '';
+            isLoading = false; // Data fetched, stop loading
           });
         } else {
           print("API Error: ${jsonResponse['message']}");
@@ -127,8 +134,8 @@ class _StudentUpdateProfileState extends State<StudentUpdateProfile> {
     }
   }
   Future<void> _updateProfile() async {
-    if (studentUuid == null) {
-      print("Student UUID is not available");
+    if (instructorUuid == null) {
+      print("Instructor UUID is not available");
       return;
     }
 
@@ -136,10 +143,10 @@ class _StudentUpdateProfileState extends State<StudentUpdateProfile> {
       isUpdating = true; // Start loading
     });
 
-    final String apiUrl = "${ApiConstant.baseUrl}student/save-profile/$studentUuid";
+    final String apiUrl = "${ApiConstant.baseUrl}instructor/profile/update/$instructorUuid";
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String token = prefs.getString('authToken') ?? '';
+      String token = prefs.getString('auth_token') ?? '';
 
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
       request.headers.addAll({
@@ -150,8 +157,8 @@ class _StudentUpdateProfileState extends State<StudentUpdateProfile> {
       request.fields['email'] = emailController.text;
       request.fields['first_name'] = firstnameController.text;
       request.fields['last_name'] = lastNameController.text;
-      // request.fields['professional_title'] = professionalTitleController.text;
-      request.fields['mobile_number'] = phoneNumberController.text;
+      request.fields['professional_title'] = professionalTitleController.text;
+      request.fields['phone_number'] = phoneNumberController.text;
       request.fields['about_me'] = bioController.text;
       request.fields['gender'] = _selectedGender ?? '';
 
@@ -167,11 +174,7 @@ class _StudentUpdateProfileState extends State<StudentUpdateProfile> {
         final jsonResponse = jsonDecode(respStr);
         if (jsonResponse['success'] == true) {
           print("Profile updated successfully: ${jsonResponse['message']}");
-          Get.snackbar("Success", "Profile updated successfully",
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-          );
+          Get.snackbar("Success", "Profile updated successfully");
         } else {
           print("API Error: ${jsonResponse['message']}");
         }
@@ -198,8 +201,7 @@ class _StudentUpdateProfileState extends State<StudentUpdateProfile> {
         resizeToAvoidBottomInset: false,
         body: Stack(
             children: [
-              if (!isLoading)
-                SafeArea(
+              SafeArea(
                 child: Padding(
                   padding: EdgeInsets.only(left: 20.w, right: 20.w),
                   child: SingleChildScrollView(
@@ -250,7 +252,7 @@ class _StudentUpdateProfileState extends State<StudentUpdateProfile> {
                                           onTap: _pickImage,
                                           child: CircleAvatar(
                                             radius: 17.h,
-                                            backgroundColor: const Color(0XFF78A03F),
+                                            backgroundColor: Color(0XFF78A03F),
                                             child: Icon(
                                               Icons.edit,
                                               color: Colors.white,
@@ -316,6 +318,14 @@ class _StudentUpdateProfileState extends State<StudentUpdateProfile> {
                                   validator: (value) => value!.isEmpty ? "Enter your email" : null,
                                 ),
                                 SizedBox(height: 20.h),
+                                _buildLabel("Professional Title", false),
+                                SizedBox(height: 10.h),
+                                CustomTextFormField(
+                                  controller: professionalTitleController,
+                                  hintText: "Title",
+                                  validator: (value) => null,
+                                ),
+                                SizedBox(height: 20.h),
                                 _buildLabel("Phone Number", true),
                                 SizedBox(height: 10.h),
                                 CustomTextFormField(
@@ -345,27 +355,44 @@ class _StudentUpdateProfileState extends State<StudentUpdateProfile> {
                                   },
                                 ),
                                 SizedBox(height: 20.h),
-                                _buildLabel("Profile Page Meta Title", false),
+                                _buildLabel("Social Links", false),
+                                _buildLabel("Facebook", false),
+                                SizedBox(height: 10.h),
+                                CustomTextFormField(
+                                  controller: TextEditingController(),
+                                  hintText: "https://facebook.com",
+                                  validator: (value) => null,
+                                ),
+                                SizedBox(height: 20.h),
+                                _buildLabel("Linkedin", false),
+                                SizedBox(height: 10.h),
+                                CustomTextFormField(
+                                  controller: TextEditingController(),
+                                  hintText: "https://linkedin.com",
+                                  validator: (value) => null,
+                                ),
+                                SizedBox(height: 20.h),
+                                _buildLabel("Twitter", false),
+                                SizedBox(height: 10.h),
+                                CustomTextFormField(
+                                  controller: TextEditingController(),
+                                  hintText: "https://twitter.com",
+                                  validator: (value) => null,
+                                ),
+                                SizedBox(height: 20.h),
+                                _buildLabel("Pinterest", false),
+                                SizedBox(height: 10.h),
+                                CustomTextFormField(
+                                  controller: TextEditingController(),
+                                  hintText: "https://pinterest.com",
+                                  validator: (value) => null,
+                                ),
+                                SizedBox(height: 20.h),
+                                _buildLabel("Skills", false),
                                 SizedBox(height: 10.h),
                                 CustomTextFormField(
                                   controller: skillsController,
-                                  hintText: "Meta Title",
-                                  validator: (value) => null,
-                                ),
-                                SizedBox(height: 20.h),
-                                _buildLabel("Profile Page Meta Description", false),
-                                SizedBox(height: 10.h),
-                                CustomTextFormField(
-                                  controller: professionalTitleController,
-                                  hintText: "Meta Description",
-                                  validator: (value) => null,
-                                ),
-                                SizedBox(height: 20.h),
-                                _buildLabel("Profile Page Keywords", false),
-                                SizedBox(height: 10.h),
-                                CustomTextFormField(
-                                  controller: professionalTitleController,
-                                  hintText: "Meta Keywords",
+                                  hintText: "",
                                   validator: (value) => null,
                                 ),
                                 SizedBox(height: 40.h),
@@ -392,13 +419,6 @@ class _StudentUpdateProfileState extends State<StudentUpdateProfile> {
                   ),
                 ),
               ),
-              if (isLoading)
-                const Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFF00AFEE),
-                    strokeWidth: 4,
-                  ),
-                ),
             ]
         ),
       ),
@@ -431,6 +451,3 @@ Widget _buildLabel(String label, bool isRequired) {
     ],
   );
 }
-
-
-
