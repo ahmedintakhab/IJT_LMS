@@ -22,6 +22,16 @@ class HomeController extends GetxController {
 class HomeMainController extends GetxController {
   RxInt position = 0.obs;
 
+  @override
+  void onInit() {
+    super.onInit();
+    // Check for initial tab from arguments
+    final arguments = Get.arguments;
+    if (arguments != null && arguments['initialTab'] != null) {
+      position.value = arguments['initialTab'];
+    }
+  }
+
   onChange(int value) {
     position.value = value;
     update();

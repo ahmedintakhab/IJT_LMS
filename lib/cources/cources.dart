@@ -18,6 +18,7 @@ import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'dart:convert';
 
 import '../home/home_main.dart';
+import '../login/login_empty_state.dart';
 import '../utils/api_constant.dart';
 import 'instructors_tab.dart';
 
@@ -202,9 +203,17 @@ class _MyCourcesState extends State<MyCources> {
 
   Future<void> _enrollCourse() async {
     try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('authToken') ?? '';
+
+      if (token.isEmpty && btnText == "Enroll Now") {
+        await prefs.setString('redirect_after_login', 'MyCources');
+        await prefs.setString('course_slug', widget.slug);
+        Get.to(() => const EmptyState());
+        return;
+      }
+
       if (btnText == "Enroll Now") {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        String token = prefs.getString('authToken') ?? '';
         print('Token check: $token');
 
         final url = '${ApiConstant.baseUrl}student/add-to-cart';
@@ -228,7 +237,7 @@ class _MyCourcesState extends State<MyCources> {
         print("Enroll API Response Body: ${response.body}");
 
         if (response.statusCode == 200) {
-          Get.to(() => HomeMainScreen());
+          Get.to(() => const HomeMainScreen());
           await fetchCourseDetails();
 
           print("API Successfully Enroll Course.");
@@ -243,13 +252,11 @@ class _MyCourcesState extends State<MyCources> {
             duration: Duration(seconds: 3),
           );
 
-          // Refresh course details to update button text if needed
           fetchCourseDetails();
         } else {
           throw Exception('Failed to enroll: ${response.statusCode}');
         }
       } else if (btnText == "Go to Course") {
-        // Handle Go to Course action here
         Get.to(() => TabBarDetails(slug: courseSlug));
       }
     } catch (e) {
@@ -263,7 +270,6 @@ class _MyCourcesState extends State<MyCources> {
       );
     }
   }
-
   // Method to reload media (image or video)
   void _reloadMedia() {
     setState(() {

@@ -444,8 +444,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text(
                     banner['banner_first_line_title'] ?? '',
                     style: TextStyle(
-                                                            fontFamily: 'Nastaleeq'
-,
+                      fontFamily: 'Nastaleeq',
                       color: Color(0XFF000000),
                       fontSize: 18.sp,
                       fontWeight: FontWeight.w700,

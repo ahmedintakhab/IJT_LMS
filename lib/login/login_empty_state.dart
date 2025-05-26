@@ -1,6 +1,5 @@
 // ignore_for_file: non_constant_identifier_names
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,6 +11,7 @@ import 'package:learn_megnagmet/widget/button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import '../cources/cources.dart';
 import '../utils/api_constant.dart';
 import '../utils/screen_size.dart';
 import '../widget/custom_text_form_field.dart';
@@ -24,7 +24,6 @@ class EmptyState extends StatefulWidget {
 }
 
 class _EmptyStateState extends State<EmptyState> {
-
   final formkey = GlobalKey<FormState>();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -53,12 +52,11 @@ class _EmptyStateState extends State<EmptyState> {
       final responseData = json.decode(response.body);
 
       if (response.statusCode == 200 && responseData['success'] == true) {
-        // Extract token from nested data object
         final token = responseData['data']['token'];
         final role = responseData['data']['role'].toString();
         final userName = responseData['data']['user_name'];
         final userEmail = responseData['data']['user_email'];
-        print('Check name email and role:$userName$userEmail$role');
+        print('Check name email and role: $userName $userEmail $role');
 
         if (token != null && token.isNotEmpty) {
           authToken = token;
@@ -76,8 +74,20 @@ class _EmptyStateState extends State<EmptyState> {
             colorText: Colors.white,
           );
 
-          // Navigate to home screen or dashboard
-           Get.off(() => const HomeMainScreen());
+          // Check for redirect after login
+          final redirectScreen = prefs.getString('redirect_after_login') ?? '';
+          print('Redirect screen: $redirectScreen');
+          if (redirectScreen == 'MyCources') {
+            final courseSlug = prefs.getString('course_slug') ?? '';
+            await prefs.remove('redirect_after_login');
+            await prefs.remove('course_slug');
+            Get.off(() => MyCources(slug: courseSlug));
+          } else if (redirectScreen == 'ProfileTab') {
+            await prefs.remove('redirect_after_login');
+            Get.off(() => HomeMainScreen(), arguments: {'initialTab': 3});
+          } else {
+            Get.off(() => const HomeMainScreen());
+          }
         } else {
           Get.snackbar(
             'Error',
@@ -109,6 +119,7 @@ class _EmptyStateState extends State<EmptyState> {
       setState(() => isLoading = false);
     }
   }
+
   @override
   Widget build(BuildContext context) {
     initializeScreenSize(context);
@@ -120,22 +131,21 @@ class _EmptyStateState extends State<EmptyState> {
             return Future.value(false);
           },
           child: Padding(
-            padding:  EdgeInsets.only(left: 20.w, right: 20.w),
+            padding: EdgeInsets.only(left: 20.w, right: 20.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(height: 16.h),
                 GestureDetector(
-                  onTap: (){
-                    Navigator.pop(exit(0));
+                  onTap: () {
+                    Navigator.pop(context);
                   },
-                  child:  Image(
+                  child: Image(
                     image: const AssetImage("assets/back_arrow.png"),
                     height: 24.h,
                     width: 24.w,
-                  )
+                  ),
                 ),
-
                 Expanded(
                   flex: 1,
                   child: ListView(
@@ -148,45 +158,46 @@ class _EmptyStateState extends State<EmptyState> {
                         child: Text(
                           "Login",
                           style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 24.sp,
-                              fontFamily: 'Gilroy',
-                              color: Color(0XFF000000)),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 24.sp,
+                            fontFamily: 'Gilroy',
+                            color: Color(0XFF000000),
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ),
                       SizedBox(height: 16.h),
                       Center(
-                          child: Text(
-                            "Glad to meet you again!",
-                            style: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                color: const Color(0XFF000000),
-                                fontSize: 15.sp,
-                                fontFamily: 'Gilroy',
-                                fontStyle: FontStyle.normal
-                            ),
-                            textAlign: TextAlign.center,
-                          )),
+                        child: Text(
+                          "Glad to meet you again!",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0XFF000000),
+                            fontSize: 15.sp,
+                            fontFamily: 'Gilroy',
+                            fontStyle: FontStyle.normal,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
                       SizedBox(height: 10.h),
                       email_password_form(),
                       SizedBox(height: 21.h),
                       forgotpassword(),
                       SizedBox(height: 40.h),
-                      // loginbutton(),
                       CustomButton(
                         onTap: loginUser,
                         buttonText: 'Log In',
                         isLoading: isLoading,
                       ),
-                      // SizedBox(height: 40.h),
                       Padding(
                         padding: EdgeInsets.only(right: 10.w, top: 10.h, bottom: 10.h),
                         child: Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: () {
-                              // Add your skip action here, e.g., navigate to HomeMainScreen
+                            onPressed: () async {
+                              SharedPreferences prefs = await SharedPreferences.getInstance();
+                              await prefs.setBool('isSkipped', true);
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => HomeMainScreen()),
@@ -215,22 +226,17 @@ class _EmptyStateState extends State<EmptyState> {
                           ),
                         ),
                       ),
-                      // CustomButton(onTap: (){
-                      //   Navigator.push(context, MaterialPageRoute(builder: (context)=>HomeMainScreen()));
-                      // }, buttonText: 'Skip'),
                       SizedBox(height: 40.h),
                       or_sign_in_with_text(),
                       SizedBox(height: 41.h),
                       login_google(),
                       SizedBox(height: 20.h),
                       login_facebook(),
-                      //SizedBox(height: 97.h),
-
                     ],
                   ),
                 ),
                 Padding(
-                  padding:  EdgeInsets.only(bottom: 30.h),
+                  padding: EdgeInsets.only(bottom: 30.h),
                   child: sign_up(),
                 ),
               ],
@@ -252,7 +258,7 @@ class _EmptyStateState extends State<EmptyState> {
       onTap: () {
         Get.to(const ForgotPassword());
       },
-      child:  Align(
+      child: Align(
         alignment: Alignment.topRight,
         child: Text(
           "Forgot password ?",
@@ -266,6 +272,7 @@ class _EmptyStateState extends State<EmptyState> {
       ),
     );
   }
+
   Widget login_google() {
     return GestureDetector(
       onTap: () {},
@@ -273,16 +280,17 @@ class _EmptyStateState extends State<EmptyState> {
         height: 56.h,
         width: 374.w,
         decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: Colors.grey.withOpacity(0.1)),
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.grey.withOpacity(0.1),
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children:  [
+          children: [
             const Image(image: AssetImage("assets/google.png")),
             SizedBox(width: 10.w),
             Text(
               "Login with Google",
-              style: TextStyle(color: Color(0XFF000000), fontSize: 18.sp,fontWeight: FontWeight.w500),
+              style: TextStyle(color: Color(0XFF000000), fontSize: 18.sp, fontWeight: FontWeight.w500),
             ),
           ],
         ),
@@ -297,16 +305,17 @@ class _EmptyStateState extends State<EmptyState> {
         height: 56.h,
         width: 374.w,
         decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: Colors.grey.withOpacity(0.1)),
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.grey.withOpacity(0.1),
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children:  [
+          children: [
             const Image(image: AssetImage("assets/facebook.png")),
             SizedBox(width: 10.w),
             Text(
               "Login with Facebook",
-              style: TextStyle(color: const Color(0XFF000000), fontSize: 18.sp,fontWeight: FontWeight.w500),
+              style: TextStyle(color: const Color(0XFF000000), fontSize: 18.sp, fontWeight: FontWeight.w500),
             ),
           ],
         ),
@@ -317,31 +326,33 @@ class _EmptyStateState extends State<EmptyState> {
   Widget sign_up() {
     return Center(
       child: RichText(
-          text: TextSpan(
-              text: 'Dont have an account?',
-              style:  TextStyle(color: Colors.black, fontSize: 15.sp,fontFamily: 'Gilroy'),
-              children: [
+        text: TextSpan(
+          text: 'Dont have an account?',
+          style: TextStyle(color: Colors.black, fontSize: 15.sp, fontFamily: 'Gilroy'),
+          children: [
             TextSpan(
               recognizer: TapGestureRecognizer()
                 ..onTap = () {
                   Get.to(const SignUpEmptyScreen());
                 },
               text: ' Sign up',
-              style:  TextStyle(
+              style: TextStyle(
                 color: Color(0XFF000000),
                 fontSize: 15.sp,
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Gilroy'
+                fontFamily: 'Gilroy',
               ),
-            )
-          ])),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Widget or_sign_in_with_text() {
     return Row(
       children: [
-         Expanded(
+        Expanded(
           child: Divider(
             height: 0.h,
             thickness: 2,
@@ -351,14 +362,18 @@ class _EmptyStateState extends State<EmptyState> {
           ),
         ),
         GestureDetector(
-          child:  Text("OR Sign in with",
-              style: TextStyle(
-                  color: const Color(0XFF000000),
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w400,
-                  fontFamily: 'Gilroy',fontStyle: FontStyle.normal)),
+          child: Text(
+            "OR Sign in with",
+            style: TextStyle(
+              color: const Color(0XFF000000),
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w400,
+              fontFamily: 'Gilroy',
+              fontStyle: FontStyle.normal,
+            ),
+          ),
         ),
-         Expanded(
+        Expanded(
           child: Divider(
             height: 0.h,
             thickness: 2,
@@ -366,7 +381,7 @@ class _EmptyStateState extends State<EmptyState> {
             endIndent: 0,
             color: const Color(0XFFDEDEDE),
           ),
-        )
+        ),
       ],
     );
   }
@@ -390,7 +405,7 @@ class _EmptyStateState extends State<EmptyState> {
               return null;
             },
           ),
-           SizedBox(height: 15.h),
+          SizedBox(height: 15.h),
           CustomTextFormField(
             controller: passwordController,
             hintText: 'Password',
