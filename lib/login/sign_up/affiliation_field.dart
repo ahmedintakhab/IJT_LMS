@@ -60,7 +60,7 @@ class AffiliationFieldState extends State<AffiliationField> {
                 // Save the value to SharedPreferences (1 for "Yes")
                 _saveAffiliation(value!);
               },
-              activeColor: const Color(0xFF23408F),
+              activeColor: const Color(0xFF00AFEE),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               visualDensity: VisualDensity(
                 horizontal: VisualDensity.minimumDensity,
@@ -95,7 +95,7 @@ class AffiliationFieldState extends State<AffiliationField> {
                 // Save the value to SharedPreferences (0 for "No")
                 _saveAffiliation(value!);
               },
-              activeColor: const Color(0xFF23408F),
+              activeColor: const Color(0xFF00AFEE),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               visualDensity: VisualDensity(
                 horizontal: VisualDensity.minimumDensity,

@@ -25,54 +25,56 @@ class _AddNoticeScreenState extends State<AddNoticeScreen> {
     setState(() {
       isSubmitting = true;
     });
-    print("check uuid: ${widget.course.uuid}");
 
     final String apiUrl = "${ApiConstant.baseUrl}instructor/notice/store/${widget.course.uuid}";
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('authToken') ?? '';
-    print('check token: $token');
 
     try {
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {
           'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
+          'Accept': 'application/json', // Explicitly ask for JSON
         },
-        body: jsonEncode({
-          // 'course_uuid': widget.course.uuid,
+        body: {
           'topic': _titleController.text,
           'details': _descriptionController.text,
-        }),
+        },
       );
 
+      print('Response status: ${response.statusCode}');
+      print('Response headers: ${response.headers}');
+      print('Response body: ${response.body}');
+
       if (response.statusCode == 200) {
-        print("Add notice API response: ${response.statusCode}");
-        final data = jsonDecode(response.body);
-        if (data['success'] == true) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Notice added successfully')),
-          );
-          Navigator.pop(context); // Go back to the notice board screen
-        } else {
-          throw Exception('Failed to add notice: ${data['message']}');
+        try {
+          final data = jsonDecode(response.body);
+          if (data['success'] == true) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Notice added successfully')),
+            );
+            Navigator.pop(context);
+          } else {
+            throw Exception(data['message'] ?? 'Failed to add notice');
+          }
+        } catch (e) {
+          throw Exception('Invalid JSON response: ${response.body}');
         }
       } else {
-        throw Exception('Failed to add notice');
+        throw Exception('Server error: ${response.statusCode}');
       }
     } catch (e) {
       print('Add notice error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error adding notice: $e')),
+        SnackBar(content: Text('Error: ${e.toString()}')),
       );
     } finally {
       setState(() {
         isSubmitting = false;
       });
     }
-  }
-
-  @override
+  }  @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();

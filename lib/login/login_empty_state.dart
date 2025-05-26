@@ -179,7 +179,42 @@ class _EmptyStateState extends State<EmptyState> {
                         buttonText: 'Log In',
                         isLoading: isLoading,
                       ),
-                      SizedBox(height: 40.h),
+                      // SizedBox(height: 40.h),
+                      Padding(
+                        padding: EdgeInsets.only(right: 10.w, top: 10.h, bottom: 10.h),
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () {
+                              // Add your skip action here, e.g., navigate to HomeMainScreen
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => HomeMainScreen()),
+                              );
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  "Skip",
+                                  style: TextStyle(
+                                    color: Color(0xFF00AFEE),
+                                    fontSize: 20.sp,
+                                    fontFamily: 'Gilroy',
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                SizedBox(width: 5.w),
+                                Icon(
+                                  Icons.arrow_forward,
+                                  color: Color(0xFF00AFEE),
+                                  size: 20.sp,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                       // CustomButton(onTap: (){
                       //   Navigator.push(context, MaterialPageRoute(builder: (context)=>HomeMainScreen()));
                       // }, buttonText: 'Skip'),

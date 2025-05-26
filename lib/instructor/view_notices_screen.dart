@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -18,6 +19,7 @@ class _ViewNoticesScreenState extends State<ViewNoticesScreen> {
   List<dynamic> notices = [];
   String courseTitle = '';
   bool isLoading = true;
+  Set<String> deletingUuids = {};
 
   @override
   void initState() {
@@ -62,6 +64,62 @@ class _ViewNoticesScreenState extends State<ViewNoticesScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error fetching notices: $e')),
+      );
+    }
+  }
+
+  Future<void> deleteNotice(String uuid, int index) async {
+    if (deletingUuids.contains(uuid)) return; // Prevent multiple delete requests for the same notice
+
+    setState(() {
+      deletingUuids.add(uuid); // Mark this notice as being deleted
+    });
+
+    String apiUrl = "${ApiConstant.baseUrl}instructor/notice/delete/$uuid";
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('authToken') ?? '';
+
+    try {
+      final response = await http.delete(
+        Uri.parse(apiUrl),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('Delete Notice API response: ${response.statusCode}');
+      print('Delete Notice API body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        if (responseData['success'] == true) {
+          setState(() {
+            notices.removeAt(index); // Remove the notice from the list
+            deletingUuids.remove(uuid); // Clear the deleting state
+          });
+          Get.snackbar(
+            'Successful',
+            responseData['message'] ?? 'Notice deleted successfully',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
+        } else {
+          throw Exception(responseData['message'] ?? 'Failed to delete notice');
+        }
+      } else {
+        throw Exception('Failed to delete notice: ${response.statusCode}');
+      }
+    } catch (e) {
+      setState(() {
+        deletingUuids.remove(uuid); // Clear the deleting state on error
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error deleting notice: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -189,10 +247,10 @@ class _ViewNoticesScreenState extends State<ViewNoticesScreen> {
                       child: const Text('Edit'),
                     ),
                     ElevatedButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Delete notice ${notice['topic']} for $courseTitle')),
-                        );
+                      onPressed: deletingUuids.contains(notice['uuid'])
+                          ? null
+                          : () {
+                        deleteNotice(notice['uuid'], index);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
@@ -201,7 +259,16 @@ class _ViewNoticesScreenState extends State<ViewNoticesScreen> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Text('Delete'),
+                      child: deletingUuids.contains(notice['uuid'])
+                          ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                          : const Text('Delete'),
                     ),
                   ],
                 ),

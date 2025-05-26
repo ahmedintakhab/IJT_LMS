@@ -69,7 +69,7 @@ class _InstructorEditScreenState extends State<InstructorEditScreen> {
     final String apiUrl = "${ApiConstant.baseUrl}instructor/profile";
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String token = prefs.getString('auth_token') ?? '';
+      String token = prefs.getString('authToken') ?? '';
 
       final response = await http.get(
         Uri.parse(apiUrl),
@@ -146,7 +146,7 @@ class _InstructorEditScreenState extends State<InstructorEditScreen> {
     final String apiUrl = "${ApiConstant.baseUrl}instructor/profile/update/$instructorUuid";
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String token = prefs.getString('auth_token') ?? '';
+      String token = prefs.getString('authToken') ?? '';
 
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
       request.headers.addAll({
@@ -201,7 +201,8 @@ class _InstructorEditScreenState extends State<InstructorEditScreen> {
         resizeToAvoidBottomInset: false,
         body: Stack(
             children: [
-              SafeArea(
+              if (!isLoading)
+                SafeArea(
                 child: Padding(
                   padding: EdgeInsets.only(left: 20.w, right: 20.w),
                   child: SingleChildScrollView(
@@ -419,6 +420,13 @@ class _InstructorEditScreenState extends State<InstructorEditScreen> {
                   ),
                 ),
               ),
+              if (isLoading)
+                const Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xFF00AFEE),
+                    strokeWidth: 4,
+                  ),
+                ),
             ]
         ),
       ),

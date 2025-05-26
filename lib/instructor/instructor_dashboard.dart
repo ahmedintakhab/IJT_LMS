@@ -363,7 +363,7 @@ class _InstructorPanelState extends State<InstructorPanel> {
                         width: double.infinity.w,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(22.h),
-                          color: const Color(0XFF78A03F),
+                          color: const Color(0XFF00AFEE),
                         ),
                         child: Center(
                           child: Text(
@@ -390,7 +390,7 @@ class _InstructorPanelState extends State<InstructorPanel> {
                         width: double.infinity.w,
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: const Color(0xFF78A03F),
+                            color: const Color(0xFF00AFEE),
                             style: BorderStyle.solid,
                             width: 1.0.w,
                           ),

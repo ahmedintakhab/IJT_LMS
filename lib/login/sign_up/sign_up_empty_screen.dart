@@ -471,9 +471,9 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
               List<Map<String, dynamic>> newProvinces = [];
               if (value != null) {
                 final selectedItem = countries.firstWhere((item) => item['country_name'] == value);
-                await prefs.setString('country_id', selectedItem['id']);
+                await prefs.setString('country_id', selectedItem['id'].toString());
                 await prefs.setString('selected_country', value);
-                newProvinces = await locationDataService.fetchProvinces(selectedItem['id'], prefs);
+                newProvinces = await locationDataService.fetchProvinces(selectedItem['id'].toString(), prefs);
               } else {
                 await prefs.remove('country_id');
                 await prefs.remove('selected_country');
@@ -518,9 +518,9 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
               List<Map<String, dynamic>> newDistricts = [];
               if (value != null) {
                 final selectedItem = provinces.firstWhere((item) => item['province_name'] == value);
-                await prefs.setString('province_id', selectedItem['id']);
+                await prefs.setString('province_id', selectedItem['id'].toString());
                 await prefs.setString('selected_province', value);
-                newDistricts = await locationDataService.fetchDistricts(selectedItem['id'], prefs);
+                newDistricts = await locationDataService.fetchDistricts(selectedItem['id'].toString(), prefs);
               } else {
                 await prefs.remove('province_id');
                 await prefs.remove('selected_province');
@@ -559,9 +559,9 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
               List<Map<String, dynamic>> newCities = [];
               if (value != null) {
                 final selectedItem = districts.firstWhere((item) => item['district_name'] == value);
-                await prefs.setString('district_id', selectedItem['id']);
+                await prefs.setString('district_id', selectedItem['id'].toString());
                 await prefs.setString('selected_district', value);
-                newCities = await locationDataService.fetchCities(selectedItem['id'], prefs);
+                newCities = await locationDataService.fetchCities(selectedItem['id'].toString(), prefs);
               } else {
                 await prefs.remove('district_id');
                 await prefs.remove('selected_district');
@@ -599,9 +599,9 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
                   orElse: () => {'id': '', 'name': ''},
                 );
                 if (selectedItem['id'] != '') {
-                  await prefs.setString('city_id', selectedItem['id']);
+                  await prefs.setString('city_id', selectedItem['id'].toString());
                   await prefs.setString('selected_city', value);
-                  newMuqams = await locationDataService.fetchMuqams(selectedItem['id'], prefs);
+                  newMuqams = await locationDataService.fetchMuqams(selectedItem['id'].toString(), prefs);
                 }
               } else {
                 await prefs.remove('city_id');
@@ -630,7 +630,7 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
               final prefs = await SharedPreferences.getInstance();
               if (value != null) {
                 final selectedItem = muqams.firstWhere((item) => item['muqam_name'] == value);
-                await prefs.setString('muqam_id', selectedItem['id']);
+                await prefs.setString('muqam_id', selectedItem['id'].toString());
                 await prefs.setString('selected_muqam', value);
               } else {
                 await prefs.remove('muqam_id');

@@ -22,7 +22,7 @@ class CustomTextFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      controller: controller,
+      controller: controller,cursorColor: Color(0XFF00AFEE),
       obscureText: obscureText,
       decoration: InputDecoration(
         hintText: hintText,
