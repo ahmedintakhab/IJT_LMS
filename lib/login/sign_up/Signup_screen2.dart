@@ -104,8 +104,8 @@ class LocationDataService {
     return [];
   }
 
-  Future<List<Map<String, dynamic>>> fetchMuqams(String cityId, SharedPreferences prefs) async {
-    final cacheKey = 'cached_muqams_$cityId';
+  Future<List<Map<String, dynamic>>> fetchMuqams(String provinceId, SharedPreferences prefs) async {
+    final cacheKey = 'cached_muqams_$provinceId';
     final cachedData = prefs.getString(cacheKey);
 
     if (cachedData != null) {
@@ -113,7 +113,7 @@ class LocationDataService {
     }
 
     try {
-      final response = await http.get(Uri.parse('${ApiConstant.baseUrl}muqams/$cityId'));
+      final response = await http.get(Uri.parse('${ApiConstant.baseUrl}muqams_by_province/$provinceId'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['success'] == true) {

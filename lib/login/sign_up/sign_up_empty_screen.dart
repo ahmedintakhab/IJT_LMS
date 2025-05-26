@@ -34,6 +34,7 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
   String? selectedDistrict;
   String? selectedCity;
   String? selectedMuqam;
+  bool hasAffiliation = false; // Default to "No" (false)
 
   bool ischeaked = false;
   bool ispassHiden = true;
@@ -54,7 +55,6 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
   TextEditingController firstnameController = TextEditingController();
   TextEditingController lastnameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
-  // TextEditingController phoneNumberController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmpasswordController = TextEditingController();
   TextEditingController membershipController = TextEditingController();
@@ -91,8 +91,7 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
     // Load countries into the state
     countries = await locationDataService.fetchCountries(prefs);
 
-    // Do not load selected values from SharedPreferences to set as initialValue
-    // Instead, keep the dropdowns empty (showing hints) by leaving selectedX as null
+    // Keep dropdowns empty initially
     selectedCountry = null;
     selectedProvince = null;
     selectedDistrict = null;
@@ -107,7 +106,7 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
     cityHint = 'City';
     muqamHint = 'Muqam';
 
-    // Check if there’s a previously selected country and load provinces
+    // Load persisted data if available
     if (prefs.containsKey('selected_country')) {
       final countryId = prefs.getString('country_id');
       if (countryId != null) {
@@ -115,11 +114,13 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
       }
     }
 
-    // Load districts, cities, and muqams if previously selected
     if (prefs.containsKey('selected_province')) {
       final provinceId = prefs.getString('province_id');
       if (provinceId != null) {
         districts = await locationDataService.fetchDistricts(provinceId, prefs);
+        if (prefs.getInt('has_affiliation') == 1) {
+          muqams = await locationDataService.fetchMuqams(provinceId, prefs);
+        }
       }
     }
 
@@ -130,11 +131,16 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
       }
     }
 
-    if (prefs.containsKey('selected_city')) {
+    if (prefs.containsKey('selected_city') && prefs.getInt('has_affiliation') != 1) {
       final cityId = prefs.getString('city_id');
       if (cityId != null) {
         muqams = await locationDataService.fetchMuqams(cityId, prefs);
       }
+    }
+
+    // Set default affiliation to "No" if not already set
+    if (!prefs.containsKey('has_affiliation')) {
+      await prefs.setInt('has_affiliation', 0);
     }
 
     setState(() => isDataLoading = false);
@@ -145,8 +151,8 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
     return {
       'country_id': prefs.getString('country_id'),
       'province_id': prefs.getString('province_id'),
-      'district_id': prefs.getString('district_id'),
-      'city_id': prefs.getString('city_id'),
+      'district_id': hasAffiliation ? null : prefs.getString('district_id'),
+      'city_id': hasAffiliation ? null : prefs.getString('city_id'),
       'muqam_id': prefs.getString('muqam_id'),
       'student_type': prefs.getInt('has_affiliation')?.toString(),
     };
@@ -158,46 +164,44 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
       return;
     }
 
-    // if (!ischeaked) {
-    //   Get.snackbar(
-    //     'Error',
-    //     'Please accept terms and conditions',
-    //     snackPosition: SnackPosition.BOTTOM,
-    //     backgroundColor: Colors.red,
-    //     colorText: Colors.white,
-    //   );
-    //   print('Terms and conditions not accepted');
-    //   return;
-    // }
+    final ids = await getAllIdsFromSharedPreferences();
 
-    if (passwordController.text != confirmpasswordController.text) {
+    // Check required fields for both cases
+    if (ids['country_id'] == null || ids['province_id'] == null || ids['student_type'] == null) {
       Get.snackbar(
         'Error',
-        'Passwords do not match',
+        'Please select Country, Province, and Affiliation',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-      print('Passwords do not match');
+      print('Missing required selections: Country, Province, or Affiliation: $ids');
       return;
     }
 
-    final ids = await getAllIdsFromSharedPreferences();
-
-    if (ids['country_id'] == null ||
-        ids['province_id'] == null ||
-        ids['district_id'] == null ||
-        ids['city_id'] == null ||
-        ids['muqam_id'] == null ||
-        ids['student_type'] == null) {
+    // Validation for "No" case: District and City required
+    if (!hasAffiliation && (ids['district_id'] == null || ids['city_id'] == null)) {
       Get.snackbar(
         'Error',
-        'Please complete all selections (Country, Province, District, City, Muqam, and Affiliation)',
+        'Please select District and City',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-      print('Missing selections: $ids');
+      print('Missing District or City for non-affiliated user');
+      return;
+    }
+
+    // Validation for "Yes" case: Muqam required
+    if (hasAffiliation && ids['muqam_id'] == null) {
+      Get.snackbar(
+        'Error',
+        'Please select Muqam',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      print('Missing Muqam selection for affiliated user');
       return;
     }
 
@@ -228,9 +232,9 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
       'mobile_number': phoneNumber,
       'country_id': ids['country_id'],
       'province_id': ids['province_id'],
-      'district_id': ids['district_id'],
-      'city_id': ids['city_id'],
-      'muqam_id': ids['muqam_id'],
+      'district_id': hasAffiliation ? null : ids['district_id'], // Send null for district_id if affiliated
+      'city_id': hasAffiliation ? null : ids['city_id'], // Send null for city_id if affiliated
+      'muqam_id': ids['muqam_id'], // Send muqam_id (optional for "No" case)
       'student_type': ids['student_type'],
     };
 
@@ -376,7 +380,7 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
           phone_number_field(
             onPhoneNumberChanged: (String phone) {
               setState(() {
-                phoneNumber = phone; // Store the phone number
+                phoneNumber = phone;
               });
             },
             validator: (String? value) {
@@ -461,7 +465,43 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
             },
           ),
           SizedBox(height: 20.h),
-          AffiliationField(controller: membershipController),
+          AffiliationField(
+            controller: membershipController,
+            onAffiliationChanged: (bool? value) async {
+              final prefs = await SharedPreferences.getInstance();
+              setState(() {
+                hasAffiliation = value ?? false; // Default to false if value is null
+                if (!hasAffiliation) {
+                  selectedMuqam = null;
+                  muqams = [];
+                } else if (hasAffiliation && selectedProvince != null) {
+                  // Fetch Muqams based on selected province
+                  final provinceItem = provinces.firstWhere((item) => item['province_name'] == selectedProvince);
+                  locationDataService
+                      .fetchMuqams(provinceItem['id'].toString(), prefs)
+                      .then((newMuqams) {
+                    setState(() {
+                      muqams = newMuqams;
+                      selectedMuqam = null;
+                      muqamHint = '--Select Muqam--';
+                    });
+                  });
+                }
+                // Reset district and city when affiliation changes
+                selectedDistrict = null;
+                selectedCity = null;
+                districts = [];
+                cities = [];
+              });
+              // Clear dependent SharedPreferences
+              await prefs.remove('district_id');
+              await prefs.remove('selected_district');
+              await prefs.remove('city_id');
+              await prefs.remove('selected_city');
+              await prefs.remove('muqam_id');
+              await prefs.remove('selected_muqam');
+            },
+          ),
           SizedBox(height: 20.h),
           CountryDropdown(
             hint: 'Country',
@@ -479,7 +519,6 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
                 await prefs.remove('selected_country');
               }
 
-              // Update state after fetching data
               setState(() {
                 selectedCountry = value;
                 isCountrySelected = value != null;
@@ -497,7 +536,6 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
                 muqams = [];
               });
 
-              // Clear dependent SharedPreferences keys
               await prefs.remove('province_id');
               await prefs.remove('selected_province');
               await prefs.remove('district_id');
@@ -516,11 +554,16 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
             onChanged: (value) async {
               final prefs = await SharedPreferences.getInstance();
               List<Map<String, dynamic>> newDistricts = [];
+              List<Map<String, dynamic>> newMuqams = [];
               if (value != null) {
                 final selectedItem = provinces.firstWhere((item) => item['province_name'] == value);
                 await prefs.setString('province_id', selectedItem['id'].toString());
                 await prefs.setString('selected_province', value);
-                newDistricts = await locationDataService.fetchDistricts(selectedItem['id'].toString(), prefs);
+                if (hasAffiliation) {
+                  newMuqams = await locationDataService.fetchMuqams(selectedItem['id'].toString(), prefs);
+                } else {
+                  newDistricts = await locationDataService.fetchDistricts(selectedItem['id'].toString(), prefs);
+                }
               } else {
                 await prefs.remove('province_id');
                 await prefs.remove('selected_province');
@@ -531,13 +574,13 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
                 isProvinceSelected = value != null;
                 districtHint = isProvinceSelected ? '--Select District--' : 'District';
                 districts = newDistricts;
+                muqams = newMuqams;
                 selectedDistrict = null;
                 selectedCity = null;
                 selectedMuqam = null;
                 isDistrictSelected = false;
                 isCitySelected = false;
                 cities = [];
-                muqams = [];
               });
 
               await prefs.remove('district_id');
@@ -550,100 +593,104 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
             initialValue: selectedProvince,
             isCountrySelected: isCountrySelected,
           ),
-          SizedBox(height: 20.h),
-          DistrictDropdown(
-            hint: districtHint,
-            items: districts,
-            onChanged: (value) async {
-              final prefs = await SharedPreferences.getInstance();
-              List<Map<String, dynamic>> newCities = [];
-              if (value != null) {
-                final selectedItem = districts.firstWhere((item) => item['district_name'] == value);
-                await prefs.setString('district_id', selectedItem['id'].toString());
-                await prefs.setString('selected_district', value);
-                newCities = await locationDataService.fetchCities(selectedItem['id'].toString(), prefs);
-              } else {
-                await prefs.remove('district_id');
-                await prefs.remove('selected_district');
-              }
-
-              setState(() {
-                selectedDistrict = value;
-                isDistrictSelected = value != null;
-                cityHint = isDistrictSelected ? '--Select City--' : 'City';
-                cities = newCities;
-                selectedCity = null;
-                selectedMuqam = null;
-                isCitySelected = false;
-                muqams = [];
-              });
-
-              await prefs.remove('city_id');
-              await prefs.remove('selected_city');
-              await prefs.remove('muqam_id');
-              await prefs.remove('selected_muqam');
-            },
-            initialValue: selectedDistrict,
-            isProvinceSelected: isProvinceSelected,
-          ),
-          SizedBox(height: 20.h),
-          CityDropdown(
-            hint: cityHint,
-            items: cities,
-            onChanged: (value) async {
-              final prefs = await SharedPreferences.getInstance();
-              List<Map<String, dynamic>> newMuqams = [];
-              if (value != null && cities.isNotEmpty) {
-                final selectedItem = cities.firstWhere(
-                      (item) => item['name'] == value,
-                  orElse: () => {'id': '', 'name': ''},
-                );
-                if (selectedItem['id'] != '') {
-                  await prefs.setString('city_id', selectedItem['id'].toString());
-                  await prefs.setString('selected_city', value);
-                  newMuqams = await locationDataService.fetchMuqams(selectedItem['id'].toString(), prefs);
+          if (!hasAffiliation) ...[
+            SizedBox(height: 20.h),
+            DistrictDropdown(
+              hint: districtHint,
+              items: districts,
+              onChanged: (value) async {
+                final prefs = await SharedPreferences.getInstance();
+                List<Map<String, dynamic>> newCities = [];
+                if (value != null) {
+                  final selectedItem = districts.firstWhere((item) => item['district_name'] == value);
+                  await prefs.setString('district_id', selectedItem['id'].toString());
+                  await prefs.setString('selected_district', value);
+                  newCities = await locationDataService.fetchCities(selectedItem['id'].toString(), prefs);
+                } else {
+                  await prefs.remove('district_id');
+                  await prefs.remove('selected_district');
                 }
-              } else {
+
+                setState(() {
+                  selectedDistrict = value;
+                  isDistrictSelected = value != null;
+                  cityHint = isDistrictSelected ? '--Select City--' : 'City';
+                  cities = newCities;
+                  selectedCity = null;
+                  selectedMuqam = null;
+                  isCitySelected = false;
+                  muqams = [];
+                });
+
                 await prefs.remove('city_id');
                 await prefs.remove('selected_city');
-              }
-
-              setState(() {
-                selectedCity = value;
-                isCitySelected = value != null;
-                muqamHint = isCitySelected ? '--Select Muqam--' : 'Muqam';
-                muqams = newMuqams;
-                selectedMuqam = null;
-              });
-
-              await prefs.remove('muqam_id');
-              await prefs.remove('selected_muqam');
-            },
-            initialValue: selectedCity,
-            isDistrictSelected: isDistrictSelected,
-          ),
-          SizedBox(height: 20.h),
-          MuqamDropdown(
-            hint: muqamHint,
-            items: muqams,
-            onChanged: (value) async {
-              final prefs = await SharedPreferences.getInstance();
-              if (value != null) {
-                final selectedItem = muqams.firstWhere((item) => item['muqam_name'] == value);
-                await prefs.setString('muqam_id', selectedItem['id'].toString());
-                await prefs.setString('selected_muqam', value);
-              } else {
                 await prefs.remove('muqam_id');
                 await prefs.remove('selected_muqam');
-              }
+              },
+              initialValue: selectedDistrict,
+              isProvinceSelected: isProvinceSelected,
+            ),
+            SizedBox(height: 20.h),
+            CityDropdown(
+              hint: cityHint,
+              items: cities,
+              onChanged: (value) async {
+                final prefs = await SharedPreferences.getInstance();
+                List<Map<String, dynamic>> newMuqams = [];
+                if (value != null && cities.isNotEmpty) {
+                  final selectedItem = cities.firstWhere(
+                        (item) => item['name'] == value,
+                    orElse: () => {'id': '', 'name': ''},
+                  );
+                  if (selectedItem['id'] != '') {
+                    await prefs.setString('city_id', selectedItem['id'].toString());
+                    await prefs.setString('selected_city', value);
+                    newMuqams = await locationDataService.fetchMuqams(selectedItem['id'].toString(), prefs);
+                  }
+                } else {
+                  await prefs.remove('city_id');
+                  await prefs.remove('selected_city');
+                }
 
-              setState(() {
-                selectedMuqam = value;
-              });
-            },
-            initialValue: selectedMuqam,
-            isCitySelected: isCitySelected,
-          ),
+                setState(() {
+                  selectedCity = value;
+                  isCitySelected = value != null;
+                  muqamHint = isCitySelected ? '--Select Muqam--' : '--Select Muqam--';
+                  muqams = newMuqams;
+                  selectedMuqam = null;
+                });
+
+                await prefs.remove('muqam_id');
+                await prefs.remove('selected_muqam');
+              },
+              initialValue: selectedCity,
+              isDistrictSelected: isDistrictSelected,
+            ),
+          ],
+          if (hasAffiliation) ...[
+            SizedBox(height: 20.h),
+            MuqamDropdown(
+              hint: muqamHint,
+              items: muqams,
+              onChanged: (value) async {
+                final prefs = await SharedPreferences.getInstance();
+                if (value != null) {
+                  final selectedItem = muqams.firstWhere((item) => item['muqam_name'] == value);
+                  await prefs.setString('muqam_id', selectedItem['id'].toString());
+                  await prefs.setString('selected_muqam', value);
+                } else {
+                  await prefs.remove('muqam_id');
+                  await prefs.remove('selected_muqam');
+                }
+
+                setState(() {
+                  selectedMuqam = value;
+                });
+              },
+              initialValue: selectedMuqam,
+              isCitySelected: isProvinceSelected,
+            ),
+          ],
         ],
       ),
     );
@@ -694,7 +741,6 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
     firstnameController.dispose();
     lastnameController.dispose();
     emailController.dispose();
-    // phoneNumberController.dispose();
     passwordController.dispose();
     confirmpasswordController.dispose();
     locationControllers.values.forEach((controller) => controller.dispose());
