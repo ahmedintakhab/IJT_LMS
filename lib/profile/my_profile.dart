@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:learn_megnagmet/profile/help_center.dart';
-import 'package:learn_megnagmet/profile/privacy_policy.dart';
 import 'package:learn_megnagmet/profile/profile_field_container.dart';
 import 'package:learn_megnagmet/profile/student_change_password.dart';
 import 'package:learn_megnagmet/profile/student_update_profile.dart';
@@ -212,14 +210,14 @@ class _MyProfileState extends State<MyProfile> {
                               title: 'Privacy Policy',
                               icon: Icon(Icons.lock, color: Color(0XFF00AFEE)),
                               onTap: () {
-                                Get.to(PrivacyPolicy());
+                                // Get.to(PrivacyPolicy());
                               },
                             ),
                             ProfileFieldContainer(
                               title: 'Help Center',
                               icon: Icon(Icons.help_center, color: Color(0XFF00AFEE)),
                               onTap: () {
-                                Get.to(HelpCenter());
+                                // Get.to(HelpCenter());
                               },
                             ),
                             ProfileFieldContainer(
@@ -247,7 +245,7 @@ class _MyProfileState extends State<MyProfile> {
                                       style: BorderStyle.solid,
                                       width: 1.0.w,
                                     ),
-                                    borderRadius: BorderRadius.circular(20.h),
+                                    borderRadius: BorderRadius.circular(8.h),
                                   ),
                                   child: Center(
                                     child: Text("Logout",
@@ -310,7 +308,7 @@ class _MyProfileState extends State<MyProfile> {
                         height: 56.h,
                         width: double.infinity.w,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(22.h),
+                          borderRadius: BorderRadius.circular(8.h),
                           color: const Color(0XFF00AFEE),
                         ),
                         child: Center(
@@ -342,7 +340,7 @@ class _MyProfileState extends State<MyProfile> {
                             style: BorderStyle.solid,
                             width: 1.0.w,
                           ),
-                          borderRadius: BorderRadius.circular(22.h),
+                          borderRadius: BorderRadius.circular(8.h),
                         ),
                         child: Center(
                           child: Text(

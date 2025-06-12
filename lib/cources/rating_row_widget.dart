@@ -42,7 +42,7 @@ class RatingRowWidget extends StatelessWidget {
           lineHeight: 4.h,
           percent: percent,
           backgroundColor: Colors.grey,
-          progressColor: Colors.lightGreen,
+          progressColor: Color(0XFF00AFEE),
         ),
       ],
     );

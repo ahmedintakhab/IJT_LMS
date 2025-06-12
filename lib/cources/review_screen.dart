@@ -136,7 +136,7 @@ class _ReviewState extends State<Review> {
                     child:Text(
                       "Write A Review",
                       style: TextStyle(
-                                fontFamily: 'Nastaleeq',
+                          fontFamily: 'Nastaleeq',
                           fontSize: 18.sp,
                           color: const Color(0XFF000000),
                           fontWeight: FontWeight.bold),
@@ -225,7 +225,7 @@ class _ReviewState extends State<Review> {
                                   userReview['created_at'].toString(),
                                   style: TextStyle(
                                     fontSize: 12.sp,
-                                    color: Color(0XFF5E8421),
+                                    color: Color(0XFF00AFEE),
                                           fontFamily: 'Nastaleeq',
                                   ),
                                 ),

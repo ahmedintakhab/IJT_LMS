@@ -314,7 +314,8 @@ class _MyCourcesState extends State<MyCources> {
                   child: Row(
                     children: [
                       GestureDetector(
-                        onTap: () => Get.back(),
+                        onTap: () => Get.off(() => const HomeMainScreen()),
+
                         child: Image.asset(
                           "assets/back_arrow.png",
                           height: 24.h,

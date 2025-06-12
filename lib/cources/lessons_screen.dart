@@ -63,7 +63,7 @@ class _LessonState extends State<Lesson> {
                                 child: Image.asset(
                                   "assets/down.png", height: 24.h,
                                   width: 24.w,
-                                  color: Color(0XFF78A03F),),
+                                  color: Color(0XFF00AFEE),),
                               ),
                               animateTrailing: true,
 
@@ -97,7 +97,7 @@ class _LessonState extends State<Lesson> {
                                     decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(
                                             22.h),
-                                        color: const Color(0XFFEBF2C2)),
+                                        color: const Color(0XFF00AFEE)),
                                     child: Center(
                                         child: Text(
                                           'Lesson ${lesson['lesson_no']
@@ -105,7 +105,7 @@ class _LessonState extends State<Lesson> {
                                           style: TextStyle(
                                               fontSize: 12.sp,
                                               fontWeight: FontWeight.bold,
-                                              color: const Color(0XFF78A03F)),
+                                              color: Colors.white),
                                         )),
                                   ),
                                 ],
@@ -182,7 +182,7 @@ class _LessonState extends State<Lesson> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0XFF78A03F),
+                          backgroundColor: const Color(0XFF00AFEE),
                         ),
                         child: Text(
                           'Preview',
@@ -240,7 +240,7 @@ class _LessonState extends State<Lesson> {
             return SizedBox(
               height: 20.h,
               width: 20.w,
-              child: const CircularProgressIndicator(),
+              child: const CircularProgressIndicator(color: Color(0XFF00AFEE),),
             );
           }
 
@@ -258,11 +258,11 @@ class _LessonState extends State<Lesson> {
             height: 20.h,
             width: 20.w,
             colorFilter: const ColorFilter.mode(
-              Color(0XFF8CC13F),
+              Color(0XFF00AFEE),
               BlendMode.srcIn,
             ),
             theme: const SvgTheme(
-              currentColor: Color(0XFF8CC13F),
+              currentColor: Color(0XFF00AFEE),
               fontSize: 14,
               xHeight: 0,
             ),
@@ -274,7 +274,7 @@ class _LessonState extends State<Lesson> {
         iconUrl,
         height: 20.h,
         width: 20.w,
-        color: const Color(0XFF8CC13F),
+        color: const Color(0XFF00AFEE),
         errorBuilder: (context, error, stackTrace) =>
             Icon(
               Icons.error,

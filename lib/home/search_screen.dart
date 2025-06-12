@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:learn_megnagmet/home/search_courses_list.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../controller/controller.dart';
 import '../models/design_list.dart';
 import '../models/recently_added.dart';
 import '../models/trending_cource.dart';
+import '../utils/api_constant.dart';
 import '../utils/screen_size.dart';
 import '../utils/slider_page_data_model.dart';
+import 'categories_courses.dart';
 import 'filter_sheet.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -29,6 +33,53 @@ class _SearchScreenState extends State<SearchScreen> {
   List<Design> design = Utils.getDesign();
   List<Trending> cource = Utils.getTrending();
   List<Recent> recentAdded = Utils.getRecentAdded();
+  List<dynamic> courses = [];
+  bool isLoading = true;
+  String errorMessage = '';
+  @override
+  void initState() {
+    super.initState();
+    fetchCourses();
+  }
+
+  Future<void> fetchCourses() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('authToken') ?? '';
+
+      final response = await GetConnect().get(
+        '${ApiConstant.baseUrl}search-course-list',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        if (response.body['success'] == true) {
+          setState(() {
+            courses = response.body['data'];
+            isLoading = false;
+          });
+        } else {
+          setState(() {
+            errorMessage = response.body['message'] ?? 'Failed to load courses';
+            isLoading = false;
+          });
+        }
+      } else {
+        setState(() {
+          errorMessage = 'Failed to load courses: ${response.statusCode}';
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Error: $e';
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,77 +119,82 @@ class _SearchScreenState extends State<SearchScreen> {
                           children: [
                             search_text_field(),
                             //SizedBox(height: 20),
-                            Wrap(
-                              alignment: WrapAlignment.start,
-                              children: [
-                                for (final i in List.generate(
-                                    categoryList.length, (index) => index))
-                                  Padding(
-                                    padding: EdgeInsets.only(
-                                        top: 12.h,
-                                        bottom: 12.h,
-                                        right: 3.w,
-                                        left: 3.w),
-                                    child: Wrap(
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              if (!selectedCategory
-                                                  .contains(categoryList[i])) {
-                                                selectedCategory
-                                                    .add(categoryList[i]);
-                                              } else {
-                                                selectedCategory
-                                                    .remove(categoryList[i]);
-                                              }
-                                            });
-                                          },
-                                          child: Container(
-                                            padding: EdgeInsets.symmetric(
-                                                vertical: 6.h, horizontal: 13.w),
-                                            decoration: BoxDecoration(
-                                              color: selectedCategory
-                                                      .contains(categoryList[i])
-                                                  ? Color(0XFFE5ECFF)
-                                                  : Colors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(6.h),
-                                              border: Border.all(
-                                                  color: selectedCategory
-                                                          .contains(categoryList[i])
-                                                      ? Color(0XFF00AFEE)
-                                                      : Color(0XFF6E758A),
-                                                  width: 1.w),
-                                            ),
-                                            child: Text(
-                                              categoryList[i],
-                                              style: selectedCategory
-                                                      .contains(categoryList[i])
-                                                  ? TextStyle(
-                                                      fontSize: 15.sp,
-                                                      fontWeight: FontWeight.w700,
-                                                      color: Color(0XFF00AFEE),
-                                                      fontFamily: 'Gilroy')
-                                                  : TextStyle(
-                                                      fontSize: 15.sp,
-                                                      fontWeight: FontWeight.w700,
-                                                      color: Color(0XFF6E758A),
-                                                      fontFamily: 'Gilroy'),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  )
-                              ],
+                            // Wrap(
+                            //   alignment: WrapAlignment.start,
+                            //   children: [
+                            //     for (final i in List.generate(
+                            //         categoryList.length, (index) => index))
+                            //       Padding(
+                            //         padding: EdgeInsets.only(
+                            //             top: 12.h,
+                            //             bottom: 12.h,
+                            //             right: 3.w,
+                            //             left: 3.w),
+                            //         child: Wrap(
+                            //           children: [
+                            //             GestureDetector(
+                            //               onTap: () {
+                            //                 setState(() {
+                            //                   if (!selectedCategory
+                            //                       .contains(categoryList[i])) {
+                            //                     selectedCategory
+                            //                         .add(categoryList[i]);
+                            //                   } else {
+                            //                     selectedCategory
+                            //                         .remove(categoryList[i]);
+                            //                   }
+                            //                 });
+                            //               },
+                            //               child: Container(
+                            //                 padding: EdgeInsets.symmetric(
+                            //                     vertical: 6.h, horizontal: 13.w),
+                            //                 decoration: BoxDecoration(
+                            //                   color: selectedCategory
+                            //                           .contains(categoryList[i])
+                            //                       ? Color(0XFFE5ECFF)
+                            //                       : Colors.white,
+                            //                   borderRadius:
+                            //                       BorderRadius.circular(6.h),
+                            //                   border: Border.all(
+                            //                       color: selectedCategory
+                            //                               .contains(categoryList[i])
+                            //                           ? Color(0XFF00AFEE)
+                            //                           : Color(0XFF6E758A),
+                            //                       width: 1.w),
+                            //                 ),
+                            //                 child: Text(
+                            //                   categoryList[i],
+                            //                   style: selectedCategory
+                            //                           .contains(categoryList[i])
+                            //                       ? TextStyle(
+                            //                           fontSize: 15.sp,
+                            //                           fontWeight: FontWeight.w700,
+                            //                           color: Color(0XFF00AFEE),
+                            //                           fontFamily: 'Gilroy')
+                            //                       : TextStyle(
+                            //                           fontSize: 15.sp,
+                            //                           fontWeight: FontWeight.w700,
+                            //                           color: Color(0XFF6E758A),
+                            //                           fontFamily: 'Gilroy'),
+                            //                 ),
+                            //               ),
+                            //             ),
+                            //           ],
+                            //         ),
+                            //       )
+                            //   ],
+                            // ),
+                            SizedBox(height: 20.h),
+                            HorizontalDesignList(),
+                            SizedBox(height: 20.h),
+                            // trending_cource(),
+                            SearchCoursesList(
+                              courses: courses,
+                              isLoading: isLoading,
+                              errorMessage: errorMessage,
                             ),
                             SizedBox(height: 20.h),
-                            horizontal_disidn(),
-                            SizedBox(height: 20.h),
-                            trending_cource(),
-                            SizedBox(height: 20.h),
-                            recent_added_list(),
+                            // recent_added_list(),
                           ],
                         ),
                       )

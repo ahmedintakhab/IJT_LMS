@@ -39,7 +39,8 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
   }
 
   Future<void> _handleNavigation(int index) async {
-    if (index == 3) { // Profile tab (person_outline)
+    final validIndex = index.clamp(0, 2); // Now max index is 2
+    if (validIndex  == 2) { // Profile tab (person_outline)
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String token = prefs.getString('authToken') ?? '';
       if (token.isEmpty) {
@@ -76,8 +77,8 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
           ),
           child: ClipRRect(
             borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(22.0),
-              topRight: Radius.circular(22.0),
+              topLeft: Radius.circular(8.0),
+              topRight: Radius.circular(8.0),
             ),
             child: BottomNavigationBar(
               backgroundColor: const Color(0XFFFFFFFF),
@@ -131,29 +132,29 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                   ),
                   label: '',
                 ),
-                BottomNavigationBarItem(
-                  activeIcon: Column(
-                    children: [
-                      Icon(
-                        Icons.message,
-                        size: 24,
-                        color: Color(0XFF00AFEE),
-                      ),
-                      SizedBox(height: 8.79),
-                      Container(
-                        height: 1.75,
-                        width: 24,
-                        color: Color(0XFF00AFEE),
-                      ),
-                    ],
-                  ),
-                  icon: Icon(
-                    Icons.message_outlined,
-                    size: 24,
-                    color: Colors.black,
-                  ),
-                  label: '',
-                ),
+                // BottomNavigationBarItem(
+                //   activeIcon: Column(
+                //     children: [
+                //       Icon(
+                //         Icons.message,
+                //         size: 24,
+                //         color: Color(0XFF00AFEE),
+                //       ),
+                //       SizedBox(height: 8.79),
+                //       Container(
+                //         height: 1.75,
+                //         width: 24,
+                //         color: Color(0XFF00AFEE),
+                //       ),
+                //     ],
+                //   ),
+                //   icon: Icon(
+                //     Icons.message_outlined,
+                //     size: 24,
+                //     color: Colors.black,
+                //   ),
+                //   label: '',
+                // ),
                 BottomNavigationBarItem(
                   activeIcon: Column(
                     children: [
@@ -191,9 +192,9 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
         return HomeScreen();
       case 1:
         return const MyLearningCourses();
+      // case 2:
+      //   return const ChateScreen();
       case 2:
-        return const ChateScreen();
-      case 3:
         if (role == '2') {
           return InstructorPanel(user_detail: userDetail.isNotEmpty ? userDetail[0] : {});
         } else if (role == '3') {

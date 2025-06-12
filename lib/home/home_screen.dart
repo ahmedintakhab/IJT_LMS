@@ -237,10 +237,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 20.w),
                     child: Row(
                       children: [
+                        // User image and welcome text
                         Image(
                           image: AssetImage(userDetail[0].image),
-                          height: 50.h,
-                          width: 49.93.w,
+                          height: 40.h,
+                          width: 40.w,
                         ),
                         SizedBox(width: 10.w),
                         Text(
@@ -248,65 +249,81 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: TextStyle(
                             fontFamily: 'Nastaleeq',
                             color: const Color(0XFF000000),
-                            fontSize: 22.sp,
+                            fontSize: 18.sp,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 30.h),
-                        Container(
-                          height: 50.h,
-                          child: Padding(
-                            padding:
-                            EdgeInsets.symmetric(horizontal: 20.w),
-                            child: TextFormField(
-                              onTap: () => Get.to(SearchScreen()),
-                              decoration: InputDecoration(
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: const Color(0XFF00AFEE),
-                                    width: 1.w,
-                                  ),
-                                  borderRadius:
-                                  BorderRadius.circular(6),
+
+                        // Spacer to push the search icon to the right
+                        Spacer(),
+
+                        // Circular search icon container
+                        Padding(
+                          padding: EdgeInsets.only(right: 10.w),
+                          child: GestureDetector(
+                            onTap: () => Get.to(SearchScreen()),
+                            child: Container(
+                              height: 40.h,
+                              width: 40.w,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,color: Color(0XFF00AFEE),
+                                border: Border.all(
+                                  color: const Color(0XFF00AFEE),
+                                  width: 1.w,
                                 ),
-                                hintText: 'Search',
-                                hintStyle: TextStyle(
-                                  color: Color(0XFF9B9B9B),
-                                  fontSize: 15.sp,
-                                  fontFamily: 'Nastaleeq',
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                prefixIcon: Image(
-                                  image:
-                                  AssetImage('assets/search.png'),
+                              ),
+                              child: Center(
+                                child: Image(
+                                  image: AssetImage('assets/search.png'),
                                   height: 24.h,
-                                  width: 24.w,
-                                ),
-                                // suffixIcon: GestureDetector(
-                                //   onTap: () {},
-                                //   child: Container(
-                                //     height: 5.h,
-                                //     width: 5.w,
-                                //     decoration: const BoxDecoration(
-                                //       image: DecorationImage(
-                                //         image: AssetImage(
-                                //             "assets/filico.png"),
-                                //       ),
-                                //     ),
-                                //   ),
-                                // ),
-                                border: OutlineInputBorder(
-                                  borderRadius:
-                                  BorderRadius.circular(6),
+                                  width: 24.w,color: Colors.white,
                                 ),
                               ),
                             ),
                           ),
                         ),
-                        SizedBox(height: 20.h),
+                      ],
+                    ),
+                  ),
+                  // SizedBox(height: 30.h),
+                  //       Container(
+                  //         height: 50.h,
+                  //         child: Padding(
+                  //           padding:
+                  //           EdgeInsets.symmetric(horizontal: 20.w),
+                  //           child: TextFormField(
+                  //             onTap: () => Get.to(SearchScreen()),
+                  //             decoration: InputDecoration(
+                  //               focusedBorder: OutlineInputBorder(
+                  //                 borderSide: BorderSide(
+                  //                   color: const Color(0XFF00AFEE),
+                  //                   width: 1.w,
+                  //                 ),
+                  //                 borderRadius:
+                  //                 BorderRadius.circular(6),
+                  //               ),
+                  //               hintText: 'Search',
+                  //               hintStyle: TextStyle(
+                  //                 color: Color(0XFF9B9B9B),
+                  //                 fontSize: 15.sp,
+                  //                 fontFamily: 'Nastaleeq',
+                  //                 fontWeight: FontWeight.w400,
+                  //               ),
+                  //               prefixIcon: Image(
+                  //                 image:
+                  //                 AssetImage('assets/search.png'),
+                  //                 height: 24.h,
+                  //                 width: 24.w,
+                  //               ),
+                  //               border: OutlineInputBorder(
+                  //                 borderRadius:
+                  //                 BorderRadius.circular(6),
+                  //               ),
+                  //             ),
+                  //           ),
+                  //         ),
+                  //       ),
+                        SizedBox(height: 40.h),
                         generatepage(),
                         SizedBox(height: 20.h),
                         indicator(),

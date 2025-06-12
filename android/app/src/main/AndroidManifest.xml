@@ -1,4 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.codiro.lms_ijt">
     <uses-permission android:name="android.permission.INTERNET" />
    <application
         android:label="Tarbiyyah Online"
@@ -6,7 +7,7 @@
         android:icon="@mipmap/ic_launcher"
        >
         <activity
-            android:name=".MainActivity"
+            android:name="com.codiro.lms_ijt.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"
