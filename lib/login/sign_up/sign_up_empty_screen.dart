@@ -171,7 +171,7 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
       Get.snackbar(
         'Error',
         'Please select Country, Province, and Affiliation',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -184,7 +184,7 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
       Get.snackbar(
         'Error',
         'Please select District and City',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -197,7 +197,7 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
       Get.snackbar(
         'Error',
         'Please select Muqam',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -213,7 +213,7 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
       Get.snackbar(
         'Error',
         'Phone number cannot be empty',
-        snackPosition: SnackPosition.BOTTOM,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -253,38 +253,74 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
       print('API response body: ${response.body}');
 
       if (response.statusCode == 200) {
-        print('Register API status response: ${response.statusCode}');
         Get.snackbar(
           'Successful',
           'User registered successfully',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.green,
           colorText: Colors.white,
+          duration: Duration(seconds: 3),
         );
+        await Future.delayed(Duration(seconds: 2)); // Delay for snackbar visibility
         Get.off(() => const EmptyState());
       } else {
         String errorMessage = 'Registration failed';
-        if (responseData.containsKey('message')) {
-          errorMessage = responseData['message'];
-        } else if (responseData.containsKey('errors')) {
-          errorMessage = responseData['errors'].values.first[0];
+        try {
+          final responseData = json.decode(response.body);
+
+          // Handle validation errors (422 status)
+          if (response.statusCode == 422 && responseData.containsKey('data')) {
+            final errors = responseData['data'] as Map<String, dynamic>;
+            if (errors.containsKey('email') && errors['email'] is List && errors['email'].isNotEmpty) {
+              errorMessage = errors['email'][0]; // e.g., "The email has already been taken."
+            } else if (errors.containsKey('mobile_number') &&
+                errors['mobile_number'] is List &&
+                errors['mobile_number'].isNotEmpty) {
+              errorMessage = errors['mobile_number'][0]; // e.g., "The mobile number has already been taken."
+            } else if (errors.isNotEmpty) {
+              // Fallback to first available error
+              errorMessage = errors.values.first[0];
+            } else if (responseData.containsKey('message')) {
+              errorMessage = responseData['message'];
+            }
+          } else if (responseData.containsKey('message')) {
+            errorMessage = responseData['message'];
+          }
+        } catch (e) {
+          // Handle non-JSON responses (e.g., HTML or server error)
+          errorMessage = 'Registration failed: Invalid response from server';
+          print('Error parsing response: $e');
         }
+
+        // Handle specific status codes
+        if (response.statusCode == 429) {
+          errorMessage = 'Too many requests. Please try again later.';
+        } else if (response.statusCode >= 500) {
+          errorMessage = 'Server error. Please try again later.';
+        }
+
         Get.snackbar(
           'Error',
           errorMessage,
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red,
           colorText: Colors.white,
+          duration: Duration(seconds: 3),
         );
         print('Register API error: $errorMessage');
       }
     } catch (e) {
+      String errorMessage = 'An error occurred: ${e.toString()}';
+      if (e.toString().contains('SocketException')) {
+        errorMessage = 'No internet connection. Please check your network.';
+      }
       Get.snackbar(
         'Error',
-        'An error occurred: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
+        errorMessage,
+        snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
+        duration: Duration(seconds: 3),
       );
       print('Register error: ${e.toString()}');
     } finally {

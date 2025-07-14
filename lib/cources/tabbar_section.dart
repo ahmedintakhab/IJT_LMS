@@ -17,10 +17,8 @@ class TabbarSection extends StatelessWidget {
     return Column(
       children: [
         SizedBox(height: 12.h),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 15.w),
-          child: Container(
-            height: 54.h,
+        Container(
+            height: 56.h,
             width: double.infinity,
             decoration: BoxDecoration(
               boxShadow: [
@@ -67,7 +65,6 @@ class TabbarSection extends StatelessWidget {
               },
             ),
           ),
-        ),
         SizedBox(height: 12.h),
         Expanded(
           child: PageView.builder(

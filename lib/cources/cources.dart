@@ -341,10 +341,8 @@ class _MyCourcesState extends State<MyCources> {
                 ),
 
                 // Video Player Section
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 15.w),
-                  child: Container(
-                    padding: EdgeInsets.all(12.h),
+                 Container(
+                    padding: EdgeInsets.all(8.h),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       boxShadow: [
@@ -406,7 +404,6 @@ class _MyCourcesState extends State<MyCources> {
                                )
                              ),
                   ),
-                ),
 
                 // Tabbar Section with Expanded
                 Expanded(

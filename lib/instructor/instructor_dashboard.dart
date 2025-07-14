@@ -72,10 +72,9 @@ class _InstructorPanelState extends State<InstructorPanel> {
           snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.green,
           colorText: Colors.white,
-        );        // Clear user data from SharedPreferences
-        prefs.clear();
+        );
         // Clear user data from SharedPreferences
-        prefs.clear(); // Optionally clear all saved data
+        prefs.clear();
       } else {
         print("Logout failed: ${response.body}");
         Get.snackbar(

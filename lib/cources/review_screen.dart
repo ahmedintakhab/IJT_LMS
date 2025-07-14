@@ -138,8 +138,10 @@ class _ReviewState extends State<Review> {
                       style: TextStyle(
                           fontFamily: 'Nastaleeq',
                           fontSize: 18.sp,
-                          color: const Color(0XFF000000),
-                          fontWeight: FontWeight.bold),
+                          color: const Color(0XFF00AFEE),
+                          fontWeight: FontWeight.bold,decoration:
+                      TextDecoration.underline,decorationColor: Color(0XFF00AFEE)
+                      ),
                     ),
                   ),
 

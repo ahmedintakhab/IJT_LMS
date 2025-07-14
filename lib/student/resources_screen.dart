@@ -76,8 +76,8 @@ class ResourcesScreen extends StatelessWidget {
 
               return Padding(
                 padding: EdgeInsets.only(
-                  left: 20.w,
-                  right: 20.w,
+                  left: 15.w,
+                  right: 15.w,
                   top: 8.h,
                   bottom: 8.h,
                 ),
@@ -210,7 +210,7 @@ class ResourcesScreen extends StatelessWidget {
               height: 56.h,
               width: 374.w,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20.h),
+                borderRadius: BorderRadius.circular(8.h),
                 color: const Color(0xFF00AFEE),
               ),
               child: Center(

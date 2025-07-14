@@ -54,51 +54,112 @@ class _MyProfileState extends State<MyProfile> {
 
   Future<void> logoutApiCall() async {
     final String apiUrl = "${ApiConstant.baseUrl}logout";
+    bool isLoggingOut = false; // Prevent multiple taps
+
+    if (isLoggingOut) return;
+    isLoggingOut = true;
 
     try {
-      // Assuming the token is saved in shared preferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String token = prefs.getString('authToken') ?? '';
+      if (token.isEmpty) {
+        Get.snackbar(
+          'Error',
+          'No valid token found',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          duration: Duration(seconds: 3),
+        );
+        await prefs.clear();
+        await PrefData.setLogin(false);
+        await Future.delayed(Duration(seconds: 2)); // Delay for snackbar visibility
+        if (Get.currentRoute != '/EmptyState') {
+          Get.off(() => EmptyState());
+        }
+        return;
+      }
       print('Token check: $token');
 
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token', // Include token in the header
+          'Accept': 'application/json', // Added to match Postman
+          'Authorization': 'Bearer $token',
         },
+        body: '{}',
       );
 
       if (response.statusCode == 200) {
-        // Successfully logged out
+        print('Logout api response: ${response.statusCode}');
         Get.snackbar(
-          'Successful', 'User logout successfully',
+          'Successful',
+          'User logout successfully',
           snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.green,
           colorText: Colors.white,
-        );        // Clear user data from SharedPreferences
-        prefs.clear(); // Optionally clear all saved data
+          duration: Duration(seconds: 3),
+        );
+        await prefs.clear();
+        await PrefData.setLogin(false);
+        await Future.delayed(Duration(seconds: 1)); // Delay for snackbar visibility
+        if (Get.currentRoute != '/EmptyState') {
+          Get.off(() => EmptyState());
+        }
+      } else if (response.statusCode == 401) {
+        Get.snackbar(
+          'Info',
+          'Session expired. Logging out.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          duration: Duration(seconds: 3),
+        );
+        await prefs.clear();
+        await PrefData.setLogin(false);
+        await Future.delayed(Duration(seconds: 2)); // Delay for snackbar visibility
+        if (Get.currentRoute != '/EmptyState') {
+          Get.off(() => EmptyState());
+        }
       } else {
         Get.snackbar(
-          'Failed', '${response.body}',
+          'Failed',
+          'Logout failed: ${response.statusCode} ${response.body}',
           snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red,
           colorText: Colors.white,
+          duration: Duration(seconds: 3),
         );
-        print("Logout failed: ${response.body}");
+        print("Logout failed: ${response.statusCode} ${response.body}");
+        await prefs.clear();
+        await PrefData.setLogin(false);
+        await Future.delayed(Duration(seconds: 2)); // Delay for snackbar visibility
+        if (Get.currentRoute != '/EmptyState') {
+          Get.off(() => EmptyState());
+        }
       }
     } catch (e) {
       Get.snackbar(
-        'Failed', 'Logged out failed',
+        'Failed',
+        'Logout failed: $e',
         snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
+        duration: Duration(seconds: 3),
       );
-      print(" User logout failed: $e");
+      print("User logout failed: $e");
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+      await PrefData.setLogin(false);
+      await Future.delayed(Duration(seconds: 2)); // Delay for snackbar visibility
+      if (Get.currentRoute != '/EmptyState') {
+        Get.off(() => EmptyState());
+      }
+    } finally {
+      isLoggingOut = false;
     }
   }
-
-
   @override
   Widget build(BuildContext context) {
     initializeScreenSize(context);
@@ -277,6 +338,8 @@ class _MyProfileState extends State<MyProfile> {
 
 
   void showLogoutDialog() {
+    bool isLoggingOut = false; // Track loading state
+
     Get.defaultDialog(
       barrierDismissible: false,
       title: '',
@@ -285,11 +348,12 @@ class _MyProfileState extends State<MyProfile> {
         child: Column(
           children: [
             Text(
-              "Are you sure you want to Logout!",
+              "Are you sure you want to Logout?",
               style: TextStyle(
-                  fontSize: 24.sp,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Gilroy'),
+                fontSize: 24.sp,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Gilroy',
+              ),
               textAlign: TextAlign.center,
             ),
             Padding(
@@ -299,27 +363,31 @@ class _MyProfileState extends State<MyProfile> {
                   Expanded(
                     child: GestureDetector(
                       onTap: () async {
-                        // Call logout API
+                        if (isLoggingOut) return;
+                        setState(() => isLoggingOut = true);
                         await logoutApiCall();
-                        PrefData.setLogin(false);
-                        Get.off(EmptyState());
+                        setState(() => isLoggingOut = false);
+                        Get.back(); // Close dialog
                       },
                       child: Container(
                         height: 56.h,
-                        width: double.infinity.w,
+                        width: double.infinity,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8.h),
                           color: const Color(0XFF00AFEE),
                         ),
                         child: Center(
-                          child: Text(
+                          child: isLoggingOut
+                              ? CircularProgressIndicator(color: Colors.white)
+                              : Text(
                             "Yes",
                             style: TextStyle(
-                                fontFamily: 'Nastaleeq',
-                                fontWeight: FontWeight.bold,
-                                color: Color(0XFFFFFFFF),
-                                fontStyle: FontStyle.normal,
-                                fontSize: 18.sp),
+                              fontFamily: 'Nastaleeq',
+                              fontWeight: FontWeight.bold,
+                              color: Color(0XFFFFFFFF),
+                              fontStyle: FontStyle.normal,
+                              fontSize: 18.sp,
+                            ),
                           ),
                         ),
                       ),
@@ -333,7 +401,7 @@ class _MyProfileState extends State<MyProfile> {
                       },
                       child: Container(
                         height: 56.h,
-                        width: double.infinity.w,
+                        width: double.infinity,
                         decoration: BoxDecoration(
                           border: Border.all(
                             color: const Color(0XFF00AFEE),
@@ -346,11 +414,12 @@ class _MyProfileState extends State<MyProfile> {
                           child: Text(
                             "No",
                             style: TextStyle(
-                                fontFamily: 'Nastaleeq',
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF00AFEE),
-                                fontStyle: FontStyle.normal,
-                                fontSize: 18.sp),
+                              fontFamily: 'Nastaleeq',
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF00AFEE),
+                              fontStyle: FontStyle.normal,
+                              fontSize: 18.sp,
+                            ),
                           ),
                         ),
                       ),
@@ -364,6 +433,4 @@ class _MyProfileState extends State<MyProfile> {
       ),
     );
   }
-
-
 }
