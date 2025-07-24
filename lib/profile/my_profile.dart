@@ -8,6 +8,7 @@ import 'package:learn_megnagmet/profile/student_change_password.dart';
 import 'package:learn_megnagmet/profile/student_update_profile.dart';
 import 'package:learn_megnagmet/utils/slider_page_data_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../controller/controller.dart';
 import '../login/login_empty_state.dart';
@@ -36,6 +37,8 @@ class _MyProfileState extends State<MyProfile> {
   HomeMainController controller = Get.put(HomeMainController());
   String? userName;
   String? userEmail;
+  String? userImage;
+
 
   @override
   void initState() {
@@ -48,6 +51,7 @@ class _MyProfileState extends State<MyProfile> {
     setState(() {
       userName = prefs.getString('userName') ?? 'Guest';
       userEmail = prefs.getString('userEmail') ?? 'guest@gmail.com';
+      userImage = prefs.getString('image');
     });
   }
 
@@ -201,11 +205,44 @@ class _MyProfileState extends State<MyProfile> {
                         ),
                       ),
                        SizedBox(height: 20.h),
-                      Image(
-                        image: AssetImage(widget.user_detail.image!), height: 100.h,
-                        width: 100.w,
-
-                        //fit: BoxFit.cover,
+                      // Updated Image widget with shimmer and person icon
+                      ClipOval(
+                        child: userImage == null || userImage!.isEmpty
+                            ? Icon(
+                          Icons.person,
+                          size: 100.w,
+                          color: Colors.grey,
+                        )
+                            : Image(
+                          image: NetworkImage(userImage!),
+                          height: 100.h,
+                          width: 100.w,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) {
+                              return child; // Image loaded, show it
+                            }
+                            return Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                height: 100.h,
+                                width: 100.w,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.grey[300],
+                                ),
+                              ),
+                            ); // Circular shimmer effect while loading
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              Icons.person,
+                              size: 100.w,
+                              color: Colors.grey,
+                            ); // Person icon if image fails
+                          },
+                        ),
                       ),
                        SizedBox(height: 12.h),
                       Text(

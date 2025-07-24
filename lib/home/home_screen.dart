@@ -41,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
   String? errorMessage;
   String? userName;
+  String? userImage;
 
 
   @override
@@ -55,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       userName = prefs.getString('userName') ?? 'User';
+      userImage = prefs.getString('image') ?? '';
     });
   }
 
@@ -239,7 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         // User image and welcome text
                         Image(
-                          image: AssetImage(userDetail[0].image),
+                          image: NetworkImage(userImage!),
                           height: 40.h,
                           width: 40.w,
                         ),
@@ -426,7 +428,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return CarouselSlider.builder(
       options: CarouselOptions(
-        autoPlay: false,
+        autoPlay: true,
         enableInfiniteScroll: true,
         initialPage: 0,
         height: 150.0.h,

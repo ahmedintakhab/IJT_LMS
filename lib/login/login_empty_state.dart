@@ -56,7 +56,8 @@ class _EmptyStateState extends State<EmptyState> {
         final role = responseData['data']['role'].toString();
         final userName = responseData['data']['user_name'];
         final userEmail = responseData['data']['user_email'];
-        print('Check name email and role: $userName $userEmail $role');
+        final image = responseData['data']['image_url'];
+        print('Check name email and role: $userName $userEmail $role $image');
 
         if (token != null && token.isNotEmpty) {
           authToken = token;
@@ -65,6 +66,7 @@ class _EmptyStateState extends State<EmptyState> {
           await prefs.setString('role', role);
           await prefs.setString('userName', userName);
           await prefs.setString('userEmail', userEmail);
+          await prefs.setString('image', image);
 
           Get.snackbar(
             'Successful',
