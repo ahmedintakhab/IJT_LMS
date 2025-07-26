@@ -42,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? errorMessage;
   String? userName;
   String? userImage;
+  String? slug;
 
 
   @override
@@ -81,10 +82,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 featureCategories['Nisab-e-Rukniyat Courses'] ?? []);
             trendingButtonStatuses = List<bool>.filled(trendingCource.length, false);
             // print('Check trending courses: ${trendingCource}');
+            slug = trendingCource.isNotEmpty ? trendingCource[0]['slug']?.toString() ?? '' : '';
+             print('Check slug in home screen: ${slug}');
+
             recentAdded = List<Map<String, dynamic>>.from(
                 featureCategories['Nisab-e-Rafaqat Courses'] ?? []);
             // print('Check recentAdded courses: ${recentAdded}');
-
             recentButtonStatuses = List<bool>.filled(recentAdded.length, false);
             isLoading = false;
           });
@@ -263,7 +266,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         Padding(
                           padding: EdgeInsets.only(right: 10.w),
                           child: GestureDetector(
-                            onTap: () => Get.to(SearchScreen()),
+                            onTap: () => Get.to(SearchScreen(slug: slug ?? '',
+                            )),
                             child: Container(
                               height: 40.h,
                               width: 40.w,
@@ -287,44 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
-                  // SizedBox(height: 30.h),
-                  //       Container(
-                  //         height: 50.h,
-                  //         child: Padding(
-                  //           padding:
-                  //           EdgeInsets.symmetric(horizontal: 20.w),
-                  //           child: TextFormField(
-                  //             onTap: () => Get.to(SearchScreen()),
-                  //             decoration: InputDecoration(
-                  //               focusedBorder: OutlineInputBorder(
-                  //                 borderSide: BorderSide(
-                  //                   color: const Color(0XFF00AFEE),
-                  //                   width: 1.w,
-                  //                 ),
-                  //                 borderRadius:
-                  //                 BorderRadius.circular(6),
-                  //               ),
-                  //               hintText: 'Search',
-                  //               hintStyle: TextStyle(
-                  //                 color: Color(0XFF9B9B9B),
-                  //                 fontSize: 15.sp,
-                  //                 fontFamily: 'Nastaleeq',
-                  //                 fontWeight: FontWeight.w400,
-                  //               ),
-                  //               prefixIcon: Image(
-                  //                 image:
-                  //                 AssetImage('assets/search.png'),
-                  //                 height: 24.h,
-                  //                 width: 24.w,
-                  //               ),
-                  //               border: OutlineInputBorder(
-                  //                 borderRadius:
-                  //                 BorderRadius.circular(6),
-                  //               ),
-                  //             ),
-                  //           ),
-                  //         ),
-                  //       ),
+
                         SizedBox(height: 40.h),
                         generatepage(),
                         SizedBox(height: 20.h),
@@ -364,8 +331,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         TrendingCourceList(
                           trendingCource: trendingCource,
-                          buttonStatuses: trendingButtonStatuses,
-                          toggle: toggleTrending,
                           isLoading: isLoading, // Set this to true while loading data
 
                         ),

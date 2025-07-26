@@ -195,7 +195,7 @@ class _TrendingCourceState extends State<TrendingCource> {
           child: Column(
             children: [
               Container(
-                height: 165.h,
+                height: 170.h,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
@@ -272,14 +272,14 @@ class _TrendingCourceState extends State<TrendingCource> {
           child: Column(
             children: [
               Container(
-                height: 155.h,
+                height: 170.h,
                 width: double.infinity,
                 margin: EdgeInsets.all(5),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   image: DecorationImage(
                     image: NetworkImage(course['image_url'] ?? ''),
-                    fit: BoxFit.cover,
+                    fit: BoxFit.fill,
                   ),
                 ),
               ),

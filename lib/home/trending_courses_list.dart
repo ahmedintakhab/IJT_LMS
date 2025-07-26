@@ -8,15 +8,11 @@ import '../cources/cources.dart';
 
 class TrendingCourceList extends StatefulWidget {
   final List<Map<String, dynamic>> trendingCource;
-  final List<bool> buttonStatuses;
-  final Function(int) toggle;
   final bool isLoading;
 
   const TrendingCourceList({
     Key? key,
     required this.trendingCource,
-    required this.buttonStatuses,
-    required this.toggle,
     required this.isLoading,
   }) : super(key: key);
 
@@ -98,7 +94,7 @@ class _TrendingCourceListState extends State<TrendingCourceList> {
                         image: NetworkImage(
                           widget.trendingCource[index]['image'] ?? '',
                         ),
-                        fit: BoxFit.cover,
+                        fit: BoxFit.fill,
                         // errorBuilder: (context, error, stackTrace) {
                         //   return Container(
                         //     color: Colors.grey[200],
@@ -107,36 +103,36 @@ class _TrendingCourceListState extends State<TrendingCourceList> {
                         // },
                       ),
                     ),
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                          left: 10.w, right: 147.w, bottom: 142.h),
-                      child: Container(
-                        height: 20.h,
-                        width: 20.w,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                        ),
-                        child: Center(
-                          child: GestureDetector(
-                            onTap: () {
-                              widget.toggle(index);
-                            },
-                            child: widget.buttonStatuses[index]
-                                ? Image.asset(
-                              "assets/saveboldblue.png",
-                              height: 10.h,
-                              width: 9.w,
-                            )
-                                : Image.asset(
-                              "assets/savebold.png",
-                              height: 10.h,
-                              width: 9.w,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    // child: Padding(
+                    //   padding: EdgeInsets.only(
+                    //       left: 10.w, right: 147.w, bottom: 142.h),
+                    //   child: Container(
+                    //     height: 20.h,
+                    //     width: 20.w,
+                    //     decoration: const BoxDecoration(
+                    //       shape: BoxShape.circle,
+                    //       color: Colors.white,
+                    //     ),
+                    //     child: Center(
+                    //       child: GestureDetector(
+                    //         onTap: () {
+                    //           widget.toggle(index);
+                    //         },
+                    //         child: widget.buttonStatuses[index]
+                    //             ? Image.asset(
+                    //           "assets/saveboldblue.png",
+                    //           height: 10.h,
+                    //           width: 9.w,
+                    //         )
+                    //             : Image.asset(
+                    //           "assets/savebold.png",
+                    //           height: 10.h,
+                    //           width: 9.w,
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
                   ),
                   SizedBox(height: 8.h),
                   SizedBox(
