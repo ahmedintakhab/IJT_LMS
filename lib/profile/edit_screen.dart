@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import '../controller/controller.dart';
 import '../models/new_user_detail.dart';
 import '../utils/screen_size.dart';
-import 'my_profile.dart';
 
 class EditScreen extends StatefulWidget {
   const EditScreen({Key? key, required this.user}) : super(key: key);

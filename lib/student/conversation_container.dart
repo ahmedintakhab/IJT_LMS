@@ -34,7 +34,7 @@ class _ConversationContainerState extends State<ConversationContainer> {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token') ?? '';
+      final token = prefs.getString('authToken') ?? '';
 
       if (token.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -46,7 +46,7 @@ class _ConversationContainerState extends State<ConversationContainer> {
         return;
       }
 
-      final url = '${ApiConstant.baseUrl}student/course/create-discussion';
+      final url = '${ApiConstant.baseUrl}student/discussion-create';
       final response = await http.post(
         Uri.parse(url),
         headers: {
@@ -55,7 +55,7 @@ class _ConversationContainerState extends State<ConversationContainer> {
         },
         body: jsonEncode({
           'course_id': widget.courseId,
-          'discussion_comment': widget.messageController.text,
+          'comment': widget.messageController.text,
         }),
       );
 

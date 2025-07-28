@@ -6,23 +6,54 @@ import 'dart:convert';
 
 import '../utils/api_constant.dart';
 
-
 class WriteReviewDialog extends StatefulWidget {
   final String courseId;
-  const WriteReviewDialog({Key? key, required this.courseId}) : super(key: key);
+  final Function(Map<String, dynamic>)? onReviewSubmitted; // Callback to update review data
+  const WriteReviewDialog({Key? key, required this.courseId, this.onReviewSubmitted})
+      : super(key: key);
 
   @override
   _WriteReviewDialogState createState() => _WriteReviewDialogState();
 }
 
 class _WriteReviewDialogState extends State<WriteReviewDialog> {
-  double? _selectedRating; // For storing the selected rating
-  final TextEditingController _feedbackController = TextEditingController(); // Controller for feedback
-  bool _isSubmitPressed = false; // Track if submit button was pressed
-  String? _snackbarMessage; // Message to show
-  Color _snackbarColor = Colors.transparent; // Snackbar background color
-  bool _showSnackbar = false; // Control visibility of the snackbar
-  double _snackbarTopPosition = -50; // Initial top position of the snackbar
+  double? _selectedRating;
+  final TextEditingController _feedbackController = TextEditingController();
+  bool _isSubmitPressed = false;
+  String? _snackbarMessage;
+  Color _snackbarColor = Colors.transparent;
+  bool _showSnackbar = false;
+  double _snackbarTopPosition = -50;
+
+  Future<Map<String, dynamic>?> _fetchReviewList() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('authToken') ?? '';
+
+      final String apiUrl =
+          "${ApiConstant.baseUrl}student/course/review-list/${widget.courseId}";
+
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print('Review list fetched successfully: ${response.body}');
+        return data;
+      } else {
+        print('Failed to fetch review list: ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching review list: $e');
+      return null;
+    }
+  }
 
   Future<void> _submitReview() async {
     setState(() {
@@ -32,25 +63,20 @@ class _WriteReviewDialogState extends State<WriteReviewDialog> {
     final isFeedbackValid = _feedbackController.text.isNotEmpty;
 
     if (_selectedRating == null || !isFeedbackValid) {
-      // Show error snackbar
       _showCustomSnackBar("Please select Star and give feedback", Colors.red);
     } else {
-      // Fetch the token from SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String token = prefs.getString('auth_token') ?? '';
+      String token = prefs.getString('authToken') ?? '';
 
-      // API URL
-      String url = "${ApiConstant.baseUrl}student/course/review-create";
+      String url = "${ApiConstant.baseUrl}student/review-store";
 
-      // API Request Body
       Map<String, dynamic> requestBody = {
-        "course_id": widget.courseId, // Use the dynamic course ID
+        "course_id": widget.courseId,
         "rating": _selectedRating?.toInt(),
         "comment": _feedbackController.text,
       };
 
       try {
-        // Make the POST request
         final response = await http.post(
           Uri.parse(url),
           headers: {
@@ -59,26 +85,29 @@ class _WriteReviewDialogState extends State<WriteReviewDialog> {
           },
           body: json.encode(requestBody),
         );
+        print('Response of Review API: ${response.statusCode}');
 
-        // Handle API response
+
         if (response.statusCode == 200) {
           _showCustomSnackBar("Your review submitted successfully", Colors.green);
-          print('Reponse of Review API: ${response.statusCode}');
+          print('Response of Review API: ${response.statusCode}');
           print('Successfully submitted review');
-          print("Check the selected Rating: $_selectedRating");
-          print('show the feedbackcontroller: $_feedbackController');
 
-          // Reset form
+          // Fetch updated review list
+          final newReviewData = await _fetchReviewList();
+          if (newReviewData != null && widget.onReviewSubmitted != null) {
+            widget.onReviewSubmitted!(newReviewData); // Call callback to update ReviewPage
+          }
+
           Future.delayed(const Duration(milliseconds: 500), () {
             setState(() {
               _selectedRating = null;
               _feedbackController.clear();
               _isSubmitPressed = false;
             });
-            Navigator.of(context).pop(); // Close the dialog
+            Navigator.of(context).pop();
           });
-        }
-        else {
+        } else {
           _showCustomSnackBar("Already you have reviewed. Thank you.", Colors.red);
           print('Failed to submit review: ${response.body}');
         }
@@ -92,17 +121,15 @@ class _WriteReviewDialogState extends State<WriteReviewDialog> {
     setState(() {
       _snackbarMessage = message;
       _snackbarColor = color;
-      _snackbarTopPosition = 0; // Show the snackbar from the top
+      _snackbarTopPosition = 0;
       _showSnackbar = true;
     });
 
-    // Snackbar stays for 3 seconds and then hides
     Future.delayed(const Duration(seconds: 3), () {
       setState(() {
-        _snackbarTopPosition = -50; // Move the snackbar back up
+        _snackbarTopPosition = -50;
       });
       Future.delayed(const Duration(milliseconds: 300), () {
-        // Hide snackbar after animation
         setState(() {
           _showSnackbar = false;
         });
@@ -213,8 +240,7 @@ class _WriteReviewDialogState extends State<WriteReviewDialog> {
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
-                        color: _isSubmitPressed &&
-                            _feedbackController.text.isEmpty
+                        color: _isSubmitPressed && _feedbackController.text.isEmpty
                             ? Colors.red
                             : Colors.grey,
                       ),
@@ -243,7 +269,7 @@ class _WriteReviewDialogState extends State<WriteReviewDialog> {
                     ),
                     TextButton(
                       style: TextButton.styleFrom(
-                        backgroundColor: const Color(0XFF00AFEE),
+                        backgroundColor: const Color(0xFF00AFEE),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -266,8 +292,7 @@ class _WriteReviewDialogState extends State<WriteReviewDialog> {
             right: 0,
             child: _showSnackbar
                 ? Container(
-              padding: const EdgeInsets.symmetric(
-                  vertical: 12, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               color: _snackbarColor,
               child: Text(
                 _snackbarMessage ?? "",
@@ -282,3 +307,4 @@ class _WriteReviewDialogState extends State<WriteReviewDialog> {
     );
   }
 }
+
