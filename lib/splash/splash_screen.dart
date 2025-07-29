@@ -22,8 +22,10 @@ class _SplashscreenState extends State<Splashscreen> {
   @override
   void initState() {
     super.initState();
-    _checkAppState();  }
-
+    Timer(const Duration(seconds: 3), () {
+      _checkAppState();
+    });
+  }
   Future<void> _checkAppState() async {
     try {
       // Check if onboarding has been completed

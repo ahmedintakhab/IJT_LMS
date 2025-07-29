@@ -178,9 +178,13 @@ class _StudentUpdateProfileState extends State<StudentUpdateProfile> {
         final jsonResponse = jsonDecode(response.body);
         if (jsonResponse['success'] == true) {
           final profileImage = jsonResponse['data']['profile_image'] ?? '';
+          final userName = jsonResponse['data']['user_name'] ?? '';
+          final userEmail = jsonResponse['data']['user_email'] ?? '';
           if (profileImage.isNotEmpty) {
             await prefs.setString('image', profileImage);
-            print("Profile image saved to SharedPreferences: $profileImage");
+            await prefs.setString('userName', userName);
+            await prefs.setString('userEmail', userEmail);
+            print("Profile data saved to SharedPreferences: $profileImage $userEmail $userName");
           } else {
             print("No profile image URL in response");
           }

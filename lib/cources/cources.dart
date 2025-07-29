@@ -419,6 +419,7 @@ class _MyCourcesState extends State<MyCources> {
                   child: CustomButton(
                     onTap: _enrollCourse,
                     buttonText: btnText ?? '', // Use the dynamic button text
+                    isLoading: isLoading,
                   ),
                 ),
               ],

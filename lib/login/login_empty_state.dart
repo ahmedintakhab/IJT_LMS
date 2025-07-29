@@ -161,28 +161,32 @@ class _EmptyStateState extends State<EmptyState> {
                           "Login",
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
-                            fontSize: 24.sp,
-                            fontFamily: 'Gilroy',
+                            fontSize: 28.sp,
+                            fontFamily: 'Nastaleeq',
                             color: Color(0XFF000000),
                           ),
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 10.h),
                       Center(
                         child: Text(
                           "Glad to meet you again!",
                           style: TextStyle(
                             fontWeight: FontWeight.w500,
                             color: const Color(0XFF000000),
-                            fontSize: 15.sp,
-                            fontFamily: 'Gilroy',
+                            fontSize: 18.sp,
+                            fontFamily: 'Nastaleeq',
                             fontStyle: FontStyle.normal,
                           ),
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      SizedBox(height: 10.h),
+                      SizedBox(height: 20.h),
+                      Center(
+                          child:Container(height:100.h,width:100.h,child:
+                          Image(image: const AssetImage("assets/lms_splash.png"),fit: BoxFit.cover,))),
+                      SizedBox(height: 20.h),
                       email_password_form(),
                       // SizedBox(height: 21.h),
                       // forgotpassword(),
