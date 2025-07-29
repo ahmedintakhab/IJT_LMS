@@ -1,6 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/api_constant.dart';
 import 'content_display_screen.dart';
 import 'text_content_screen.dart';
 
@@ -14,18 +19,48 @@ class ResourcesScreen extends StatelessWidget {
     this.onLectureOpen,
   }) : super(key: key);
 
+  // Function to mark lecture as complete via API
+  Future<void> _markLectureAsComplete(String lectureId) async {
+    const String apiUrl = '${ApiConstant.baseUrl}student/complete-lecture';
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('authToken') ?? '';
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'lecture_id': lectureId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Lecture complete progress api response:${response.statusCode}');
+      } else {
+        print('Failed to mark lecture as complete');
+      }
+    } catch (e) {
+      print('Failed to mark lecture as complete: $e');
+    }
+  }
+
   // Function to handle content opening based on type
   Future<void> _openContent(BuildContext context, Map<String, dynamic> lecture) async {
     final Map<String, dynamic> data = lecture['data'] ?? {};
-    final String type = data['type']?.toString() ?? '';
-    final String source = data['source']?.toString() ?? '';
+    final String type = lecture['type']?.toString() ?? '';
+    final String source = lecture['lecture_preview_src']?.toString() ?? '';
     final String title = lecture['title']?.toString() ?? 'Untitled Lecture';
+    final String lectureId = lecture['id']?.toString() ?? '';
+     // print('chekc the type, source and title:$lectureId $type $title');
 
     try {
       if (type.isEmpty || source.isEmpty) {
         Get.snackbar('Error', 'Invalid content type or source');
         return;
       }
+      await _markLectureAsComplete(lectureId);
 
       if (type == 'text') {
         // Navigate to TextContentScreen for HTML text
