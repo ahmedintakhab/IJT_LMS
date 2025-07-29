@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,14 +11,14 @@ class InstructorContainer extends StatefulWidget {
   final TextEditingController replyController;
   final String courseId;
   final int? discussionId;
-  final Function(Map<String, dynamic>)? onReplyPosted;
+  final Function(List<dynamic>)? onDiscussionUpdated;
 
   const InstructorContainer({
     Key? key,
     required this.replyController,
     required this.courseId,
     required this.discussionId,
-    this.onReplyPosted,
+    this.onDiscussionUpdated,
   }) : super(key: key);
 
   @override
@@ -25,52 +27,39 @@ class InstructorContainer extends StatefulWidget {
 
 class _InstructorContainerState extends State<InstructorContainer> {
   bool _isLoading = false;
-  String _replyText = '';
 
-  @override
-  void initState() {
-    super.initState();
+  Future<List<dynamic>?> _fetchDiscussionList() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('authToken') ?? '';
 
-    // Add listener to the controller to keep track of text changes
-    widget.replyController.addListener(_updateReplyText);
-  }
+      final url = '${ApiConstant.baseUrl}student/course/discussion-list/${widget.courseId}';
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
 
-  @override
-  void dispose() {
-    // Remove listener when widget is disposed
-    widget.replyController.removeListener(_updateReplyText);
-    super.dispose();
-  }
-
-  // Keep track of text changes
-  void _updateReplyText() {
-    _replyText = widget.replyController.text;
-  }
-
-  // Clear text field with multiple safety measures
-  void _clearTextField() {
-    // Method 1: Set empty text directly
-    widget.replyController.text = '';
-
-    // Method 2: Use the clear method
-    widget.replyController.clear();
-
-    // Method 3: Update the UI
-    setState(() {
-      _replyText = '';
-    });
-
-    // Method 4: Force a rebuild with post-frame callback
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {
-          // Double-check it's cleared
-          if (widget.replyController.text.isNotEmpty) {
-            widget.replyController.clear();
-          }
-        });
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        print('Discussion list fetched successfully for reply: ${response.body}');
+        return responseData as List<dynamic>;
+      } else {
+        print('Failed to fetch discussion list: ${response.body}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to fetch discussions: ${response.reasonPhrase}')),
+        );
+        return null;
       }
-    });
+    } catch (e) {
+      print('Error fetching discussion list: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching discussions: $e')),
+      );
+      return null;
+    }
   }
 
   Future<void> _postReply() async {
@@ -81,8 +70,7 @@ class _InstructorContainerState extends State<InstructorContainer> {
       return;
     }
 
-    // Capture the text input before any operations
-    final String replyText = _replyText.trim();
+    final String replyText = widget.replyController.text.trim();
 
     if (replyText.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -96,12 +84,8 @@ class _InstructorContainerState extends State<InstructorContainer> {
     });
 
     try {
-      // Clear the text field immediately - IMPORTANT: This happens BEFORE the API call
-      _clearTextField();
-
-      // Get auth token from SharedPreferences
       final prefs = await SharedPreferences.getInstance();
-      final authToken = prefs.getString('auth_token');
+      final authToken = prefs.getString('authToken');
 
       if (authToken == null || authToken.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -113,7 +97,6 @@ class _InstructorContainerState extends State<InstructorContainer> {
         return;
       }
 
-      // Prepare API request
       final url = Uri.parse('${ApiConstant.baseUrl}student/course/create-discussion-reply');
 
       final response = await http.post(
@@ -129,45 +112,52 @@ class _InstructorContainerState extends State<InstructorContainer> {
         }),
       );
 
+      print('Reply POST response: ${response.statusCode} - ${response.body}');
+
       if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
+        final responseData = jsonDecode(response.body);
 
-        if (responseData['status'] == true) {
-          // Clear text field again (for extra safety)
-          _clearTextField();
-
-          // Notify parent widget about the new reply if callback is provided
-          if (widget.onReplyPosted != null && responseData['data'] != null) {
-            widget.onReplyPosted!(responseData['data']);
+        // Check for numeric status 200 instead of boolean true
+        if (responseData['status'] == 200) {
+          // Fetch updated discussion list
+          final newDiscussionData = await _fetchDiscussionList();
+          if (newDiscussionData != null && widget.onDiscussionUpdated != null) {
+            print('Calling onDiscussionUpdated with new data: $newDiscussionData');
+            widget.onDiscussionUpdated!(newDiscussionData);
           }
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Reply posted successfully'),backgroundColor: Colors.green,),
-          );
+          widget.replyController.clear();
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   const SnackBar(
+          //     content: Text('Reply posted successfully'),
+          //     backgroundColor: Colors.green,
+          //   ),
+          // );
+          // Get.snackbar(
+          //   'Success',
+          //   'Reply posted successfully',
+          //   snackPosition: SnackPosition.TOP,
+          // );
         } else {
-          // API returned success status code but with error in response body
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(responseData['message'] ?? 'Failed to post reply')),
+          print('Reply failed with message: ${responseData['message']}');
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   SnackBar(content: Text(responseData['message'] ?? 'Failed to post reply')),
+          // );
+          Get.snackbar(
+            'Failed',
+            'Failed to post reply',
+            snackPosition: SnackPosition.TOP,
           );
         }
       } else {
-        // Failed to post reply
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to post reply. Please try again.')),
-        );
+        print('Reply POST failed: ${response.reasonPhrase}');
       }
     } catch (e) {
-      // Handle any exceptions
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
+      print('Error posting reply: $e');
     } finally {
       setState(() {
         _isLoading = false;
       });
-
-      // One final attempt to clear the text
-      _clearTextField();
     }
   }
 
@@ -183,7 +173,7 @@ class _InstructorContainerState extends State<InstructorContainer> {
         children: [
           TextField(
             controller: widget.replyController,
-            cursorColor:const Color(0xFF00AFEE),
+            cursorColor: const Color(0xFF00AFEE),
             decoration: InputDecoration(
               border: InputBorder.none,
               hintText: 'Leave a reply...',
@@ -206,13 +196,13 @@ class _InstructorContainerState extends State<InstructorContainer> {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF00AFEE),
-
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              onPressed: _isLoading ? null : () {
-                // First check if there's text to submit
+              onPressed: _isLoading
+                  ? null
+                  : () {
                 if (widget.replyController.text.trim().isNotEmpty) {
                   _postReply();
                 } else {

@@ -29,14 +29,12 @@ class _TabBarDetailsState extends State<TabBarDetails> with SingleTickerProvider
   final List<String> tabs = [
     'Overview',
     'Content',
-    'Quiz',
-    'Assignment',
     'Notice',
     'Live Class',
     'Discussion',
     'Certificate',
     'Review',
-  ];
+  ]; //'Quiz',Assignment hide
   late List<Widget> pages;
 
   // API Data
@@ -144,8 +142,8 @@ class _TabBarDetailsState extends State<TabBarDetails> with SingleTickerProvider
             courseContent: courseContent,
             onLectureOpen: handleLectureOpen,
           ),
-          QuizPage(quizData: quizData),
-          AssignmentPage(assignmentData: assignmentData),
+          // QuizPage(quizData: quizData),
+          // AssignmentPage(assignmentData: assignmentData),
           NoticePage(noticeData: noticeData),
           LiveClassPage(liveClassData: liveClassData),
           DiscussionPage(discussionData: discussionData, courseId: courseId),
