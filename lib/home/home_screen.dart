@@ -382,7 +382,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget generatepage() {
     if (isLoading || banners.isEmpty) {
       return Container(
-        height: 150.h,
+        height: 180.h,
+        width: double.infinity,
         margin: EdgeInsets.symmetric(horizontal: 16.w),
         decoration: BoxDecoration(
           color: Colors.grey[200],
@@ -396,60 +397,41 @@ class _HomeScreenState extends State<HomeScreen> {
         autoPlay: true,
         enableInfiniteScroll: true,
         initialPage: 0,
-        height: 150.0.h,
+        height: 180.h,
         enlargeCenterPage: false,
-        viewportFraction: 0.84,
-        // onPageChanged: (index, reason) {
-        //   homecontroller.onChange(index.obs);
-        // },
+        viewportFraction: 1.0, // Use full screen width
       ),
       itemBuilder: (BuildContext context, int index, int realIndex) {
         final banner = banners[index];
-        return Padding(
-          padding: EdgeInsets.only(
-            left: index == 0 ? 0.w : 12.w,
-            right: index == banners.length - 1 ? 12.w : 0.w,
-          ),
-          child: Container(
-            height: 150.h,
-            width: 352.w,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              image: DecorationImage(
-                image: NetworkImage(banner['banner_image'] ?? ''),
-              ),
+        return Container(
+          width: MediaQuery.of(context).size.width,
+          height: 180.h,
+          margin: EdgeInsets.symmetric(horizontal: 0.w),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4),
+            image: DecorationImage(
+              image: NetworkImage(banner['banner_image'] ?? ''),
+              fit: BoxFit.cover, // Make sure image covers full width
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding:
-                  EdgeInsets.only(top: 20.h, left: 25.w, right: 110.w),
-                  child: Text(
-                    banner['banner_first_line_title'] ?? '',
-                    style: TextStyle(
-                      fontFamily: 'Nastaleeq',
-                      color: Color(0XFF000000),
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.only(top: 20.h, left: 25.w, right: 110.w),
+                child: Text(
+                  banner['banner_first_line_title'] ?? '',
+                  style: TextStyle(
+                    fontFamily: 'Nastaleeq',
+                    color: Color(0XFF000000),
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 29.sp),
-                Padding(
-                  padding: EdgeInsets.only(left: 25.w),
-                  // child: Text(
-                  //   "Get Start",
-                  //   style: TextStyle(
-                  //     color: const Color(0XFF00AFEE),
-                  //     fontWeight: FontWeight.w700,
-                  //      fontFamily: 'Nastaleeq',
-                  //     fontSize: 18.sp,
-                  //   ),
-                  // ),
-                ),
-              ],
-            ),
+              ),
+              SizedBox(height: 29.sp),
+              // Additional widgets here
+            ],
           ),
         );
       },

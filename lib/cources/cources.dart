@@ -237,7 +237,7 @@ class _MyCourcesState extends State<MyCources> {
         print("Enroll API Response Body: ${response.body}");
 
         if (response.statusCode == 200) {
-          Get.to(() => const HomeMainScreen());
+          Get.to(() =>  TabBarDetails(slug:widget.slug));
           await fetchCourseDetails();
 
           print("API Successfully Enroll Course.");
@@ -328,8 +328,8 @@ class _MyCourcesState extends State<MyCources> {
                           courseTitle,
                           style: TextStyle(
                             fontFamily: 'Nastaleeq',
-                            fontWeight: FontWeight.w700,
-                            fontSize: 20.sp,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24.sp,
                             overflow: TextOverflow.ellipsis,
                           ),
                           maxLines: 1,
@@ -342,7 +342,7 @@ class _MyCourcesState extends State<MyCources> {
 
                 // Video Player Section
                  Container(
-                    padding: EdgeInsets.all(8.h),
+                    padding: EdgeInsets.all(2.h),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       boxShadow: [
@@ -351,10 +351,10 @@ class _MyCourcesState extends State<MyCources> {
                           blurRadius: 16,
                         ),
                       ],
-                      borderRadius: BorderRadius.circular(22.h),
+                      borderRadius: BorderRadius.circular(8.h),
                     ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(22.h),
+                        borderRadius: BorderRadius.circular(8.h),
                         child: AspectRatio(
                           aspectRatio: 16 / 9,
                           child: Stack(

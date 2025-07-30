@@ -82,7 +82,7 @@ class _MyLearningCoursesState extends State<MyLearningCourses> {
     return Scaffold(
       body: Column(
         children: [
-          SizedBox(height: 60.h),
+          SizedBox(height: 30.h),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.h),
             child: Row(
@@ -99,7 +99,7 @@ class _MyLearningCoursesState extends State<MyLearningCourses> {
                 Text(
                   "My Courses",
                   style: TextStyle(
-                    fontSize: 24.sp,
+                    fontSize: 26.sp,
                     color: const Color(0XFF000000),
                     fontFamily: 'Nastaleeq',
                     fontWeight: FontWeight.bold,
@@ -314,7 +314,7 @@ class _MyLearningCoursesState extends State<MyLearningCourses> {
         final instructor = course['course']['instructor'];
         final authorName = '${instructor['first_name']} ${instructor['last_name']}';
         final progress = (course['progress'] ?? 0) / 100.0; // API returns 0-100
-        print('Check the slug on my learning courses: ${course['course']['slug']}');
+        // print('Check the slug on my learning courses: ${course['course']['slug']}');
 
         return GestureDetector(
           onTap: () {
@@ -339,14 +339,14 @@ class _MyLearningCoursesState extends State<MyLearningCourses> {
                 Stack(
                   children: [
                     Container(
-                      height: 210.h,
+                      height: 250.h,
                       width: double.infinity,
-                      margin: EdgeInsets.all(10),
+                      margin: EdgeInsets.all(5),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12.h),
+                        borderRadius: BorderRadius.circular(8.h),
                         image: DecorationImage(
                           image: NetworkImage(course['course']['image_url'] ?? ''),
-                          fit: BoxFit.cover,
+                          fit: BoxFit.fill,
                           // onError: (exception, stackTrace) {
                           //   return const Icon(Icons.broken_image, size: 50);
                           // },

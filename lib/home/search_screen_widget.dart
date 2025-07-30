@@ -269,8 +269,8 @@ class TrendingCourses extends StatelessWidget {
                 }
               },
               child: Container(
-                height:260.h,
-                width: 177.w,
+                height:200.h,
+                width: 275.w,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12.h),
                   boxShadow: [
@@ -285,8 +285,8 @@ class TrendingCourses extends StatelessWidget {
                 child: Column(
                   children: [
                     Container(
-                      height: 195.h,
-                      width: 200.w,
+                      height: 200.h,
+                      width: 275.w,
                       decoration: BoxDecoration(
                         image: DecorationImage(
                           image: NetworkImage(courses['course_image'].toString()),

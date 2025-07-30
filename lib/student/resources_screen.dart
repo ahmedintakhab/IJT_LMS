@@ -37,7 +37,7 @@ class ResourcesScreen extends StatelessWidget {
       );
 
       if (response.statusCode == 200) {
-        print('Lecture complete progress api response:${response.statusCode}');
+        print('Lecture complete progress api response: ${response.statusCode}');
       } else {
         print('Failed to mark lecture as complete');
       }
@@ -53,7 +53,13 @@ class ResourcesScreen extends StatelessWidget {
     final String source = lecture['lecture_preview_src']?.toString() ?? '';
     final String title = lecture['title']?.toString() ?? 'Untitled Lecture';
     final String lectureId = lecture['id']?.toString() ?? '';
-     // print('chekc the type, source and title:$lectureId $type $title');
+    final String isLocked = lecture['is_locked']?.toString() ?? 'No';
+
+    // Check if lecture is locked
+    if (isLocked == 'Yes') {
+      Get.snackbar('Locked', 'This lecture is locked and cannot be accessed.');
+      return;
+    }
 
     try {
       if (type.isEmpty || source.isEmpty) {
@@ -143,6 +149,7 @@ class ResourcesScreen extends StatelessWidget {
 
                     // Display the lectures
                     ...lectures.map((lecture) {
+                      final String isLocked = lecture['is_locked']?.toString() ?? 'No';
                       return Padding(
                         padding: const EdgeInsets.all(5),
                         child: Container(
@@ -208,18 +215,20 @@ class ResourcesScreen extends StatelessWidget {
                                   ),
                                 ),
 
-                                // Open icon
+                                // Lock or Eye icon based on is_locked
                                 Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     GestureDetector(
+                                      onTap: isLocked == 'Yes'
+                                          ? null // Disable tap for locked lectures
+                                          : () => _openContent(context, lecture),
                                       child: Icon(
-                                        Icons.open_in_new,
-                                        color: const Color(0xFF00AFEE),
+                                        isLocked == 'Yes' ? Icons.lock : Icons.visibility,
+                                        color: isLocked == 'Yes' ? Colors.grey : const Color(0xFF00AFEE),
                                         size: 26.w,
                                       ),
-                                      onTap: () => _openContent(context, lecture),
                                     ),
                                   ],
                                 ),
@@ -233,33 +242,6 @@ class ResourcesScreen extends StatelessWidget {
                 ),
               );
             },
-          ),
-        ),
-        GestureDetector(
-          onTap: () {
-            Navigator.pop(context);
-          },
-          child: Padding(
-            padding: EdgeInsets.only(bottom: 40.h, top: 15.h),
-            child: Container(
-              height: 56.h,
-              width: 374.w,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8.h),
-                color: const Color(0xFF00AFEE),
-              ),
-              child: Center(
-                child: Text(
-                  "Continue Course",
-                  style: TextStyle(
-                    color: const Color(0xFFFFFFFF),
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w700,
-                    fontFamily: 'Gilroy',
-                  ),
-                ),
-              ),
-            ),
           ),
         ),
       ],

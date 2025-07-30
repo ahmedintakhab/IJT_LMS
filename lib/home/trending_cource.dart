@@ -179,7 +179,7 @@ class _TrendingCourceState extends State<TrendingCource> {
 
   Widget _buildShimmerEffect() {
     return GridView.count(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      padding: EdgeInsets.symmetric(horizontal: 15.w),
       crossAxisCount: 2,
       crossAxisSpacing: 18.73,
       mainAxisSpacing: 20,
@@ -195,10 +195,10 @@ class _TrendingCourceState extends State<TrendingCource> {
           child: Column(
             children: [
               Container(
-                height: 170.h,
+                height: 180.h,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(8),
                   color: Colors.grey,
                 ),
               ),
@@ -246,7 +246,7 @@ class _TrendingCourceState extends State<TrendingCource> {
   Widget _buildCourseList() {
     return GridView.count(
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      padding: EdgeInsets.symmetric(horizontal: 15.w),
       crossAxisCount: 2,
       crossAxisSpacing: 18.73,
       mainAxisSpacing: 20,
@@ -272,7 +272,7 @@ class _TrendingCourceState extends State<TrendingCource> {
           child: Column(
             children: [
               Container(
-                height: 170.h,
+                height: 180.h,
                 width: double.infinity,
                 margin: EdgeInsets.all(5),
                 decoration: BoxDecoration(

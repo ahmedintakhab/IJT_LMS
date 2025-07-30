@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
-import 'package:learn_megnagmet/student/quiz_screen.dart';
 import 'package:learn_megnagmet/student/resources_screen.dart';
 import 'package:learn_megnagmet/student/review_screen.dart';
+import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import '../utils/api_constant.dart';
-import 'assignment_screen.dart';
 import 'discussion_screen.dart';
 import 'live_screen.dart';
 import 'notice_screen.dart';
@@ -42,6 +42,8 @@ class _TabBarDetailsState extends State<TabBarDetails> with SingleTickerProvider
   bool isLoading = true;
   String courseId = '';
   String courseTitle = '';
+  double progress = 0.0;
+
 
   // Data arrays
   List<dynamic> courseContent = [];
@@ -91,7 +93,8 @@ class _TabBarDetailsState extends State<TabBarDetails> with SingleTickerProvider
           apiData = json.decode(response.body);
           courseTitle = apiData?['data']['title']?.toString() ?? '';
           courseId = apiData?['data']['id']?.toString() ?? '';
-          print('Check title: $courseTitle');
+          progress = (apiData?['data']['progress'] ?? 0) / 100.0;
+          print('Check progress: $progress');
           print('Check the student course detail api data: $apiData');
 
           // Extract data
@@ -166,19 +169,19 @@ class _TabBarDetailsState extends State<TabBarDetails> with SingleTickerProvider
     return Scaffold(
       body: Column(
         children: [
-          const SizedBox(height: 50),
+           SizedBox(height: 30.h),
           Align(
             alignment: Alignment.topRight,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25),
               child: Text(
                 courseTitle,
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 22),
+                style:  TextStyle(fontWeight: FontWeight.w700, fontSize: 26.sp),
                 textDirection: TextDirection.rtl,
               ),
             ),
           ),
-          const SizedBox(height: 20),
+           SizedBox(height: 20.h),
           _buildTabBar(),
           Expanded(
             child: isLoading
@@ -186,6 +189,32 @@ class _TabBarDetailsState extends State<TabBarDetails> with SingleTickerProvider
                 : _buildTabBarPages(),
           ),
         ],
+      ),
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        color: Colors.white,
+        child: LinearPercentIndicator(
+          padding: EdgeInsets.zero,
+          // width: MediaQuery.of(context).size.width - 40, // Adjust width to fit padding
+          lineHeight: 16.0.h,
+          width: 310.0.w,
+
+          percent: progress,
+          trailing: Padding(
+            padding: EdgeInsets.only(left: 14),
+            child: Text(
+              "${(progress * 100).toInt()}%",
+              style: const TextStyle(
+                fontFamily: 'Gilroy',
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+          backgroundColor: const Color(0XFFDEDEDE),
+          progressColor: const Color(0XFF00AFEE),
+          barRadius: const Radius.circular(22),
+        ),
       ),
     );
   }

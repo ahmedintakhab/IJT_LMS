@@ -124,21 +124,15 @@ class _RecentAddedListState extends State<RecentAddedList> {
                     Container(
                       height: 200.h,
                       width: 276.w,
-                      margin: EdgeInsets.all(10),
+                      margin: EdgeInsets.all(5),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         image: DecorationImage(
                           image: NetworkImage(course['image'] ?? ''),
-                          fit: BoxFit.cover,
-                          // errorBuilder: (context, error, stackTrace) {
-                          //   return Container(
-                          //     color: Colors.grey[200],
-                          //     child: Icon(Icons.broken_image, size: 40.w),
-                          //   );
-                          // },
+                          fit: BoxFit.fill,
                         ),
                       ),
-                     
+
                     ),
                     SizedBox(height: 20.h),
                     Directionality(

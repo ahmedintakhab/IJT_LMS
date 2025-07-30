@@ -24,7 +24,7 @@ class _TrendingCourceListState extends State<TrendingCourceList> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 234.h,
+      height: 245.h,
       width: double.infinity.w,
       child: widget.isLoading
           ? Shimmer.fromColors(
@@ -42,8 +42,8 @@ class _TrendingCourceListState extends State<TrendingCourceList> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    height: 172.h,
-                    width: 177.w,
+                    height: 175.h,
+                    width: 175.w,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8.r),
@@ -51,7 +51,7 @@ class _TrendingCourceListState extends State<TrendingCourceList> {
                   ),
                   SizedBox(height: 8.h),
                   Container(
-                    width: 177.w,
+                    width: 175.w,
                     height: 16.h,
                     color: Colors.white,
                   ),
@@ -86,8 +86,8 @@ class _TrendingCourceListState extends State<TrendingCourceList> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    height: 172.h,
-                    width: 177.w,
+                    height: 200.h,
+                    width: 276.w,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8.r),
                       image: DecorationImage(
@@ -95,54 +95,19 @@ class _TrendingCourceListState extends State<TrendingCourceList> {
                           widget.trendingCource[index]['image'] ?? '',
                         ),
                         fit: BoxFit.fill,
-                        // errorBuilder: (context, error, stackTrace) {
-                        //   return Container(
-                        //     color: Colors.grey[200],
-                        //     child: Icon(Icons.broken_image, size: 40.w),
-                        //   );
-                        // },
                       ),
                     ),
-                    // child: Padding(
-                    //   padding: EdgeInsets.only(
-                    //       left: 10.w, right: 147.w, bottom: 142.h),
-                    //   child: Container(
-                    //     height: 20.h,
-                    //     width: 20.w,
-                    //     decoration: const BoxDecoration(
-                    //       shape: BoxShape.circle,
-                    //       color: Colors.white,
-                    //     ),
-                    //     child: Center(
-                    //       child: GestureDetector(
-                    //         onTap: () {
-                    //           widget.toggle(index);
-                    //         },
-                    //         child: widget.buttonStatuses[index]
-                    //             ? Image.asset(
-                    //           "assets/saveboldblue.png",
-                    //           height: 10.h,
-                    //           width: 9.w,
-                    //         )
-                    //             : Image.asset(
-                    //           "assets/savebold.png",
-                    //           height: 10.h,
-                    //           width: 9.w,
-                    //         ),
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
+
                   ),
                   SizedBox(height: 8.h),
                   SizedBox(
-                    width: 177.w,height: 20,
+                    width: 275.w,height: 20,
                     child: Text(
                       widget.trendingCource[index]['title'] ?? '',
                       style: TextStyle(
                         fontFamily: 'Nastaleeq',
                         fontWeight: FontWeight.w700,
-                        fontSize: 14.sp,
+                        fontSize: 20.sp,
                         color: const Color(0XFF000000),
                       ),
                       textDirection: TextDirection.rtl,

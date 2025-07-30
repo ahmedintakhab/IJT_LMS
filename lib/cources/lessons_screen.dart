@@ -12,7 +12,7 @@ import '../models/lesson.dart';
 import '../utils/screen_size.dart';
 
 class Lesson extends StatefulWidget {
-  final List< dynamic> lessonsData;
+  final List<dynamic> lessonsData;
 
   const Lesson({Key? key, required this.lessonsData}) : super(key: key);
 
@@ -23,120 +23,115 @@ class Lesson extends StatefulWidget {
 class _LessonState extends State<Lesson> {
   List<LessonList> lessonLists = Utils.getLesson();
 
+  @override
   Widget build(BuildContext context) {
     print('Check lesson Data on lesson Screen: ${widget.lessonsData}');
     initializeScreenSize(context);
+
     return GetBuilder(
-        init: HomeController(),
-        builder: (controller) =>
-            SingleChildScrollView(
-              child: Column(
-                children: [
-                  ListView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      scrollDirection: Axis.vertical,
-                      shrinkWrap: true,
-                      itemCount: widget.lessonsData.length,
-                      itemBuilder: (BuildContext, index) {
-                        var lesson = widget
-                            .lessonsData[index]; // Get each lesson data
-                        return Padding(
-                          padding: EdgeInsets.only(top: index == 0 ? 0.h : 8.h,
-                              bottom: 8.h,
-                              left: 15.w,
-                              right: 15.w),
-                          child: Container(
-                            width: double.infinity,
+      init: HomeController(),
+      builder: (controller) => SingleChildScrollView(
+        child: Column(
+          children: [
+            ListView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              scrollDirection: Axis.vertical,
+              shrinkWrap: true,
+              itemCount: widget.lessonsData.length,
+              itemBuilder: (context, index) {
+                var lesson = widget.lessonsData[index];
+                var lectures = lesson['lesson_lectures'] as List;
+
+                return Padding(
+                  padding: EdgeInsets.only(
+                      top: index == 0 ? 0.h : 8.h,
+                      bottom: 8.h,
+                      left: 15.w,
+                      right: 15.w),
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12.h),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0XFF23408F).withOpacity(0.14),
+                          offset: const Offset(-4, 5),
+                          blurRadius: 16,
+                        ),
+                      ],
+                    ),
+                    child: ExpansionTileCard(
+                      trailing: lectures.isEmpty
+                          ? SizedBox(width: 1) // disables expand arrow
+                          : Padding(
+                        padding: EdgeInsets.only(right: 20.w),
+                        child: Image.asset(
+                          "assets/down.png",
+                          height: 24.h,
+                          width: 24.w,
+                          color: Color(0XFF00AFEE),
+                        ),
+                      ),
+                      animateTrailing: true,
+                      baseColor: Colors.white,
+                      expandedColor: Colors.white,
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            lesson['lesson_name'] ?? 'No Name',
+                            style: TextStyle(
+                                fontSize: 16.sp,
+                                color: Color(0XFF000000),
+                                fontFamily: 'Nastaleeq',
+                                fontWeight: FontWeight.bold),
+                            textDirection: TextDirection.rtl,
+                          ),
+                          SizedBox(height: 4.h),
+                          Container(
+                            height: 20.h,
+                            width: 63.w,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12.h),
-                              boxShadow: [
-                                BoxShadow(
-                                    color: const Color(0XFF23408F).withOpacity(
-                                        0.14),
-                                    offset: const Offset(-4, 5),
-                                    blurRadius: 16),
-                              ],
+                              borderRadius: BorderRadius.circular(22.h),
+                              color: const Color(0XFF00AFEE),
                             ),
-                            child: ExpansionTileCard(
-                              trailing: Padding(
-                                padding: EdgeInsets.only(right: 20.w),
-                                child: Image.asset(
-                                  "assets/down.png", height: 24.h,
-                                  width: 24.w,
-                                  color: Color(0XFF00AFEE),),
+                            child: Center(
+                              child: Text(
+                                'Lesson ${lesson['lesson_no'].toString()}',
+                                style: TextStyle(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
                               ),
-                              animateTrailing: true,
-
-
-                              // contentPadding: EdgeInsets.symmetric(
-                              //     vertical: 5.h),
-                              // borderRadius: BorderRadius.circular(22.h),
-                              // leading: Image.asset(
-                              //   lessonLists[index].image ?? 'assets/3rdlessondetail.png',
-                              //   height: 66.h,
-                              //   width: 66.w,
-                              // ),
-
-                              title: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    lesson['lesson_name'] ?? 'No Name',
-                                    style: TextStyle(
-                                        fontSize: 14.sp,
-                                        color: Color(0XFF000000),
-                                        fontFamily: 'Nastaleeq',
-                                        fontWeight: FontWeight.bold),
-                                    textDirection: TextDirection.rtl,
-
-                                  ),
-                                  SizedBox(height: 4.h),
-                                  Container(
-                                    height: 20.h,
-                                    width: 63.w,
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(
-                                            22.h),
-                                        color: const Color(0XFF00AFEE)),
-                                    child: Center(
-                                        child: Text(
-                                          'Lesson ${lesson['lesson_no']
-                                              .toString()}',
-                                          style: TextStyle(
-                                              fontSize: 12.sp,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white),
-                                        )),
-                                  ),
-                                ],
-                              ),
-                              children: <Widget>[
-                                Divider(
-                                  thickness: 1.0,
-                                  height: 1.0.h,
-                                ),
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: 16.0.w,
-                                        vertical: 8.0.h
-                                    ),
-                                    child: lesson_detail(index),),
-                                )
-                              ],
                             ),
                           ),
-                        );
-                      }),
-
-                ],
-              ),
-            ));
+                        ],
+                      ),
+                      children: lectures.isEmpty
+                          ? []
+                          : [
+                        Divider(thickness: 1.0, height: 1.0.h),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16.0.w, vertical: 8.0.h),
+                            child: lesson_detail(index),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget lesson_detail(int index) {
-    // Get the lectures data for the current lesson
     var lectures = widget.lessonsData[index]['lesson_lectures'] as List;
 
     return Column(
@@ -148,48 +143,45 @@ class _LessonState extends State<Lesson> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Lecture icon with SVG support
                 _buildLectureIcon(lecture['lecture_icon_src']),
                 SizedBox(width: 10.w),
-
                 Flexible(
                   child: Text(
                     lecture['lecture_title'] ?? 'No Title',
                     style: TextStyle(
-                        fontSize: 14.sp, color: const Color(0XFF000000)),
+                      fontSize: 14.sp,
+                      color: const Color(0XFF000000),
+                    ),
                   ),
                 ),
                 SizedBox(width: 10.w),
 
+                /// Locked icon
                 if (lecture['lecture_is'] == 'Locked')
                   Icon(
                     Icons.lock,
                     color: Colors.grey,
                     size: 20.h,
                   )
-                else
-                  if (lecture['lecture_is'] == 'Free')
-                    Container(
-                      width: 70,
-                      height: 20,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          final url = lecture['lecture_preview_btn_src'];
-                          if (url != null && url.isNotEmpty) {
-                            launchUrl(Uri.parse(url));
-                          } else {
-                            print('Invalid or missing URL for lecture preview');
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0XFF00AFEE),
-                        ),
-                        child: Text(
-                          'Preview',
-                          style: TextStyle(fontSize: 8.sp, color: Colors.white),
-                        ),
-                      ),
+
+                /// Free or مفت → Show Eye Icon
+                else if (lecture['lecture_is'] == 'Free' ||
+                    lecture['lecture_is'] == ' مفت')
+                  GestureDetector(
+                    onTap: () {
+                      final url = lecture['lecture_preview_btn_src'];
+                      if (url != null && url.isNotEmpty) {
+                        launchUrl(Uri.parse(url));
+                      } else {
+                        print('Preview URL is not available');
+                      }
+                    },
+                    child: Icon(
+                      Icons.remove_red_eye,
+                      color: const Color(0XFF00AFEE),
+                      size: 22.h,
                     ),
+                  ),
               ],
             ),
             SizedBox(height: 5.h),
@@ -208,12 +200,10 @@ class _LessonState extends State<Lesson> {
 
       String svgContent = response.body;
 
-      // Fix rotation values using proper RegExp replacement
-      svgContent =
-          svgContent.replaceAll(RegExp(r'rotate\(\s*\d+deg\s*\)'), 'rotate(0)');
+      svgContent = svgContent.replaceAll(RegExp(r'rotate\(\s*\d+deg\s*\)'), 'rotate(0)');
       svgContent = svgContent.replaceAllMapped(
-          RegExp(r'(-?\d+)deg'),
-              (match) => match.group(1) ?? '0'
+        RegExp(r'(-?\d+)deg'),
+            (match) => match.group(1) ?? '0',
       );
 
       return svgContent;
@@ -240,7 +230,9 @@ class _LessonState extends State<Lesson> {
             return SizedBox(
               height: 20.h,
               width: 20.w,
-              child: const CircularProgressIndicator(color: Color(0XFF00AFEE),),
+              child: const CircularProgressIndicator(
+                color: Color(0XFF00AFEE),
+              ),
             );
           }
 
@@ -257,10 +249,8 @@ class _LessonState extends State<Lesson> {
             snapshot.data!,
             height: 20.h,
             width: 20.w,
-            colorFilter: const ColorFilter.mode(
-              Color(0XFF00AFEE),
-              BlendMode.srcIn,
-            ),
+            colorFilter:
+            const ColorFilter.mode(Color(0XFF00AFEE), BlendMode.srcIn),
             theme: const SvgTheme(
               currentColor: Color(0XFF00AFEE),
               fontSize: 14,
@@ -275,16 +265,16 @@ class _LessonState extends State<Lesson> {
         height: 20.h,
         width: 20.w,
         color: const Color(0XFF00AFEE),
-        errorBuilder: (context, error, stackTrace) =>
-            Icon(
-              Icons.error,
-              color: Colors.red,
-              size: 20.h,
-            ),
+        errorBuilder: (context, error, stackTrace) => Icon(
+          Icons.error,
+          color: Colors.red,
+          size: 20.h,
+        ),
       );
     }
   }
 }
+
 
 
 

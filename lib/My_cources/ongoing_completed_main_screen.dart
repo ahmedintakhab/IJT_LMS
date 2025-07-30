@@ -33,7 +33,7 @@ class _OngoingCompletedScreenState extends State<OngoingCompletedScreen> {
           init: OngoingCompletedController(),
           builder: (controller) => Column(
             children: [
-              SizedBox(height: 73.h),
+              SizedBox(height: 20.h),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.h),
                 child: Row(
@@ -51,12 +51,12 @@ class _OngoingCompletedScreenState extends State<OngoingCompletedScreen> {
                     SizedBox(width: 16.w),
                     Text(
                       "My Courses",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24.sp),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 26.sp),
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 20.h),
+              SizedBox(height: 30.h),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Container(
