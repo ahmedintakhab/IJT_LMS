@@ -3,9 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:learn_megnagmet/cources/cources.dart';
 import 'package:learn_megnagmet/utils/api_constant.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:shimmer/shimmer.dart';
+import '../utils/cache_api_service.dart';
 import '../utils/screen_size.dart';
 
 class RecentlyAdded extends StatefulWidget {
@@ -37,19 +36,19 @@ class _RecentlyAddedState extends State<RecentlyAdded> {
   Future<void> fetchRecentCourses() async {
     try {
       final url = '${ApiConstant.baseUrl}courses-list';
-      final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 10));
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['success'] == true && data['data']['courses'] != null) {
-          setState(() {
-            courses = data['data']['courses'];
-            isLoading = false;
-          });
-          return;
-        }
+      // ✅ Use cached data if available
+      final data = await fetchDataWithCache(url);
+
+      if (data['success'] == true && data['data']['courses'] != null) {
+        setState(() {
+          courses = data['data']['courses'];
+          isLoading = false;
+        });
+        return;
       }
-      throw Exception('Failed to load courses');
+
+      throw Exception('No courses found in API response');
     } catch (e) {
       print('Recent courses error: ${e.toString()}');
       setState(() {
@@ -65,7 +64,7 @@ class _RecentlyAddedState extends State<RecentlyAdded> {
     return Scaffold(
       body: Column(
         children: [
-          SizedBox(height: 60.h),
+          SizedBox(height: 30.h),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.h),
             child: Row(
@@ -290,7 +289,7 @@ class _RecentlyAddedState extends State<RecentlyAdded> {
 
   Widget _buildCourseList() {
     return ListView.builder(
-      padding: EdgeInsets.only(left: 20.w, right: 20.w, top: 10.h),
+      padding: EdgeInsets.all(20),
       itemCount: courses.length,
       itemBuilder: (context, index) {
         final course = courses[index];
@@ -300,7 +299,7 @@ class _RecentlyAddedState extends State<RecentlyAdded> {
                Get.to(MyCources(slug: course['slug']));
             },
             child: Container(
-            margin: EdgeInsets.only(bottom: 10.h),
+            margin: EdgeInsets.only(bottom: 20.h),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(6.h),
               boxShadow: [
@@ -318,11 +317,11 @@ class _RecentlyAddedState extends State<RecentlyAdded> {
                 Stack(
                   children: [
                     Container(
-                      height: 210.h,
+                      height: 240.h,
                       width: double.infinity,
-                      margin: EdgeInsets.all(10),
+                      margin: EdgeInsets.all(5),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12.h),
+                        borderRadius: BorderRadius.circular(8.h),
                         image: DecorationImage(
                           image: NetworkImage(course['image_url'] ?? ''),
                           fit: BoxFit.cover,

@@ -8,6 +8,7 @@ import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:shimmer/shimmer.dart';
+import '../utils/cache_api_service.dart';
 import '../utils/screen_size.dart';
 
 class MyLearningCourses extends StatefulWidget {
@@ -43,32 +44,29 @@ class _MyLearningCoursesState extends State<MyLearningCourses> {
       String token = prefs.getString('authToken') ?? '';
 
       final url = '${ApiConstant.baseUrl}student/my-learning';
-      final response = await http.get(Uri.parse(url),
+      final data = await fetchDataWithCache(
+        url,
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
-      ).timeout(const Duration(seconds: 10));
+      );
 
-      if (response.statusCode == 200) {
-        print('My learning courses API response: ${response.statusCode}');
-        final data = json.decode(response.body);
-        print('API data: $data');
-        if (data['success'] == true && data['data'] != null && data['data']['data'] != null) {
-          if (!mounted) return; // Check if widget is still mounted before setState
-          setState(() {
-            courses = data['data']['data'];
-            isLoading = false;
-          });
-          return;
-        } else {
-          throw Exception('No courses found in API response');
-        }
+      print('API data: $data');
+
+      if (data['success'] == true && data['data'] != null && data['data']['data'] != null) {
+        if (!mounted) return;
+        setState(() {
+          courses = data['data']['data'];
+          isLoading = false;
+        });
+      } else {
+        throw Exception('No courses found in API response');
       }
-      throw Exception('Failed to load courses: ${response.statusCode}');
+
     } catch (e) {
       print('Recent courses error: ${e.toString()}');
-      if (!mounted) return; // Check if widget is still mounted before setState
+      if (!mounted) return;
       setState(() {
         isLoading = false;
         hasError = true;

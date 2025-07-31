@@ -1,13 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shimmer/shimmer.dart';
 import '../cources/cources.dart';
 import '../utils/api_constant.dart';
+import '../utils/cache_api_service.dart';
 import 'category_wise_courses.dart';
 import 'filter_sheet.dart';
 import 'search_screen_controller.dart';
@@ -19,15 +16,13 @@ class SearchTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('Check the controller result for Search field: ${controller}');
-
     return Container(
       height: 50.h,
       child: TextFormField(
         controller: controller.searchController,
         decoration: InputDecoration(
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Color(0XFF78A03F), width: 1.w),
+            borderSide: BorderSide(color: Color(0XFF00AFEE), width: 1.w),
             borderRadius: BorderRadius.circular(22.h),
           ),
           hintText: 'Search',
@@ -89,13 +84,13 @@ class HorizontalDesign extends StatelessWidget {
   const HorizontalDesign({Key? key, required this.controller}) : super(key: key);
 
   Future<List<dynamic>> fetchCategories() async {
-    final url = Uri.parse('${ApiConstant.baseUrl}category-list');
-
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String token = prefs.getString('authToken') ?? '';
 
-      final response = await http.get(
+      final url = '${ApiConstant.baseUrl}category-list';
+
+      final jsonData = await fetchDataWithCache(
         url,
         headers: {
           'Authorization': 'Bearer $token',
@@ -103,15 +98,10 @@ class HorizontalDesign extends StatelessWidget {
         },
       );
 
-      if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
-        if (jsonData['success'] == true) {
-          return jsonData['data']['data'] as List<dynamic>;
-        } else {
-          throw Exception('API returned success: false - ${jsonData['message']}');
-        }
+      if (jsonData['success'] == true) {
+        return jsonData['data']['data'] as List<dynamic>;
       } else {
-        throw Exception('Failed to load categories: ${response.statusCode}');
+        throw Exception('API returned success: false - ${jsonData['message']}');
       }
     } catch (e) {
       throw Exception('Error fetching categories: $e');
@@ -120,7 +110,6 @@ class HorizontalDesign extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('Check the controller result for Horizontl: ${controller}');
     return Container(
       height: 140.h,
       width: double.infinity,
@@ -272,7 +261,7 @@ class TrendingCourses extends StatelessWidget {
                 height:200.h,
                 width: 275.w,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12.h),
+                  borderRadius: BorderRadius.circular(8.h),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0XFF23408F).withOpacity(0.14),

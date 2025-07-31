@@ -20,6 +20,7 @@ import 'dart:convert';
 import '../home/home_main.dart';
 import '../login/login_empty_state.dart';
 import '../utils/api_constant.dart';
+import '../utils/custom_cache_manager.dart';
 import 'instructors_tab.dart';
 
 class MyCources extends StatefulWidget {
@@ -95,94 +96,103 @@ class _MyCourcesState extends State<MyCources> {
       String token = prefs.getString('authToken') ?? '';
 
       final url = '${ApiConstant.baseUrl}course-details/${widget.slug}';
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
 
+      // Check if cached response exists
+      final cachedResponse = await CustomCacheManager.instance.getFileFromCache(url);
+      dynamic data;
 
-      if (response.statusCode == 200) {
-        print('Course details API response: ${response.statusCode}');
-        final data = json.decode(response.body);
-        // print('Course details API data: $data');
-
-        if (data != null) {
-          setState(() {
-            courseData = data;
-            courseId = data['course_id'].toString() ?? '';
-            courseSlug = data['course_slug'] ?? ''; // Add this line
-            print('Course slug: $courseSlug');
-
-            print('Check the course id on course details screen:$courseId ');
-            btnText = data['btn_text'] ?? '';
-            print('Check button Text:$btnText');
-
-            // Extract overview data
-            if (data['overview'] != null) {
-              overviewData = data['overview'];
-              courseTitle = data['overview']['title'] ?? "Course";
-            }
-            print('Course overview data:$overviewData');
-
-            // Extract lessons data
-            if (data['lessons'] != null) {
-              lessonsData = data['lessons'];
-
-            }
-            // Extract instructors data
-            if (data['instructors'] != null) {
-              instructorsData = data['instructors'];
-            }
-            print('Course Instructors data:$instructorsData');
-
-            // Extract instructors data
-            if (data['reviews'] != null) {
-              reviewsData = data['reviews'];
-            }
-            print('Course Instructors data:$reviewsData');
-
-
-            if (data['course_preview_src'] != null && data['course_preview_src'].isNotEmpty) {
-              videoUrl = data['course_preview_src'];
-              print('media url: $videoUrl');
-
-              if (_isYoutubeUrl(videoUrl)) {
-                isVideo = true;
-                // For YouTube, we'll handle it differently in the UI
-                setState(() => isMediaLoading = false);
-              } else if (_isImageUrl(videoUrl)) {
-                isVideo = false;
-                setState(() => isMediaLoading = false);
-              } else {
-                // Regular video URL
-                isVideo = true;
-                flickManager.dispose();
-                flickManager = FlickManager(
-                  videoPlayerController: VideoPlayerController.network(videoUrl),
-                  autoPlay: false,
-                )..flickControlManager!.addListener(_checkVideoLoading);
-              }
-            }
-
-
-
-            // Initialize pages with course details
-            pageclass = [
-              Overview(overviewData: overviewData),
-              Lesson(lessonsData: lessonsData,),
-              Review(reviewsData: reviewsData,
-                courseId: courseId,
-              ),
-              Instructors(instructorsData: instructorsData),
-            ];
-            isLoading = false;
-          });
-        }
+      if (cachedResponse != null && cachedResponse.file != null) {
+        print('✅ Loaded course details from Cache');
+        final cachedData = await cachedResponse.file.readAsString();
+        data = jsonDecode(cachedData);
       } else {
-        throw Exception('Failed to load course details: ${response.statusCode}');
+        print('🌐 Fetching course details from API');
+        final response = await http.get(
+          Uri.parse(url),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        );
+
+        if (response.statusCode == 200) {
+          data = json.decode(response.body);
+          // Cache the response
+          await CustomCacheManager.instance.putFile(
+            url,
+            response.bodyBytes,
+            fileExtension: 'json',
+          );
+        } else {
+          throw Exception('Failed to load course details: ${response.statusCode}');
+        }
+      }
+
+      if (data != null) {
+        setState(() {
+          courseData = data;
+          courseId = data['course_id'].toString() ?? '';
+          courseSlug = data['course_slug'] ?? '';
+          print('Course slug: $courseSlug');
+          print('Check the course id on course details screen:$courseId ');
+          btnText = data['btn_text'] ?? '';
+          print('Check button Text:$btnText');
+
+          // Extract overview data
+          if (data['overview'] != null) {
+            overviewData = data['overview'];
+            courseTitle = data['overview']['title'] ?? "Course";
+          }
+          print('Course overview data:$overviewData');
+
+          // Extract lessons data
+          if (data['lessons'] != null) {
+            lessonsData = data['lessons'];
+          }
+
+          // Extract instructors data
+          if (data['instructors'] != null) {
+            instructorsData = data['instructors'];
+          }
+          print('Course Instructors data:$instructorsData');
+
+          // Extract reviews data
+          if (data['reviews'] != null) {
+            reviewsData = data['reviews'];
+          }
+          print('Course Reviews data:$reviewsData');
+
+          // Handle media
+          if (data['course_preview_src'] != null && data['course_preview_src'].isNotEmpty) {
+            videoUrl = data['course_preview_src'];
+            print('media url: $videoUrl');
+
+            if (_isYoutubeUrl(videoUrl)) {
+              isVideo = true;
+              setState(() => isMediaLoading = false);
+            } else if (_isImageUrl(videoUrl)) {
+              isVideo = false;
+              setState(() => isMediaLoading = false);
+            } else {
+              isVideo = true;
+              flickManager.dispose();
+              flickManager = FlickManager(
+                videoPlayerController: VideoPlayerController.network(videoUrl),
+                autoPlay: false,
+              )..flickControlManager!.addListener(_checkVideoLoading);
+            }
+          }
+
+          // Initialize pages with course details
+          pageclass = [
+            Overview(overviewData: overviewData),
+            Lesson(lessonsData: lessonsData),
+            Review(reviewsData: reviewsData, courseId: courseId),
+            Instructors(instructorsData: instructorsData),
+          ];
+
+          isLoading = false;
+        });
       }
     } catch (e) {
       setState(() {
@@ -217,6 +227,7 @@ class _MyCourcesState extends State<MyCources> {
         print('Token check: $token');
 
         final url = '${ApiConstant.baseUrl}student/add-to-cart';
+        final courseDetailsUrl = '${ApiConstant.baseUrl}course-details/${widget.slug}';
 
         print("API URL: $url");
         print("Course ID: $courseId");
@@ -234,9 +245,16 @@ class _MyCourcesState extends State<MyCources> {
         );
 
         print("Enroll API Response Code: ${response.statusCode}");
-        print("Enroll API Response Body: ${response.body}");
+         print("Enroll API Response Body: ${response.body}");
 
         if (response.statusCode == 200) {
+          // 🚫 Clear old cached course data
+          await CustomCacheManager.instance.removeFile(courseDetailsUrl); // ✅ Clear correct cache
+          print('Successfully remove cache in course details');
+
+          // 🔄 Fetch updated course details
+          await fetchCourseDetails();
+
           Get.to(() =>  TabBarDetails(slug:widget.slug));
           await fetchCourseDetails();
 

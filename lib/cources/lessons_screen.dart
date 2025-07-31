@@ -9,6 +9,8 @@ import 'package:learn_megnagmet/utils/slider_page_data_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/lesson.dart';
+import '../student/content_display_screen.dart';
+import '../student/text_content_screen.dart';
 import '../utils/screen_size.dart';
 
 class Lesson extends StatefulWidget {
@@ -137,14 +139,18 @@ class _LessonState extends State<Lesson> {
     return Column(
       children: List.generate(lectures.length, (lectureIndex) {
         var lecture = lectures[lectureIndex];
+        final lectureIs = lecture['lecture_is']?.toString() ?? '';
+        print('Lecture $lectureIndex: lecture_is = "$lectureIs"');
 
         return Column(
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                // Lecture icon with SVG support
                 _buildLectureIcon(lecture['lecture_icon_src']),
                 SizedBox(width: 10.w),
+
                 Flexible(
                   child: Text(
                     lecture['lecture_title'] ?? 'No Title',
@@ -152,34 +158,57 @@ class _LessonState extends State<Lesson> {
                       fontSize: 14.sp,
                       color: const Color(0XFF000000),
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 SizedBox(width: 10.w),
 
-                /// Locked icon
                 if (lecture['lecture_is'] == 'Locked')
                   Icon(
                     Icons.lock,
                     color: Colors.grey,
                     size: 20.h,
                   )
-
-                /// Free or مفت → Show Eye Icon
-                else if (lecture['lecture_is'] == 'Free' ||
-                    lecture['lecture_is'] == ' مفت')
+                else if (lectureIs == 'Free' || lectureIs == 'مفت')
                   GestureDetector(
                     onTap: () {
                       final url = lecture['lecture_preview_btn_src'];
                       if (url != null && url.isNotEmpty) {
-                        launchUrl(Uri.parse(url));
-                      } else {
-                        print('Preview URL is not available');
+                        // Map lecture_type to contentType
+                        String contentType =
+                          lecture['lecture_type']?.toString() ?? 'text';
+
+                        if (contentType == 'text') {
+                          // Navigate to TextContentScreen for text content
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TextContentScreen(
+                                title: lecture['lecture_title'] ?? 'No Title',
+                                htmlContent: url,
+                              ),
+                            ),
+                          );
+                        } else {
+                          // Navigate to ContentDisplayScreen for other content types
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ContentDisplayScreen(
+                                title: lecture['lecture_title'] ?? 'No Title',
+                                contentType: contentType,
+                                source: url,
+                              ),
+                            ),
+                          );
+                        }
                       }
                     },
                     child: Icon(
                       Icons.remove_red_eye,
-                      color: const Color(0XFF00AFEE),
-                      size: 22.h,
+                      color: const Color(0xFF00AFEE),
+                      size: 20.h,
                     ),
                   ),
               ],

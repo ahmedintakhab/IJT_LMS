@@ -16,6 +16,7 @@ import 'package:learn_megnagmet/utils/slider_page_data_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 import '../utils/api_constant.dart';
+import '../utils/cache_api_service.dart';
 import '../utils/screen_size.dart';
 import 'categories_courses.dart';
 
@@ -64,43 +65,35 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> fetchCourses() async {
     try {
       final url = '${ApiConstant.baseUrl}home/courses';
-      final response = await http.get(Uri.parse(url));
+      final jsonData = await fetchDataWithCache(url); // ✅ use cache
 
-      if (response.statusCode == 200) {
-        print('Home Api response statuscode: ${response.statusCode}');
-        final jsonData = json.decode(response.body);
-        if (jsonData['success'] == true) {
-          final featureCategories = jsonData['data']['featureCategories'];
+      if (jsonData['success'] == true) {
+        final featureCategories = jsonData['data']['featureCategories'];
 
-          setState(() {
-            // Get banner data
-            bannerData = jsonData['data']['banner'];
-            if (bannerData != null) {
-              banners = [bannerData!]; // Convert to list for carousel
-            }
-            trendingCource = List<Map<String, dynamic>>.from(
-                featureCategories['Nisab-e-Rukniyat Courses'] ?? []);
-            trendingButtonStatuses = List<bool>.filled(trendingCource.length, false);
-            // print('Check trending courses: ${trendingCource}');
-            slug = trendingCource.isNotEmpty ? trendingCource[0]['slug']?.toString() ?? '' : '';
-             print('Check slug in home screen: ${slug}');
+        setState(() {
+          // Get banner data
+          bannerData = jsonData['data']['banner'];
+          if (bannerData != null) {
+            banners = [bannerData!];
+          }
+          trendingCource = List<Map<String, dynamic>>.from(
+              featureCategories['Nisab-e-Rukniyat Courses'] ?? []);
+          trendingButtonStatuses =
+          List<bool>.filled(trendingCource.length, false);
+          slug = trendingCource.isNotEmpty
+              ? trendingCource[0]['slug']?.toString() ?? ''
+              : '';
 
-            recentAdded = List<Map<String, dynamic>>.from(
-                featureCategories['Nisab-e-Rafaqat Courses'] ?? []);
-            // print('Check recentAdded courses: ${recentAdded}');
-            recentButtonStatuses = List<bool>.filled(recentAdded.length, false);
-            isLoading = false;
-          });
-        } else {
-          setState(() {
-            isLoading = false;
-            errorMessage = jsonData['message'] ?? 'Failed to load courses';
-          });
-        }
+          recentAdded = List<Map<String, dynamic>>.from(
+              featureCategories['Nisab-e-Rafaqat Courses'] ?? []);
+          recentButtonStatuses =
+          List<bool>.filled(recentAdded.length, false);
+          isLoading = false;
+        });
       } else {
         setState(() {
           isLoading = false;
-          errorMessage = 'Failed to fetch data: ${response.statusCode}';
+          errorMessage = jsonData['message'] ?? 'Failed to load courses';
         });
       }
     } catch (e) {
@@ -394,8 +387,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return CarouselSlider.builder(
       options: CarouselOptions(
-        autoPlay: true,
-        enableInfiniteScroll: true,
+        autoPlay: banners.length > 1, // Auto-play only if more than one banner
+        enableInfiniteScroll: banners.length > 1, // Infinite scroll only if more than one banner
         initialPage: 0,
         height: 180.h,
         enlargeCenterPage: false,
@@ -436,8 +429,7 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
       itemCount: banners.length,
-    );
-  }
+    );  }
 
   Widget indicator() {
     return Row(

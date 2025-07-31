@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:shimmer/shimmer.dart';
 
 import '../cources/cources.dart';
+import '../utils/cache_api_service.dart';
 
 class TrendingCource extends StatefulWidget {
   const TrendingCource({Key? key}) : super(key: key);
@@ -40,24 +41,18 @@ class _TrendingCourceState extends State<TrendingCource> {
   Future<void> fetchTrendingCourses() async {
     try {
       final url = '${ApiConstant.baseUrl}courses-list';
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['success'] == true && data['data']['courses'] != null) {
-          setState(() {
-            courses = data['data']['courses'];
-            isLoading = false;
-          });
-        }
-      } else {
-        throw Exception('Failed to load courses');
+      // ✅ Use cached data if available
+      final data = await fetchDataWithCache(url);
+      if (data['success'] == true && data['data']['courses'] != null) {
+        setState(() {
+          courses = data['data']['courses'];
+          isLoading = false;
+        });
+        return;
       }
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      print('Trending courses error: ${e.toString()}');
+      throw Exception('No courses found in api response');
+    }catch (e){
+      print('Recent courses error: ${e.toString()}');
       setState(() {
         isLoading = false;
         hasError = true;
