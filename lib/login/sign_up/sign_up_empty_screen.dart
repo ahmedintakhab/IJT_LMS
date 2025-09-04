@@ -357,7 +357,7 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
               ),
               Expanded(
                 child: isDataLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF00AFEE),))
                     : ListView(
                   children: [
                     detailForm(),

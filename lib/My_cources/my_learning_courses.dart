@@ -44,26 +44,32 @@ class _MyLearningCoursesState extends State<MyLearningCourses> {
       String token = prefs.getString('authToken') ?? '';
 
       final url = '${ApiConstant.baseUrl}student/my-learning';
-      final data = await fetchDataWithCache(
-        url,
+      final response = await http.get(
+        Uri.parse(url),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
 
-      print('API data: $data');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('API data: $data');
 
-      if (data['success'] == true && data['data'] != null && data['data']['data'] != null) {
-        if (!mounted) return;
-        setState(() {
-          courses = data['data']['data'];
-          isLoading = false;
-        });
+        if (data['success'] == true &&
+            data['data'] != null &&
+            data['data']['data'] != null) {
+          if (!mounted) return;
+          setState(() {
+            courses = data['data']['data'];
+            isLoading = false;
+          });
+        } else {
+          throw Exception('No courses found in API response');
+        }
       } else {
-        throw Exception('No courses found in API response');
+        throw Exception('Failed to fetch courses: ${response.statusCode}');
       }
-
     } catch (e) {
       print('Recent courses error: ${e.toString()}');
       if (!mounted) return;
@@ -140,7 +146,7 @@ class _MyLearningCoursesState extends State<MyLearningCourses> {
               _loadDataWithShimmer();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0XFF00AFEE),
+              backgroundColor: const Color(0xFF00AFEE),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
