@@ -34,7 +34,9 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
   String? selectedDistrict;
   String? selectedCity;
   String? selectedMuqam;
-  bool hasAffiliation = false; // Default to "No" (false)
+  bool hasAffiliation = false;
+  bool isChecked = false;
+
 
   bool ischeaked = false;
   bool ispassHiden = true;
@@ -65,6 +67,8 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
     'city': TextEditingController(),
     'muqam': TextEditingController(),
   };
+  // Declare a GlobalKey for accessing state
+  final GlobalKey<TermConditionCheckboxState> termsKey = GlobalKey();
 
   List<Map<String, dynamic>> countries = [];
   List<Map<String, dynamic>> provinces = [];
@@ -91,56 +95,84 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
     // Load countries into the state
     countries = await locationDataService.fetchCountries(prefs);
 
-    // Keep dropdowns empty initially
-    selectedCountry = null;
-    selectedProvince = null;
-    selectedDistrict = null;
-    selectedCity = null;
-    selectedMuqam = null;
-    isCountrySelected = false;
-    isProvinceSelected = false;
-    isDistrictSelected = false;
-    isCitySelected = false;
-    provinceHint = 'Province';
-    districtHint = 'District';
-    cityHint = 'City';
-    muqamHint = 'Muqam';
+    // Load affiliation from prefs or set default
+    int? affiliationInt = prefs.getInt('has_affiliation');
+    if (affiliationInt == null) {
+      affiliationInt = 0;
+      await prefs.setInt('has_affiliation', 0);
+    }
+    hasAffiliation = affiliationInt == 1;
 
-    // Load persisted data if available
-    if (prefs.containsKey('selected_country')) {
+    // Check if a country is saved in prefs, otherwise select Pakistan
+    selectedCountry = prefs.getString('selected_country');
+    if (selectedCountry == null) {
+      final pakistan = countries.firstWhere(
+            (c) => c['country_name'].toString().toLowerCase() == 'pakistan',
+        orElse: () => {},
+      );
+      if (pakistan.isNotEmpty) {
+        selectedCountry = pakistan['country_name'];
+        await prefs.setString('country_id', pakistan['id'].toString());
+        await prefs.setString('selected_country', selectedCountry!);
+        provinces = await locationDataService.fetchProvinces(pakistan['id'].toString(), prefs);
+        isCountrySelected = true;
+        provinceHint = '--Select Province--';
+      }
+    } else {
+      // If a country is already saved, load its provinces
       final countryId = prefs.getString('country_id');
       if (countryId != null) {
         provinces = await locationDataService.fetchProvinces(countryId, prefs);
+        isCountrySelected = true;
+        provinceHint = '--Select Province--';
       }
     }
 
-    if (prefs.containsKey('selected_province')) {
+    // Load selected province from prefs if available
+    selectedProvince = prefs.getString('selected_province');
+    if (selectedProvince != null) {
       final provinceId = prefs.getString('province_id');
       if (provinceId != null) {
-        districts = await locationDataService.fetchDistricts(provinceId, prefs);
-        if (prefs.getInt('has_affiliation') == 1) {
+        if (hasAffiliation) {
           muqams = await locationDataService.fetchMuqams(provinceId, prefs);
+        } else {
+          districts = await locationDataService.fetchDistricts(provinceId, prefs);
+        }
+        isProvinceSelected = true;
+        districtHint = '--Select District--';
+      }
+    }
+
+    // Load selected district from prefs if available and no affiliation
+    if (!hasAffiliation) {
+      selectedDistrict = prefs.getString('selected_district');
+      if (selectedDistrict != null) {
+        final districtId = prefs.getString('district_id');
+        if (districtId != null) {
+          cities = await locationDataService.fetchCities(districtId, prefs);
+          isDistrictSelected = true;
+          cityHint = '--Select City--';
         }
       }
     }
 
-    if (prefs.containsKey('selected_district')) {
-      final districtId = prefs.getString('district_id');
-      if (districtId != null) {
-        cities = await locationDataService.fetchCities(districtId, prefs);
+    // Load selected city from prefs if available and no affiliation
+    if (!hasAffiliation) {
+      selectedCity = prefs.getString('selected_city');
+      if (selectedCity != null) {
+        final cityId = prefs.getString('city_id');
+        if (cityId != null) {
+          muqams = await locationDataService.fetchMuqams(cityId, prefs);
+          isCitySelected = true;
+          muqamHint = '--Select Muqam--';
+        }
       }
     }
 
-    if (prefs.containsKey('selected_city') && prefs.getInt('has_affiliation') != 1) {
-      final cityId = prefs.getString('city_id');
-      if (cityId != null) {
-        muqams = await locationDataService.fetchMuqams(cityId, prefs);
-      }
-    }
-
-    // Set default affiliation to "No" if not already set
-    if (!prefs.containsKey('has_affiliation')) {
-      await prefs.setInt('has_affiliation', 0);
+    // Load selected muqam from prefs if available
+    selectedMuqam = prefs.getString('selected_muqam');
+    if (selectedMuqam != null && (isProvinceSelected || isCitySelected)) {
+      muqamHint = '--Select Muqam--';
     }
 
     setState(() => isDataLoading = false);
@@ -232,9 +264,9 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
       'mobile_number': phoneNumber,
       'country_id': ids['country_id'],
       'province_id': ids['province_id'],
-      'district_id': hasAffiliation ? null : ids['district_id'], // Send null for district_id if affiliated
-      'city_id': hasAffiliation ? null : ids['city_id'], // Send null for city_id if affiliated
-      'muqam_id': ids['muqam_id'], // Send muqam_id (optional for "No" case)
+      'district_id': hasAffiliation ? null : ids['district_id'],
+      'city_id': hasAffiliation ? null : ids['city_id'],
+      'muqam_id': ids['muqam_id'],
       'student_type': ids['student_type'],
     };
 
@@ -261,24 +293,21 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
           colorText: Colors.white,
           duration: Duration(seconds: 3),
         );
-        await Future.delayed(Duration(seconds: 2)); // Delay for snackbar visibility
+        await Future.delayed(Duration(seconds: 2));
         Get.off(() => const EmptyState());
       } else {
         String errorMessage = 'Registration failed';
         try {
           final responseData = json.decode(response.body);
-
-          // Handle validation errors (422 status)
           if (response.statusCode == 422 && responseData.containsKey('data')) {
             final errors = responseData['data'] as Map<String, dynamic>;
             if (errors.containsKey('email') && errors['email'] is List && errors['email'].isNotEmpty) {
-              errorMessage = errors['email'][0]; // e.g., "The email has already been taken."
+              errorMessage = errors['email'][0];
             } else if (errors.containsKey('mobile_number') &&
                 errors['mobile_number'] is List &&
                 errors['mobile_number'].isNotEmpty) {
-              errorMessage = errors['mobile_number'][0]; // e.g., "The mobile number has already been taken."
+              errorMessage = errors['mobile_number'][0];
             } else if (errors.isNotEmpty) {
-              // Fallback to first available error
               errorMessage = errors.values.first[0];
             } else if (responseData.containsKey('message')) {
               errorMessage = responseData['message'];
@@ -287,12 +316,10 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
             errorMessage = responseData['message'];
           }
         } catch (e) {
-          // Handle non-JSON responses (e.g., HTML or server error)
           errorMessage = 'Registration failed: Invalid response from server';
           print('Error parsing response: $e');
         }
 
-        // Handle specific status codes
         if (response.statusCode == 429) {
           errorMessage = 'Too many requests. Please try again later.';
         } else if (response.statusCode >= 500) {
@@ -340,38 +367,49 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 60.h),
-              backButton(),
-              SizedBox(height: 20.h),
-              Center(
-                child: Text(
-                  "Create an account",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24.sp,
-                    fontFamily: 'Gilroy',
-                    color: const Color(0XFF000000),
+              SizedBox(height: 30.h),
+              Row(
+                children: [
+                  backButton(),
+                  SizedBox(width: 60.h),
+                  Center(
+                    child: Text(
+                      "Create an account",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24.sp,
+                        fontFamily: 'Gilroy',
+                        color: const Color(0XFF000000),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                ),
+                ],
               ),
+              SizedBox(height: 30.h),
               Expanded(
                 child: isDataLoading
-                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF00AFEE),))
+                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF00AFEE)))
                     : ListView(
                   children: [
                     detailForm(),
-                    SizedBox(height: 25.h),
-                    TermConditionCheckbox(),
-                    SizedBox(height: 25.h),
-                    CustomButton(
-                      onTap: registerUser,
-                      buttonText: 'Sign Up',
-                      isLoading: isLoading,
-                    ),
                   ],
                 ),
               ),
+              TermConditionCheckbox(key: termsKey),
+              SizedBox(height: 20),
+
+              CustomButton(
+                buttonText: "Sign Up",
+                isLoading: isLoading,
+                onTap: () {
+                  // 🔑 Validate checkbox before calling registerUser()
+                  if (termsKey.currentState?.validateAgreement() ?? false) {
+                    registerUser();
+                  }
+                },
+              ),
+              SizedBox(height: 15.h),
               Padding(
                 padding: EdgeInsets.only(bottom: 30.h),
                 child: alreadyLoginButton(),
@@ -506,16 +544,13 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
             onAffiliationChanged: (bool? value) async {
               final prefs = await SharedPreferences.getInstance();
               setState(() {
-                hasAffiliation = value ?? false; // Default to false if value is null
+                hasAffiliation = value ?? false;
                 if (!hasAffiliation) {
                   selectedMuqam = null;
                   muqams = [];
                 } else if (hasAffiliation && selectedProvince != null) {
-                  // Fetch Muqams based on selected province
                   final provinceItem = provinces.firstWhere((item) => item['province_name'] == selectedProvince);
-                  locationDataService
-                      .fetchMuqams(provinceItem['id'].toString(), prefs)
-                      .then((newMuqams) {
+                  locationDataService.fetchMuqams(provinceItem['id'].toString(), prefs).then((newMuqams) {
                     setState(() {
                       muqams = newMuqams;
                       selectedMuqam = null;
@@ -523,13 +558,12 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
                     });
                   });
                 }
-                // Reset district and city when affiliation changes
                 selectedDistrict = null;
                 selectedCity = null;
                 districts = [];
                 cities = [];
               });
-              // Clear dependent SharedPreferences
+              await prefs.setInt('has_affiliation', hasAffiliation ? 1 : 0);
               await prefs.remove('district_id');
               await prefs.remove('selected_district');
               await prefs.remove('city_id');

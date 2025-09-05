@@ -88,7 +88,7 @@ class _EmptyStateState extends State<EmptyState> {
             await prefs.remove('redirect_after_login');
             Get.off(() => HomeMainScreen(), arguments: {'initialTab': 3});
           } else {
-            Get.off(() => const HomeMainScreen());
+            Get.offAll(() => const HomeMainScreen());
           }
         } else {
           Get.snackbar(
@@ -137,17 +137,17 @@ class _EmptyStateState extends State<EmptyState> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 16.h),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Image(
-                    image: const AssetImage("assets/back_arrow.png"),
-                    height: 24.h,
-                    width: 24.w,
-                  ),
-                ),
+                // SizedBox(height: 16.h),
+                // GestureDetector(
+                //   onTap: () {
+                //     Navigator.pop(context);
+                //   },
+                //   child: Image(
+                //     image: const AssetImage("assets/back_arrow.png"),
+                //     height: 24.h,
+                //     width: 24.w,
+                //   ),
+                // ),
                 Expanded(
                   flex: 1,
                   child: ListView(

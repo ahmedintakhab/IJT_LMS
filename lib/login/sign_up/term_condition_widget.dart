@@ -8,11 +8,29 @@ class TermConditionCheckbox extends StatefulWidget {
   const TermConditionCheckbox({Key? key}) : super(key: key);
 
   @override
-  _TermConditionCheckboxState createState() => _TermConditionCheckboxState();
+  TermConditionCheckboxState createState() => TermConditionCheckboxState();
 }
 
-class _TermConditionCheckboxState extends State<TermConditionCheckbox> {
+class TermConditionCheckboxState extends State<TermConditionCheckbox> {
   bool ischeaked = false;
+
+  // ✅ Expose acceptance state
+  bool get isAccepted => ischeaked;
+
+  // ✅ Call this before signup
+  bool validateAgreement() {
+    if (!ischeaked) {
+      Get.snackbar(
+        "Terms Required",
+        "Please accept Terms and Conditions to continue",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return false;
+    }
+    return true;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +42,7 @@ class _TermConditionCheckboxState extends State<TermConditionCheckbox> {
           value: ischeaked,
           onChanged: (value) {
             setState(() {
-              ischeaked = value!;
+              ischeaked = value ?? false;
             });
           },
         ),
@@ -50,7 +68,7 @@ class _TermConditionCheckboxState extends State<TermConditionCheckbox> {
                   fontWeight: FontWeight.w700,
                   fontFamily: 'Gilroy',
                 ),
-              )
+              ),
             ],
           ),
         ),

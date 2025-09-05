@@ -121,15 +121,42 @@ class AffiliationFieldState extends State<AffiliationField> {
         ),
         if (_hasAffiliation) ...[
           SizedBox(height: 10.h),
-          CustomDropdown(
-            hint: 'Select Member Level',
-            value: _selectedMemberLevel,
-            items: const ['Karkun', 'Rafiq', 'Umidwar', 'Rukan'],
-            onChanged: (value) {
-              setState(() {
-                _selectedMemberLevel = value;
-                widget.controller.text = value ?? '';
-              });
+          FormField<String>(
+            validator: (value) {
+              if (_hasAffiliation && (_selectedMemberLevel == null || _selectedMemberLevel!.isEmpty)) {
+                return 'Please select a member level';
+              }
+              return null;
+            },
+            builder: (field) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CustomDropdown(
+                    hint: 'Select Member Level',
+                    value: _selectedMemberLevel,
+                    items: const ['Karkun', 'Rafiq', 'Umidwar', 'Rukan'],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedMemberLevel = value;
+                        widget.controller.text = value ?? '';
+                      });
+                      field.didChange(value); // 🔹 keeps validation in sync
+                    },
+                  ),
+                  if (field.hasError)
+                    Padding(
+                      padding: EdgeInsets.only(top: 5.h, left: 12.w),
+                      child: Text(
+                        field.errorText!,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ),
+                ],
+              );
             },
           ),
         ],
