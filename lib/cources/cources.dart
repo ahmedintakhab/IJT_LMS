@@ -52,6 +52,7 @@ class _MyCourcesState extends State<MyCources> {
   String courseSlug = "";
   String btnText = '';
   bool isVideo = true;
+  bool isButtonLoading = false; // Added for button loading state
   bool isMediaLoading = true;
   String videoUrl = "https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4"; // Default video
   // Add this helper method to check if URL is YouTube
@@ -212,6 +213,9 @@ class _MyCourcesState extends State<MyCources> {
   }
 
   Future<void> _enrollCourse() async {
+    setState(() {
+      isButtonLoading = true; // Start button loading
+    });
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String token = prefs.getString('authToken') ?? '';
@@ -220,6 +224,9 @@ class _MyCourcesState extends State<MyCources> {
         await prefs.setString('redirect_after_login', 'MyCources');
         await prefs.setString('course_slug', widget.slug);
         Get.to(() => const EmptyState());
+        setState(() {
+          isButtonLoading = false; // Stop button loading
+        });
         return;
       }
 
@@ -286,6 +293,10 @@ class _MyCourcesState extends State<MyCources> {
         backgroundColor: Colors.red.withOpacity(0.2),
         colorText: Colors.red,
       );
+    }finally {
+      setState(() {
+        isButtonLoading = false; // Stop button loading
+      });
     }
   }
   // Method to reload media (image or video)
@@ -433,11 +444,11 @@ class _MyCourcesState extends State<MyCources> {
 
                 // Enroll Button
                 Padding(
-                  padding: EdgeInsets.only(bottom: 30.h,left: 10.w, right: 10.w),
+                  padding: EdgeInsets.only(bottom: 30.h, left: 10.w, right: 10.w),
                   child: CustomButton(
                     onTap: _enrollCourse,
-                    buttonText: btnText ?? '', // Use the dynamic button text
-                    isLoading: isLoading,
+                    buttonText: btnText ?? '',
+                    isLoading: isButtonLoading, // Pass button loading state
                   ),
                 ),
               ],

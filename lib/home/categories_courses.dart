@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:learn_megnagmet/home/category_wise_courses.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,25 +18,38 @@ class HorizontalDesignList extends StatelessWidget {
       String token = prefs.getString('authToken') ?? '';
 
       final url = '${ApiConstant.baseUrl}category-list';
+      print("📡 Calling API => $url");
 
-      final jsonData = await fetchDataWithCache(
-        url,
+      final response = await http.get(
+        Uri.parse(url),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
 
-      if (jsonData['success'] == true) {
-        return jsonData['data']['data'] as List<dynamic>;
+      print("Status Code => ${response.statusCode}");
+      print("Raw Body => ${response.body}");
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+
+        if (jsonData['success'] == true) {
+          print("📦 Categories Data => ${jsonData['data']['data']}");
+          return jsonData['data']['data'] as List<dynamic>;
+        } else {
+          throw Exception(
+            'API returned success: false - ${jsonData['message']}',
+          );
+        }
       } else {
-        throw Exception('API returned success: false - ${jsonData['message']}');
+        throw Exception('Failed to load categories, status: ${response.statusCode}');
       }
     } catch (e) {
+      print("❌ Error fetching categories: $e");
       throw Exception('Error fetching categories: $e');
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -64,6 +78,7 @@ class HorizontalDesignList extends StatelessWidget {
               final category = categories[index];
               final name = category['name']?.toString() ?? 'Unknown';
               final slug = category['slug']?.toString() ?? '';
+              print("check the slug:$slug");
               final imageUrl = category['image_url']?.toString() ??
                   'https://tarbiah.online/uploads/default/no-image-found.png';
 

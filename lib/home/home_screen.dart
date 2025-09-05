@@ -230,66 +230,77 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: EdgeInsets.zero,
                 // crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 16.h),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    child: Row(
-                      children: [
-                        // User image and welcome text
-                        Image(
-                          image: NetworkImage(userImage!),
-                          height: 40.h,
-                          width: 40.w,
-                        ),
-                        SizedBox(width: 10.w),
-                        Text(
-                          "Welcome,${userName}",
-                          style: TextStyle(
-                            fontFamily: 'Nastaleeq',
-                            color: const Color(0XFF000000),
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-
-                        // Spacer to push the search icon to the right
-                        Spacer(),
-
-                        // Circular search icon container
-                        Padding(
-                          padding: EdgeInsets.only(right: 10.w),
-                          child: GestureDetector(
-                            onTap: () => Get.to(SearchScreen(slug: slug ?? '',
-                            )),
+                  // SizedBox(height: 16.h),
+                   Container(
+                      height: 70,
+                      color: Color(0XFF00AFEE), // Your specified color
+                      child: Row(
+                        children: [
+                          // User image and welcome text
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
                             child: Container(
-                              height: 40.h,
-                              width: 40.w,
+                              height: 35,
+                              width: 35,
                               decoration: BoxDecoration(
-                                shape: BoxShape.circle,color: Color(0XFF00AFEE),
-                                border: Border.all(
-                                  color: const Color(0XFF00AFEE),
-                                  width: 1.w,
-                                ),
-                              ),
-                              child: Center(
-                                child: Image(
-                                  image: AssetImage('assets/search.png'),
-                                  height: 24.h,
-                                  width: 24.w,color: Colors.white,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                                image: DecorationImage(
+                                  image: NetworkImage(userImage!),
+                                  fit: BoxFit.cover,
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
+                          SizedBox(width: 10.w),
+                          Text(
+                            "Welcome,${userName}",
+                            style: TextStyle(
+                              fontFamily: 'Nastaleeq',
+                              color: Colors.white,
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
 
-                        SizedBox(height: 40.h),
+                          // Spacer to push the search icon to the right
+                          Spacer(),
+
+                          // Circular search icon container
+                          Padding(
+                            padding: EdgeInsets.only(right: 10.w),
+                            child: GestureDetector(
+                              onTap: () => Get.to(SearchScreen(slug: slug ?? '',
+                              )),
+                              child: Container(
+                                height: 45.h,
+                                width: 45.w,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,color: Color(0XFF00AFEE),
+                                  border: Border.all(
+                                    color: const Color(0XFF00AFEE),
+                                    width: 1.w,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Image(
+                                    image: AssetImage('assets/search.png'),
+                                    height: 28.h,
+                                    width: 28.w,color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                        // SizedBox(height: 40.h),
                         generatepage(),
-                        SizedBox(height: 20.h),
-                        indicator(),
-                        SizedBox(height: 20.h),
+                        // SizedBox(height: 20.h),
+                        // indicator(),
+                        SizedBox(height: 30.h),
                         HorizontalDesignList(),
                         SizedBox(height: 22.h),
                         Padding(

@@ -5,8 +5,6 @@ import 'package:learn_megnagmet/home/home_screen.dart';
 import 'package:learn_megnagmet/login/login_empty_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../My_cources/my_learning_courses.dart';
-import '../My_cources/ongoing_completed_main_screen.dart';
-import '../chate/chate_screen.dart';
 import '../instructor/instructor_dashboard.dart';
 import '../profile/my_profile.dart';
 import '../utils/slider_page_data_model.dart';
@@ -62,6 +60,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
       builder: (controller) => Scaffold(
         body: _body(),
         bottomNavigationBar: Container(
+          height: 75,
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.only(
               topRight: Radius.circular(22),
@@ -75,113 +74,77 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
               ),
             ],
           ),
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(8.0),
-              topRight: Radius.circular(8.0),
-            ),
-            child: BottomNavigationBar(
-              backgroundColor: const Color(0XFFFFFFFF),
-              currentIndex: controller.position.value,
-              onTap: _handleNavigation,
-              type: BottomNavigationBarType.fixed,
-              items: [
-                BottomNavigationBarItem(
-                  activeIcon: Column(
-                    children: [
-                      Icon(
-                        Icons.home,
-                        size: 24,
-                        color: Color(0XFF00AFEE),
+          child: BottomAppBar(
+            shape: const CircularNotchedRectangle(),
+            notchMargin: 15.0,
+            color: Colors.white,
+            child: SizedBox(
+              height: 50,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  // Courses Tab
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => _handleNavigation(1),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.menu_book,
+                            color: controller.position.value == 1
+                                ? const Color(0XFF00AFEE)
+                                : Colors.black,
+                          ),
+                          Text(
+                            "Courses",
+                            style: TextStyle(
+                              color: controller.position.value == 1
+                                  ? const Color(0XFF00AFEE)
+                                  : Colors.black,
+                            ),
+                          )
+                        ],
                       ),
-                      SizedBox(height: 8.79),
-                      Container(
-                        height: 1.75,
-                        width: 24,
-                        color: Color(0XFF00AFEE),
+                    ),
+                  ),
+                  const SizedBox(width: 80), // space for FAB
+                  // Profile Tab
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => _handleNavigation(2),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.person,
+                            color: controller.position.value == 2
+                                ? const Color(0XFF00AFEE)
+                                : Colors.black,
+                          ),
+                          Text(
+                            "Profile",
+                            style: TextStyle(
+                              color: controller.position.value == 2
+                                  ? const Color(0XFF00AFEE)
+                                  : Colors.black,
+                            ),
+                          )
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                  icon: Icon(
-                    Icons.home_outlined,
-                    size: 24,
-                    color: Colors.black,
-                  ),
-                  label: '',
-                ),
-                BottomNavigationBarItem(
-                  activeIcon: Column(
-                    children: [
-                      Icon(
-                        Icons.menu_book,
-                        size: 24,
-                        color: Color(0XFF00AFEE),
-                      ),
-                      SizedBox(height: 8.79),
-                      Container(
-                        height: 1.75,
-                        width: 24,
-                        color: Color(0XFF00AFEE),
-                      ),
-                    ],
-                  ),
-                  icon: Icon(
-                    Icons.menu_book_outlined,
-                    size: 24,
-                    color: Colors.black,
-                  ),
-                  label: '',
-                ),
-                // BottomNavigationBarItem(
-                //   activeIcon: Column(
-                //     children: [
-                //       Icon(
-                //         Icons.message,
-                //         size: 24,
-                //         color: Color(0XFF00AFEE),
-                //       ),
-                //       SizedBox(height: 8.79),
-                //       Container(
-                //         height: 1.75,
-                //         width: 24,
-                //         color: Color(0XFF00AFEE),
-                //       ),
-                //     ],
-                //   ),
-                //   icon: Icon(
-                //     Icons.message_outlined,
-                //     size: 24,
-                //     color: Colors.black,
-                //   ),
-                //   label: '',
-                // ),
-                BottomNavigationBarItem(
-                  activeIcon: Column(
-                    children: [
-                      Icon(
-                        Icons.person,
-                        size: 24,
-                        color: Color(0XFF00AFEE),
-                      ),
-                      SizedBox(height: 8.79),
-                      Container(
-                        height: 1.75,
-                        width: 24,
-                        color: Color(0XFF00AFEE),
-                      ),
-                    ],
-                  ),
-                  icon: Icon(
-                    Icons.person_outline,
-                    size: 24,
-                    color: Colors.black,
-                  ),
-                  label: '',
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _handleNavigation(0),
+          backgroundColor: const Color(0XFF00AFEE),
+          child: const Icon(Icons.home, color: Colors.white),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       ),
     );
   }
