@@ -150,89 +150,90 @@ class ResourcesScreen extends StatelessWidget {
                     // Display the lectures
                     ...lectures.map((lecture) {
                       final String isLocked = lecture['is_locked']?.toString() ?? 'No';
-                      return Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Container(
-                          height: 80.h,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(22.h),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF23408F).withOpacity(0.14),
-                                offset: const Offset(-4, 5),
-                                blurRadius: 16,
-                              ),
-                            ],
-                            color: Colors.white,
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                // Lecture number
-                                Container(
-                                  height: 55.h,
-                                  width: 33.w,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(22.h),
-                                    color: const Color(0xFF00AFEE),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      lecture['lecture_no']?.toString() ?? '',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 17.sp,
-                                        fontFamily: 'Nastaleeq',
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                                ),
 
-                                // Lecture title
-                                Expanded(
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 18.h, horizontal: 10),
+                      return GestureDetector(
+                        onTap: isLocked == 'Yes'
+                            ? null // Disable tap for locked lectures
+                            : () => _openContent(context, lecture),
+                        child: Padding(
+                          padding: const EdgeInsets.all(5),
+                          child: Container(
+                            height: 80.h,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(22.h),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF23408F).withOpacity(0.14),
+                                  offset: const Offset(-4, 5),
+                                  blurRadius: 16,
+                                ),
+                              ],
+                              color: Colors.white,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  // Lecture number
+                                  Container(
+                                    height: 55.h,
+                                    width: 33.w,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(22.h),
+                                      color: const Color(0xFF00AFEE),
+                                    ),
                                     child: Center(
-                                      child: Directionality(
-                                        textDirection: TextDirection.rtl,
-                                        child: Text(
-                                          lecture['title']?.toString() ?? 'Untitled Lecture',
-                                          style: TextStyle(
-                                            color: const Color(0xFF000000),
-                                            fontSize: 18.sp,
-                                            fontFamily: 'Nastaleeq',
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
+                                      child: Text(
+                                        lecture['lecture_no']?.toString() ?? '',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 17.sp,
+                                          fontFamily: 'Nastaleeq',
+                                          fontWeight: FontWeight.w700,
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
 
-                                // Lock or Eye icon based on is_locked
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    GestureDetector(
-                                      onTap: isLocked == 'Yes'
-                                          ? null // Disable tap for locked lectures
-                                          : () => _openContent(context, lecture),
-                                      child: Icon(
+                                  // Lecture title
+                                  Expanded(
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 18.h, horizontal: 10),
+                                      child: Center(
+                                        child: Directionality(
+                                          textDirection: TextDirection.rtl,
+                                          child: Text(
+                                            lecture['title']?.toString() ?? 'Untitled Lecture',
+                                            style: TextStyle(
+                                              color: const Color(0xFF000000),
+                                              fontSize: 18.sp,
+                                              fontFamily: 'Nastaleeq',
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Lock or Eye icon based on is_locked
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Icon(
                                         isLocked == 'Yes' ? Icons.lock : Icons.visibility,
                                         color: isLocked == 'Yes' ? Colors.grey : const Color(0xFF00AFEE),
                                         size: 26.w,
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),

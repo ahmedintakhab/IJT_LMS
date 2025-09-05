@@ -29,13 +29,13 @@ class HorizontalDesignList extends StatelessWidget {
       );
 
       print("Status Code => ${response.statusCode}");
-      print("Raw Body => ${response.body}");
+      // print("Raw Body => ${response.body}");
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
 
         if (jsonData['success'] == true) {
-          print("📦 Categories Data => ${jsonData['data']['data']}");
+          // print("📦 Categories Data => ${jsonData['data']['data']}");
           return jsonData['data']['data'] as List<dynamic>;
         } else {
           throw Exception(
@@ -78,7 +78,6 @@ class HorizontalDesignList extends StatelessWidget {
               final category = categories[index];
               final name = category['name']?.toString() ?? 'Unknown';
               final slug = category['slug']?.toString() ?? '';
-              print("check the slug:$slug");
               final imageUrl = category['image_url']?.toString() ??
                   'https://tarbiah.online/uploads/default/no-image-found.png';
 

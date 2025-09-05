@@ -157,24 +157,24 @@ class _DiscussionPageState extends State<DiscussionPage> {
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          if (discussion['discussion_user_type'] == "Instructor")
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 8,
-                                                vertical: 2,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: Colors.blue[100],
-                                                borderRadius: BorderRadius.circular(12),
-                                              ),
-                                              child: Text(
-                                                "Instructor",
-                                                style: TextStyle(
-                                                  color: Colors.blue[800],
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                            ),
+                                          // if (discussion['discussion_user_type'] == "Instructor")
+                                          //   Container(
+                                          //     padding: const EdgeInsets.symmetric(
+                                          //       horizontal: 8,
+                                          //       vertical: 2,
+                                          //     ),
+                                          //     decoration: BoxDecoration(
+                                          //       color: Colors.blue[100],
+                                          //       borderRadius: BorderRadius.circular(12),
+                                          //     ),
+                                          //     child: Text(
+                                          //       "Instructor",
+                                          //       style: TextStyle(
+                                          //         color: Colors.blue[800],
+                                          //         fontSize: 12,
+                                          //       ),
+                                          //     ),
+                                          //   ),
                                         ],
                                       ),
                                       const SizedBox(height: 4),
@@ -198,19 +198,19 @@ class _DiscussionPageState extends State<DiscussionPage> {
                                 ),
                               ),
                               const Spacer(),
-                              Row(
-                                children: [
-                                  Icon(Icons.message, size: 16, color: Colors.grey[600]),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    (discussion['discussion_total_replies'] ?? 0).toString(),
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              // Row(
+                              //   children: [
+                              //     Icon(Icons.message, size: 16, color: Colors.grey[600]),
+                              //     const SizedBox(width: 4),
+                              //     Text(
+                              //       (discussion['discussion_total_replies'] ?? 0).toString(),
+                              //       style: TextStyle(
+                              //         color: Colors.grey[600],
+                              //         fontSize: 12,
+                              //       ),
+                              //     ),
+                              //   ],
+                              // ),
                             ],
                           ),
                         ),
@@ -247,24 +247,24 @@ class _DiscussionPageState extends State<DiscussionPage> {
                                                 ),
                                               ),
                                               const SizedBox(width: 8),
-                                              if (reply['reply_user_type'] == "Instructor")
-                                                Container(
-                                                  padding: const EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 2,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.blue[100],
-                                                    borderRadius: BorderRadius.circular(12),
-                                                  ),
-                                                  child: Text(
-                                                    "Instructor",
-                                                    style: TextStyle(
-                                                      color: Colors.blue[800],
-                                                      fontSize: 12,
-                                                    ),
-                                                  ),
-                                                ),
+                                              // if (reply['reply_user_type'] == "Instructor")
+                                              //   Container(
+                                              //     padding: const EdgeInsets.symmetric(
+                                              //       horizontal: 8,
+                                              //       vertical: 2,
+                                              //     ),
+                                              //     decoration: BoxDecoration(
+                                              //       color: Colors.blue[100],
+                                              //       borderRadius: BorderRadius.circular(12),
+                                              //     ),
+                                              //     child: Text(
+                                              //       "Instructor",
+                                              //       style: TextStyle(
+                                              //         color: Colors.blue[800],
+                                              //         fontSize: 12,
+                                              //       ),
+                                              //     ),
+                                              //   ),
                                             ],
                                           ),
                                           const SizedBox(height: 4),

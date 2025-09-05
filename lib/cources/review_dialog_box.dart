@@ -270,16 +270,31 @@ class _WriteReviewDialogState extends State<WriteReviewDialog> {
                     TextButton(
                       style: TextButton.styleFrom(
                         backgroundColor: const Color(0xFF00AFEE),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        minimumSize: const Size(140, 48), // keeps size stable
+                      ),
+                      onPressed: _isSubmitPressed ? null : _submitReview, // prevent double taps
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        transitionBuilder: (child, anim) => FadeTransition(opacity: anim, child: child),
+                        child: _isSubmitPressed
+                            ? const SizedBox(
+                          key: ValueKey('loader'),
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                            : const Text(
+                          key: ValueKey('label'),
+                          "Submit Review",
+                          style: TextStyle(color: Colors.white),
                         ),
                       ),
-                      onPressed: _submitReview,
-                      child: const Text(
-                        "Submit Review",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
+                    )
+
                   ],
                 ),
               ],

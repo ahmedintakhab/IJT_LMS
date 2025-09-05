@@ -45,7 +45,7 @@ class _CategoryWiseCoursesState extends State<CategoryWiseCourses> {
       final url = '${ApiConstant.baseUrl}category/courses/${widget.slug}';
       final response = await http.get(Uri.parse(url));
       print("Status Code => ${response.statusCode}");
-      print("Response Body => ${response.body}");
+      // print("Response Body => ${response.body}");
 
       if (response.statusCode == 200) {
         print('Category wise courses api response: ${response.statusCode}');
@@ -80,7 +80,7 @@ class _CategoryWiseCoursesState extends State<CategoryWiseCourses> {
 
   @override
   Widget build(BuildContext context) {
-    print('Chekc slug in categories screen:${widget.slug}');
+    // print('Chekc slug in categories screen:${widget.slug}');
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(

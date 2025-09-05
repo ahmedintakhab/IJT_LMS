@@ -4,7 +4,7 @@ class CustomCacheManager {
   static CacheManager instance = CacheManager(
     Config(
       'customCacheKey',
-      stalePeriod: const Duration(hours: 24), // cache duration
+      stalePeriod: const Duration(minutes: 2), // cache duration
       maxNrOfCacheObjects: 100, // limit
     ),
   );

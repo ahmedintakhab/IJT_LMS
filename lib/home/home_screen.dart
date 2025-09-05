@@ -77,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
             banners = [bannerData!];
           }
           trendingCource = List<Map<String, dynamic>>.from(
-              featureCategories['Nisab-e-Rukniyat Courses'] ?? []);
+              featureCategories['Nisab-e-Rukniyat'] ?? []);
           trendingButtonStatuses =
           List<bool>.filled(trendingCource.length, false);
           slug = trendingCource.isNotEmpty
@@ -85,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
               : '';
 
           recentAdded = List<Map<String, dynamic>>.from(
-              featureCategories['Nisab-e-Rafaqat Courses'] ?? []);
+              featureCategories['Nisab-e-Rafaqat'] ?? []);
           recentButtonStatuses =
           List<bool>.filled(recentAdded.length, false);
           isLoading = false;
