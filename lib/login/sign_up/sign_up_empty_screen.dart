@@ -84,6 +84,12 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
     locationDataService = LocationDataService();
     _loadDropdownData();
   }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadDropdownData(); // reload data every time this screen becomes active
+  }
+
 
   Future<void> _loadDropdownData() async {
     setState(() => isDataLoading = true);
@@ -225,17 +231,17 @@ class _SignUpEmptyScreenState extends State<SignUpEmptyScreen> {
     }
 
     // Validation for "Yes" case: Muqam required
-    if (hasAffiliation && ids['muqam_id'] == null) {
-      Get.snackbar(
-        'Error',
-        'Please select Muqam',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      print('Missing Muqam selection for affiliated user');
-      return;
-    }
+    // if (hasAffiliation && ids['muqam_id'] == null) {
+    //   Get.snackbar(
+    //     'Error',
+    //     'Please select Muqam',
+    //     snackPosition: SnackPosition.TOP,
+    //     backgroundColor: Colors.red,
+    //     colorText: Colors.white,
+    //   );
+    //   print('Missing Muqam selection for affiliated user');
+    //   return;
+    // }
 
     setState(() => isLoading = true);
 

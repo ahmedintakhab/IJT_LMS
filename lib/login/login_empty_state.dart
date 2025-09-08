@@ -340,7 +340,7 @@ class _EmptyStateState extends State<EmptyState> {
             TextSpan(
               recognizer: TapGestureRecognizer()
                 ..onTap = () {
-                  Get.to(const SignUpEmptyScreen());
+                  Get.to(() => SignUpEmptyScreen());
                 },
               text: ' Sign up',
               style: TextStyle(
