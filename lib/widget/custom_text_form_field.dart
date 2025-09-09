@@ -8,6 +8,9 @@ class CustomTextFormField extends StatelessWidget {
   final bool obscureText;
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
+  final String? labelText;
+  final int? maxLines;
+
 
   const CustomTextFormField({
     super.key,
@@ -17,6 +20,8 @@ class CustomTextFormField extends StatelessWidget {
     this.obscureText = false,
     this.suffixIcon,
     this.validator,
+    this.labelText,
+    this.maxLines,
   });
 
   @override
@@ -24,6 +29,7 @@ class CustomTextFormField extends StatelessWidget {
     return TextFormField(
       controller: controller,cursorColor: Color(0XFF00AFEE),
       obscureText: obscureText,
+      maxLines: maxLines,
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: hintStyle ??
@@ -33,6 +39,13 @@ class CustomTextFormField extends StatelessWidget {
               color: const Color(0xFF9B9B9B),
               fontWeight: FontWeight.bold,
             ),
+        labelText: labelText, // Use optional labelText
+        labelStyle: TextStyle(
+          fontSize: 16.sp,
+          fontFamily: 'Gilroy',
+          color: const Color(0xFF00AFEE), // Match theme color
+          fontWeight: FontWeight.w600,
+        ),
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(6.h) ,
             borderSide: BorderSide(color: const Color(0XFF00AFEE), width: 1.w),

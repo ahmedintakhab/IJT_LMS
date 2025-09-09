@@ -17,6 +17,7 @@ import '../controller/controller.dart';
 import '../login/login_empty_state.dart';
 import '../models/new_user_detail.dart';
 import '../models/profile_option.dart';
+import '../upload_courses/upload_course_sceen.dart';
 import '../utils/api_constant.dart';
 import '../utils/slider_page_data_model.dart';
 import '../widget/button.dart';
@@ -205,6 +206,13 @@ class _InstructorPanelState extends State<InstructorPanel> {
                               icon: Icon(Icons.book, color: Color(0XFF00AFEE)),
                               onTap: () {
                                 Get.to(InstructorCourses());
+                              },
+                            ),
+                            ProfileFieldContainer(
+                              title:'Upload Courses',
+                              icon: Icon(Icons.upload, color: Color(0XFF00AFEE)),
+                              onTap: () {
+                                Get.to(UploadCourseScreen());
                               },
                             ),
                             // Saved Course
