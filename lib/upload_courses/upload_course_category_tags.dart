@@ -8,9 +8,9 @@ import '../widget/custom_dropdown.dart';
 
 class UploadCourseCategoryTags extends StatefulWidget {
   final VoidCallback onComplete;
+  final VoidCallback? onBack;
 
-  const UploadCourseCategoryTags({super.key, required this.onComplete});
-
+  const UploadCourseCategoryTags({super.key, required this.onComplete, this.onBack});
   @override
   State<UploadCourseCategoryTags> createState() =>
       _UploadCourseCategoryTagsState();
@@ -487,8 +487,9 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                     width: 100.w,
                     child: CustomButton(
                       onTap: () {
-                        Navigator.pop(context);
-                      },
+                        if (widget.onBack != null) {
+                          widget.onBack!();
+                        }                      },
                       buttonText: 'Back',
                     ),
                   ),

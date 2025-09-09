@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 
 class InstructorsScreen extends StatelessWidget {
   final VoidCallback onComplete;
+  final VoidCallback? onBack;
 
-  const InstructorsScreen({super.key, required this.onComplete});
-
+  const InstructorsScreen({super.key, required this.onComplete, this.onBack});
   @override
   Widget build(BuildContext context) {
     return Container(

@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 
 class SubmitProcessScreen extends StatelessWidget {
   final VoidCallback onSubmit;
+  final VoidCallback? onBack;
 
-  const SubmitProcessScreen({super.key, required this.onSubmit});
-
+  const SubmitProcessScreen({super.key, required this.onSubmit, this.onBack});
   @override
   Widget build(BuildContext context) {
     return Container(

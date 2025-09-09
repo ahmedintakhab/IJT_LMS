@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:learn_megnagmet/upload_courses/select%20_instructor.dart';
 import 'package:learn_megnagmet/upload_courses/submit_process.dart';
-import 'package:learn_megnagmet/upload_courses/upload_lectures.dart';
+import 'package:learn_megnagmet/upload_courses/add_lesson_screen.dart';
 import 'upload_course_details.dart';
 import 'upload_course_category_tags.dart';
 
@@ -173,8 +173,11 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
           return UploadCourseDetails(
             onComplete: () {
               setState(() {
-                _isCategoryStep = true; // ✅ Move to category step
+                _isCategoryStep = true; // Move to category step
               });
+            },
+            onBack: () {
+              // No back action needed from initial step
             },
           );
         } else {
@@ -182,17 +185,28 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
             onComplete: () {
               setState(() {
                 _isCategoryStep = false; // Reset for next flow
-                _currentStep = 1; // ✅ Go to Upload Video
+                _currentStep = 1; // Go to Upload Video
+              });
+            },
+            onBack: () {
+              setState(() {
+                _isCategoryStep = false; // Move back to Details step
               });
             },
           );
         }
 
       case 1:
-        return UploadVideoScreen(onComplete: () => setState(() => _currentStep = 2));
+        return AddLessonScreen(
+          onComplete: () => setState(() => _currentStep = 2),
+          onBack: () => setState(() => _currentStep = 0), // Move back to Category
+        );
 
       case 2:
-        return InstructorsScreen(onComplete: () => setState(() => _currentStep = 3));
+        return InstructorsScreen(
+          onComplete: () => setState(() => _currentStep = 3),
+          onBack: () => setState(() => _currentStep = 1), // Move back to Video
+        );
 
       case 3:
         return SubmitProcessScreen(
@@ -208,6 +222,7 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
               ),
             );
           },
+          onBack: () => setState(() => _currentStep = 2), // Move back to Instructors
         );
 
       default:

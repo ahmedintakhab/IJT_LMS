@@ -7,9 +7,9 @@ import '../widget/custom_text_form_field.dart';
 
 class UploadCourseDetails extends StatefulWidget {
   final VoidCallback onComplete;
+  final VoidCallback? onBack;
 
-  const UploadCourseDetails({super.key, required this.onComplete});
-
+  const UploadCourseDetails({super.key, required this.onComplete, this.onBack});
   @override
   State<UploadCourseDetails> createState() => _UploadCourseDetailsState();
 }
