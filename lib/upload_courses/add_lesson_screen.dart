@@ -9,7 +9,6 @@ class AddLessonScreen extends StatefulWidget {
   final VoidCallback onComplete;
   final VoidCallback? onBack;
 
-
   const AddLessonScreen({super.key, required this.onComplete, this.onBack});
 
   @override
@@ -17,6 +16,15 @@ class AddLessonScreen extends StatefulWidget {
 }
 
 class _AddLessonScreenState extends State<AddLessonScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _lessonTitleController = TextEditingController();
+
+  @override
+  void dispose() {
+    _lessonTitleController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,43 +35,50 @@ class _AddLessonScreenState extends State<AddLessonScreen> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                child: Container(
-                  padding: const EdgeInsets.all(26.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12.withOpacity(0.2),
-                        blurRadius: 15,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'To Upload your course videos please create your section and lesson details first!',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
+                child: Form(
+                  key: _formKey,
+                  child: Container(
+                    padding: const EdgeInsets.all(26.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12.withOpacity(0.2),
+                          blurRadius: 15,
+                          offset: const Offset(0, 4),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Section title of the courses "Test Lesson"',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: const Color(0xFF00AFEE),
-                          fontWeight: FontWeight.bold,
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'To Upload your course videos please create your section and lesson details first!',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      CustomTextFormField(hintText: 'Introduction',
-                        labelText: 'Introduction',
-                      )
-                    ],
+                        const SizedBox(height: 16),
+                        Text(
+                          'Section title of the courses "Test Lesson"',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: const Color(0xFF00AFEE),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        CustomTextFormField(
+                          controller: _lessonTitleController,
+                          hintText: 'Enter Lesson Title',
+                          labelText: 'Lesson Title',
+                          validator: (val) =>
+                          val?.isEmpty ?? true ? 'Lesson title is required' : null,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -75,18 +90,26 @@ class _AddLessonScreenState extends State<AddLessonScreen> {
                 children: [
                   SizedBox(
                     width: 100.w,
-                    child: CustomButton(onTap: (){
-                      if (widget.onBack != null) {
-                        widget.onBack!();
-                      }                    }, buttonText: 'Back'),
+                    child: CustomButton(
+                      onTap: () {
+                        if (widget.onBack != null) {
+                          widget.onBack!();
+                        }
+                      },
+                      buttonText: 'Back',
+                    ),
                   ),
-                  SizedBox(width: 20,),
+                  SizedBox(width: 20),
                   Expanded(
-                    child: CustomButton(onTap: (){
-                      widget.onComplete();
-
-                    }, buttonText: 'Save and Continue'),
-                  )
+                    child: CustomButton(
+                      onTap: () {
+                        if (_formKey.currentState!.validate()) {
+                          widget.onComplete();
+                        }
+                      },
+                      buttonText: 'Save and Continue',
+                    ),
+                  ),
                 ],
               ),
             ),
