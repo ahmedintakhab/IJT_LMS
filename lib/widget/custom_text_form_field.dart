@@ -43,7 +43,8 @@ class CustomTextFormField extends StatelessWidget {
         labelStyle: TextStyle(
           fontSize: 16.sp,
           fontFamily: 'Gilroy',
-          color: const Color(0xFF00AFEE), // Match theme color
+          color: Colors.grey, // Match theme color
+          // color: const Color(0xFF00AFEE), // Match theme color
           fontWeight: FontWeight.w600,
         ),
         focusedBorder: OutlineInputBorder(
