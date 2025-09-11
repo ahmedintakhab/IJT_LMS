@@ -2,10 +2,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:learn_megnagmet/upload_courses/sub_category_dropdown.dart';
+import 'package:learn_megnagmet/upload_courses/tags_dropdown.dart';
 import 'package:learn_megnagmet/widget/button.dart';
 import 'package:learn_megnagmet/widget/custom_text_form_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widget/custom_dropdown.dart';
+import 'category_dropdown.dart';
 
 class UploadCourseCategoryTags extends StatefulWidget {
   final VoidCallback onComplete;
@@ -22,6 +25,7 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
 
   // Dropdown values
   String? selectedCategory;
+  int? selectedCategoryId; // Added this
   String? selectedSubCategory;
   List<String> selectedTags = [];
   String? selectedRequestCourseAs;
@@ -70,33 +74,9 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
 
 
   // Sample data
-  final List<String> categories = [
-    'Soft Skills',
-    'Technical Skills',
-    'Business Skills',
-    'Creative Skills',
-  ];
-
-  final List<String> subCategories = [
-    'Communication',
-    'Leadership',
-    'Time Management',
-    'Problem Solving',
-  ];
-
-  final List<String> availableTags = [
-    'Fiqh Courses',
-    'Islamic History',
-    'Arabic Language',
-    'Quran Studies',
-    'Hadith Studies',
-    'Islamic Finance',
-  ];
-
   final List<String> requestCourseAsOptions = [
     'Publish',
     'Upcoming',
-    'Draft',
   ];
 
   final List<String> dripContentOptions = [
@@ -208,13 +188,13 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                       ),
                       SizedBox(height: 12.h),
 
-                      CustomDropdown(
+                      CategoryDropdown(
                         hint: 'Soft Skills',
                         value: selectedCategory,
-                        items: categories,
-                        onChanged: (value) {
+                        onChanged: (name, id) {
                           setState(() {
-                            selectedCategory = value;
+                            selectedCategory = name;
+                            selectedCategoryId = id;
                             selectedSubCategory = null;
                           });
                         },
@@ -225,10 +205,10 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                       Text('Course Subcategory', style: _titleStyle()),
                       SizedBox(height: 12.h),
 
-                      CustomDropdown(
+                      SubCategoryDropdown(
                         hint: 'Select sub category',
                         value: selectedSubCategory,
-                        items: subCategories,
+                        categoryId: selectedCategoryId,
                         onChanged: (value) {
                           setState(() {
                             selectedSubCategory = value;
@@ -270,12 +250,9 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                               ),
                               SizedBox(height: 12.h),
                             ],
-                            CustomDropdown(
+                            TagsDropdown(
                               hint: 'Select tags',
                               value: null,
-                              items: availableTags
-                                  .where((tag) => !selectedTags.contains(tag))
-                                  .toList(),
                               onChanged: (value) {
                                 if (value != null && !selectedTags.contains(value)) {
                                   setState(() {
