@@ -1,19 +1,21 @@
 // File: submit_process_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:learn_megnagmet/widget/button.dart';
 
 class SubmitProcessScreen extends StatelessWidget {
   final VoidCallback onSubmit;
   final VoidCallback? onBack;
 
   const SubmitProcessScreen({super.key, required this.onSubmit, this.onBack});
+
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.1),
@@ -24,7 +26,7 @@ class SubmitProcessScreen extends StatelessWidget {
       ),
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(32.0),
+          padding: const EdgeInsets.all(12.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -51,17 +53,32 @@ class SubmitProcessScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: onSubmit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+              // Fixed buttons at the bottom - same layout as instructor screen
+              Padding(
+                padding: const EdgeInsets.only(top: 16, bottom: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    SizedBox(
+                      width: 100,
+                      child: CustomButton(
+                        onTap: () {
+                          if (onBack != null) {
+                            onBack!();
+                          }
+                        },
+                        buttonText: 'Back',
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: CustomButton(
+                        onTap: onSubmit,
+                        buttonText: 'Submit Course',
+                      ),
+                    ),
+                  ],
                 ),
-                child: const Text('Submit Course'),
               ),
             ],
           ),

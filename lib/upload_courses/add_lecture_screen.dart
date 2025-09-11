@@ -18,6 +18,7 @@ class AddLectureScreen extends StatefulWidget {
 class _AddLectureScreenState extends State<AddLectureScreen> {
   String _selectedType = 'Video'; // Default to Video
   final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _textContentController = TextEditingController(); // For Text case
   String? _videoType;
   String? _visibility;
   final TextEditingController _youtubeIdController = TextEditingController();
@@ -79,6 +80,7 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
   @override
   void dispose() {
     _titleController.dispose();
+    _textContentController.dispose(); // Dispose new controller for Text
     _youtubeIdController.dispose();
     _durationController.dispose();
     _slideEmbedCodeController.dispose(); // Dispose new controller
@@ -373,7 +375,13 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
                                   });
                                 },
                               ),
-                            if (_selectedType == 'Video' || _selectedType == 'PDF' || _selectedType == 'Image' || _selectedType == 'Slides' || _selectedType == 'Audio')
+                            if (_selectedType == 'Text')
+                              CustomTextFormField(
+                                controller: _textContentController,
+                                hintText: 'Enter Text Content',
+                                labelText: 'Text Content',
+                              ),
+                            if (_selectedType == 'Video' || _selectedType == 'PDF' || _selectedType == 'Image' || _selectedType == 'Slides' || _selectedType == 'Audio' || _selectedType == 'Text')
                               SizedBox(height: 16.h),
                             CustomTextFormField(
                               controller: _titleController,
