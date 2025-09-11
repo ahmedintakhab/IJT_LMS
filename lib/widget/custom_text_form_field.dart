@@ -26,10 +26,12 @@ class CustomTextFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Ensure that obscureText is false when maxLines is greater than 1
+    final bool effectiveObscureText = obscureText && (maxLines == null || maxLines == 1);
     return TextFormField(
       controller: controller,cursorColor: Color(0XFF00AFEE),
-      obscureText: obscureText,
-      maxLines: maxLines,
+      obscureText: effectiveObscureText,
+      maxLines: effectiveObscureText ? 1 : maxLines,
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: hintStyle ??

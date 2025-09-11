@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:learn_megnagmet/widget/button.dart';
 import 'package:learn_megnagmet/widget/custom_text_form_field.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widget/custom_dropdown.dart';
 
 class UploadCourseCategoryTags extends StatefulWidget {
@@ -30,6 +31,29 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
   String? selectedDifficulty;
   String? selectedVideoOption; // "upload" or "youtube"
   File? introVideoFile;
+  int? courseId;
+
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCourseId();
+  }
+  Future<void> _loadCourseId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? CourseId = prefs.getInt('courseId');
+
+    if (CourseId != null) {
+      setState(() {
+        courseId = CourseId;
+      });
+      debugPrint("Fetched Course ID from SharedPreferences: $CourseId");
+    } else {
+      debugPrint("No Course ID found in SharedPreferences.");
+    }
+  }
+
+
 
   // Image Files
   File? courseImage;
