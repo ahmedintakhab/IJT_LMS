@@ -9,107 +9,89 @@ import 'package:learn_megnagmet/widget/custom_text_form_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widget/custom_dropdown.dart';
 import 'category_dropdown.dart';
+import 'difficulty_level_dropdown.dart';
+import 'dropdown_items.dart';
+import 'languages_dropdown.dart';
+import 'lesson_dropdown.dart';
 
 class UploadCourseCategoryTags extends StatefulWidget {
   final VoidCallback onComplete;
   final VoidCallback? onBack;
 
   const UploadCourseCategoryTags({super.key, required this.onComplete, this.onBack});
+
   @override
-  State<UploadCourseCategoryTags> createState() =>
-      _UploadCourseCategoryTagsState();
+  State<UploadCourseCategoryTags> createState() => _UploadCourseCategoryTagsState();
 }
 
 class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
   final _formKey = GlobalKey<FormState>();
 
-  // Dropdown values
   String? selectedCategory;
-  int? selectedCategoryId; // Added this
+  int? selectedCategoryId;
   String? selectedSubCategory;
+  int? selectedSubCategoryId;
   List<String> selectedTags = [];
+  List<int> selectedTagIds = [];
   String? selectedRequestCourseAs;
+  int? selectedRequestCourseAsId;
   String? selectedDripContent;
+  int? selectedDripContentId;
   String? selectedLearnersAccessibility;
   String? selectedLanguage;
-  String? selectedDifficulty;
-  String? selectedVideoOption; // "upload" or "youtube"
+  int? selectedLanguageId;
+  String? selectedDifficultyName;
+  int? selectedDifficultyId;
+  String? selectedVideoOption;
   File? introVideoFile;
   int? courseId;
 
+  File? courseImage;
+  File? thumbnailImage;
+  final ImagePicker _picker = ImagePicker();
+
+  final TextEditingController courseAccessPeriodController = TextEditingController();
+  final TextEditingController coursePriceController = TextEditingController();
+  final TextEditingController oldPriceController = TextEditingController();
+  final TextEditingController youtubeIdController = TextEditingController();
+  final TextEditingController accessPeriodController = TextEditingController();
+
+  final List<String> requestCourseAsOptions = [
+    'Publish',
+    'Upcoming',
+  ];
+
+  // Map to convert requestCourseAsOptions name to ID
+  final Map<String, int> requestCourseAsIdMap = {
+    'Publish': 1,
+    'Upcoming': 6,
+  };
+
+  final List<String> learnersAccessibilityOptions = [
+    'Paid',
+    'Free',
+  ];
 
   @override
   void initState() {
     super.initState();
     _loadCourseId();
   }
+
   Future<void> _loadCourseId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    int? CourseId = prefs.getInt('courseId');
-
-    if (CourseId != null) {
-      setState(() {
-        courseId = CourseId;
-      });
-      debugPrint("Fetched Course ID from SharedPreferences: $CourseId");
-    } else {
-      debugPrint("No Course ID found in SharedPreferences.");
-    }
+    setState(() {
+      courseId = prefs.getInt('courseId');
+    });
   }
-
-
-
-  // Image Files
-  File? courseImage;
-  File? thumbnailImage;
-  final ImagePicker _picker = ImagePicker();
-
-  // Text Controllers
-  final TextEditingController courseAccessPeriodController =
-  TextEditingController();
-  final TextEditingController coursePriceController = TextEditingController();
-  final TextEditingController oldPriceController = TextEditingController();
-  final TextEditingController youtubeIdController = TextEditingController();
-  final TextEditingController accessPeriodController = TextEditingController();
-
-
-  // Sample data
-  final List<String> requestCourseAsOptions = [
-    'Publish',
-    'Upcoming',
-  ];
-
-  final List<String> dripContentOptions = [
-    'Show all lesson',
-    'Sequential',
-    'Scheduled',
-  ];
-
-  final List<String> learnersAccessibilityOptions = [
-    'Public',
-    'Private',
-    'Restricted',
-  ];
-
-  final List<String> languageOptions = [
-    'English',
-    'Arabic',
-    'Urdu',
-    'Spanish',
-    'French',
-  ];
-
-  final List<String> difficultyOptions = [
-    'Beginner',
-    'Intermediate',
-    'Advanced',
-  ];
 
   @override
   void dispose() {
     courseAccessPeriodController.dispose();
     coursePriceController.dispose();
     oldPriceController.dispose();
+    youtubeIdController.dispose();
+    accessPeriodController.dispose();
     super.dispose();
   }
 
@@ -117,23 +99,18 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       final file = File(pickedFile.path);
-
-      // File size validation (max 1MB)
       final bytes = await file.length();
       final sizeInMB = bytes / (1024 * 1024);
       if (sizeInMB > 1) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              isThumbnail
-                  ? "Thumbnail size must be less than 1MB"
-                  : "Course image size must be less than 1MB",
+              isThumbnail ? "Thumbnail size must be less than 1MB" : "Course image size must be less than 1MB",
             ),
           ),
         );
         return;
       }
-
       setState(() {
         if (isThumbnail) {
           thumbnailImage = file;
@@ -143,12 +120,11 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
       });
     }
   }
+
   Future<void> pickIntroVideo() async {
     final pickedFile = await _picker.pickVideo(source: ImageSource.gallery);
     if (pickedFile != null) {
       final file = File(pickedFile.path);
-
-      // Validate video size (Max 50MB for example)
       final bytes = await file.length();
       final sizeInMB = bytes / (1024 * 1024);
       if (sizeInMB > 50) {
@@ -157,13 +133,11 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
         );
         return;
       }
-
       setState(() {
         introVideoFile = file;
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -180,55 +154,44 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      /// ---------------- Existing Code ----------------
-
-                      Text(
-                        'Course Category',
-                        style: _titleStyle(),
-                      ),
+                      Text('Course Category', style: _titleStyle()),
                       SizedBox(height: 12.h),
-
                       CategoryDropdown(
-                        hint: 'Soft Skills',
+                        hint: 'Select Category',
                         value: selectedCategory,
                         onChanged: (name, id) {
                           setState(() {
                             selectedCategory = name;
                             selectedCategoryId = id;
                             selectedSubCategory = null;
+                            selectedSubCategoryId = null;
                           });
                         },
                       ),
-
                       SizedBox(height: 24.h),
-
                       Text('Course Subcategory', style: _titleStyle()),
                       SizedBox(height: 12.h),
-
                       SubCategoryDropdown(
-                        hint: 'Select sub category',
+                        hint: 'Select Subcategory',
                         value: selectedSubCategory,
                         categoryId: selectedCategoryId,
-                        onChanged: (value) {
+                        onChanged: (name, id) {
                           setState(() {
-                            selectedSubCategory = value;
+                            selectedSubCategory = name;
+                            selectedSubCategoryId = id;
                           });
                         },
                       ),
-
                       SizedBox(height: 24.h),
-
                       Text('Tags', style: _titleStyle()),
                       SizedBox(height: 12.h),
-
-                      /// --- Tags Section UI ---
                       Container(
                         width: double.infinity,
                         padding: EdgeInsets.all(16.w),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF5F5F5),
                           borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(color: const Color(0XFFDEDEDE), width: 1.w),
+                          border: Border.all(color: const Color(0xFFDEDEDE), width: 1.w),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,26 +200,30 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                               Wrap(
                                 spacing: 8.w,
                                 runSpacing: 8.h,
-                                children: selectedTags
-                                    .map((tag) => Chip(
-                                  label: Text(tag),
-                                  onDeleted: () {
-                                    setState(() {
-                                      selectedTags.remove(tag);
-                                    });
-                                  },
-                                ))
-                                    .toList(),
+                                children: selectedTags.asMap().entries.map((entry) {
+                                  int index = entry.key;
+                                  String tag = entry.value;
+                                  return Chip(
+                                    label: Text(tag),
+                                    onDeleted: () {
+                                      setState(() {
+                                        selectedTags.removeAt(index);
+                                        selectedTagIds.removeAt(index);
+                                      });
+                                    },
+                                  );
+                                }).toList(),
                               ),
                               SizedBox(height: 12.h),
                             ],
                             TagsDropdown(
                               hint: 'Select tags',
                               value: null,
-                              onChanged: (value) {
-                                if (value != null && !selectedTags.contains(value)) {
+                              onChanged: (name, id) {
+                                if (name != null && id != null && !selectedTags.contains(name)) {
                                   setState(() {
-                                    selectedTags.add(value);
+                                    selectedTags.add(name);
+                                    selectedTagIds.add(id);
                                   });
                                 }
                               },
@@ -264,33 +231,30 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                           ],
                         ),
                       ),
-
                       SizedBox(height: 32.h),
-
                       Text('Request course as', style: _titleStyle()),
                       SizedBox(height: 12.h),
                       CustomDropdown(
                         hint: 'Publish',
                         value: selectedRequestCourseAs,
                         items: requestCourseAsOptions,
-                        onChanged: (value) {
+                        onChanged: (name) {
                           setState(() {
-                            selectedRequestCourseAs = value;
+                            selectedRequestCourseAs = name;
+                            selectedRequestCourseAsId = name != null ? requestCourseAsIdMap[name] : null;
                           });
                         },
                       ),
-
                       SizedBox(height: 20.h),
-
                       Text('Drip Content', style: _titleStyle()),
                       SizedBox(height: 12.h),
-                      CustomDropdown(
+                      LessonsDropdown(
                         hint: 'Show all lesson',
                         value: selectedDripContent,
-                        items: dripContentOptions,
-                        onChanged: (value) {
+                        onChanged: (name, id) {
                           setState(() {
-                            selectedDripContent = value;
+                            selectedDripContent = name;
+                            selectedDripContentId = id;
                           });
                         },
                       ),
@@ -302,7 +266,6 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                         hintText: 'If there is no expiry duration, leave the field blank',
                       ),
                       SizedBox(height: 20.h),
-
                       Text('Learners Accessibility', style: _titleStyle()),
                       SizedBox(height: 12.h),
                       CustomDropdown(
@@ -312,56 +275,59 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                         onChanged: (value) {
                           setState(() {
                             selectedLearnersAccessibility = value;
+                            // clear price fields if user switches to Free
+                            if (value == "Free") {
+                              coursePriceController.clear();
+                              oldPriceController.clear();
+                            }
                           });
                         },
                       ),
-
                       SizedBox(height: 20.h),
-
-                      Text('Course Price', style: _titleStyle()),
+            // Show Price fields only if Paid
+            if (selectedLearnersAccessibility == "Paid") ...[
+          Text('Course Price', style: _titleStyle()),
                       SizedBox(height: 12.h),
-                      CustomTextFormField(hintText: 'Price'),
-
+                      CustomTextFormField(
+                        controller: coursePriceController,
+                        hintText: 'Price',
+                      ),
                       SizedBox(height: 20.h),
-
                       Text('Old Price', style: _titleStyle()),
                       SizedBox(height: 12.h),
-                      CustomTextFormField(hintText: 'Old Price'),
-
+                      CustomTextFormField(
+                        controller: oldPriceController,
+                        hintText: 'Old Price',
+                      ),
                       SizedBox(height: 20.h),
-
+                      ],
                       Text('Language', style: _titleStyle()),
                       SizedBox(height: 12.h),
-                      CustomDropdown(
+                      LanguagesDropdown(
                         hint: 'Select language',
                         value: selectedLanguage,
-                        items: languageOptions,
-                        onChanged: (value) {
+                        onChanged: (name, id) {
                           setState(() {
-                            selectedLanguage = value;
+                            selectedLanguage = name;
+                            selectedLanguageId = id;
                           });
                         },
                       ),
-
-                      /// ---------------- New Additions ----------------
-
                       SizedBox(height: 20.h),
-
                       Text('Difficulty Level', style: _titleStyle()),
                       SizedBox(height: 12.h),
-                      CustomDropdown(
+                      DifficultyDropdown(
                         hint: 'Select Difficulty Level',
-                        value: selectedDifficulty,
-                        items: difficultyOptions,
-                        onChanged: (value) {
+                        value: selectedDifficultyName, // String? state variable for name
+                        onChanged: (name, id) {
                           setState(() {
-                            selectedDifficulty = value;
+                            selectedDifficultyName = name; // e.g. "Medium"
+                            selectedDifficultyId = id;     // e.g. 2
                           });
                         },
                       ),
 
                       SizedBox(height: 20.h),
-
                       Text('Course Image', style: _titleStyle()),
                       SizedBox(height: 12.h),
                       _imagePickerBox(courseImage, "Image", () => pickImage(false)),
@@ -370,9 +336,7 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                         "Recommended size: 575px X 450px (Max 1MB)\nAccepted: jpg, jpeg, png",
                         style: TextStyle(fontSize: 12.sp, color: Colors.grey),
                       ),
-
                       SizedBox(height: 20.h),
-
                       Text('Course Thumbnail', style: _titleStyle()),
                       SizedBox(height: 12.h),
                       _imagePickerBox(thumbnailImage, "Thumbnail", () => pickImage(true)),
@@ -381,11 +345,9 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                         "Recommended size: 220px X 170px (Max 1MB)\nAccepted: jpg, jpeg, png",
                         style: TextStyle(fontSize: 12.sp, color: Colors.grey),
                       ),
-
                       SizedBox(height: 40.h),
                       Text('Course Introduction Video (Optional)', style: _titleStyle()),
                       SizedBox(height: 12.h),
-
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -448,7 +410,6 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                                 ),
                               ),
                           ],
-
                           RadioListTile<String>(
                             value: "youtube",
                             groupValue: selectedVideoOption,
@@ -478,7 +439,6 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                 ),
               ),
             ),
-            /// ---------------- Buttons ----------------
             Padding(
               padding: EdgeInsets.only(top: 16.h),
               child: Row(
@@ -490,7 +450,8 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                       onTap: () {
                         if (widget.onBack != null) {
                           widget.onBack!();
-                        }                      },
+                        }
+                      },
                       buttonText: 'Back',
                     ),
                   ),
@@ -501,8 +462,7 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                         if (_formKey.currentState!.validate()) {
                           if (selectedCategory == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('Please select a category')),
+                              const SnackBar(content: Text('Please select a category')),
                             );
                             return;
                           }
@@ -539,7 +499,7 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
         decoration: BoxDecoration(
           color: const Color(0xFFF5F5F5),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: const Color(0XFFDEDEDE), width: 1.w),
+          border: Border.all(color: const Color(0xFFDEDEDE), width: 1.w),
         ),
         child: file != null
             ? ClipRRect(

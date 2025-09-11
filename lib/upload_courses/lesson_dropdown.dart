@@ -7,12 +7,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/api_constant.dart';
 import 'dropdown_items.dart';
 
-class TagsDropdown extends StatefulWidget {
+class LessonsDropdown extends StatefulWidget {
   final String hint;
   final String? value;
   final void Function(String?, int?) onChanged;
 
-  const TagsDropdown({
+  const LessonsDropdown({
     super.key,
     required this.hint,
     this.value,
@@ -20,10 +20,10 @@ class TagsDropdown extends StatefulWidget {
   });
 
   @override
-  State<TagsDropdown> createState() => _TagsDropdownState();
+  State<LessonsDropdown> createState() => _LessonsDropdownState();
 }
 
-class _TagsDropdownState extends State<TagsDropdown> {
+class _LessonsDropdownState extends State<LessonsDropdown> {
   List<DropdownItem> _items = [];
 
   @override
@@ -34,7 +34,7 @@ class _TagsDropdownState extends State<TagsDropdown> {
 
   Future<void> _loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? cached = prefs.getString('tags');
+    String? cached = prefs.getString('drip_contents');
     if (cached != null) {
       try {
         final jsonResponse = jsonDecode(cached);
@@ -44,34 +44,35 @@ class _TagsDropdownState extends State<TagsDropdown> {
             _items = jsonList.map((m) => DropdownItem(id: m['id'], name: m['name'])).toList();
           });
         }
-      } catch (e) {}
-    } else {
-      try {
-        final url = '${ApiConstant.baseUrl}instructor/get-tags';
-        final response = await http.get(Uri.parse(url));
-        if (response.statusCode == 200) {
-          final jsonResponse = jsonDecode(response.body);
-          if (jsonResponse['success'] == true) {
-            List<dynamic> jsonList = jsonResponse['data'];
-            setState(() {
-              _items = jsonList.map((m) => DropdownItem(id: m['id'], name: m['name'])).toList();
-            });
-            await prefs.setString('tags', response.body);
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Failed to load tags: ${jsonResponse['message']}')),
-            );
-          }
+      } catch (e) {
+        // Handle parsing error silently or retry fetching
+      }
+    }
+    try {
+      final url = '${ApiConstant.baseUrl}instructor/get-drip-contents';
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        if (jsonResponse['success'] == true) {
+          List<dynamic> jsonList = jsonResponse['data'];
+          setState(() {
+            _items = jsonList.map((m) => DropdownItem(id: m['id'], name: m['name'])).toList();
+          });
+          await prefs.setString('drip_contents', response.body);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to load tags: HTTP ${response.statusCode}')),
+            SnackBar(content: Text('Failed to load drip contents: ${jsonResponse['message']}')),
           );
         }
-      } catch (e) {
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error fetching tags')),
+          SnackBar(content: Text('Failed to load drip contents: HTTP ${response.statusCode}')),
         );
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error fetching drip contents')),
+      );
     }
   }
 

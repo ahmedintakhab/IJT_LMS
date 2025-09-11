@@ -4,20 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../utils/api_constant.dart'; // Adjust the import path as needed
-
-class DropdownItem {
-  final int id;
-  final String name;
-
-  DropdownItem({required this.id, required this.name});
-}
+import '../utils/api_constant.dart';
+import 'dropdown_items.dart';
 
 class SubCategoryDropdown extends StatefulWidget {
   final String hint;
   final String? value;
   final int? categoryId;
-  final void Function(String?) onChanged;
+  final void Function(String?, int?) onChanged;
 
   const SubCategoryDropdown({
     super.key,
@@ -51,7 +45,7 @@ class _SubCategoryDropdownState extends State<SubCategoryDropdown> {
         _items = [];
         _currentCategoryId = null;
         if (widget.value != null) {
-          widget.onChanged(null); // Reset selected value
+          widget.onChanged(null, null);
         }
       });
       if (widget.categoryId != null) {
@@ -62,17 +56,13 @@ class _SubCategoryDropdownState extends State<SubCategoryDropdown> {
 
   Future<void> _loadData(int catId) async {
     if (_currentCategoryId == catId && _items.isNotEmpty) {
-      debugPrint('Subcategory data already loaded for category ID: $catId');
       return;
     }
     _currentCategoryId = catId;
-    debugPrint('Fetching subcategories for category ID: $catId');
-
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String key = 'subcategories_$catId';
     String? cached = prefs.getString(key);
     if (cached != null) {
-      debugPrint('Loading cached subcategories for category ID: $catId');
       try {
         final jsonResponse = jsonDecode(cached);
         if (jsonResponse['success'] == true) {
@@ -80,20 +70,12 @@ class _SubCategoryDropdownState extends State<SubCategoryDropdown> {
           setState(() {
             _items = jsonList.map((m) => DropdownItem(id: m['id'], name: m['name'])).toList();
           });
-          debugPrint('Cached subcategories loaded: ${_items.map((e) => e.name).toList()}');
-        } else {
-          debugPrint('Cached API Error: ${jsonResponse['message']}');
         }
-      } catch (e) {
-        debugPrint('Error parsing cached subcategories: $e');
-      }
+      } catch (e) {}
     } else {
       try {
         final url = '${ApiConstant.baseUrl}instructor/get-category-subcategories/$catId';
-        debugPrint('Making API call to: $url');
         final response = await http.get(Uri.parse(url));
-        debugPrint('Subcategory API response code: ${response.statusCode}');
-        debugPrint('Subcategory API response body: ${response.body}');
         if (response.statusCode == 200) {
           final jsonResponse = jsonDecode(response.body);
           if (jsonResponse['success'] == true) {
@@ -101,22 +83,18 @@ class _SubCategoryDropdownState extends State<SubCategoryDropdown> {
             setState(() {
               _items = jsonList.map((m) => DropdownItem(id: m['id'], name: m['name'])).toList();
             });
-            debugPrint('Subcategories loaded: ${_items.map((e) => e.name).toList()}');
             await prefs.setString(key, response.body);
           } else {
-            debugPrint('API Error: ${jsonResponse['message']}');
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Failed to load subcategories: ${jsonResponse['message']}')),
             );
           }
         } else {
-          debugPrint('HTTP Error: ${response.statusCode}');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Failed to load subcategories: HTTP ${response.statusCode}')),
           );
         }
       } catch (e) {
-        debugPrint('Error fetching subcategories: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error fetching subcategories')),
         );
@@ -126,7 +104,6 @@ class _SubCategoryDropdownState extends State<SubCategoryDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('Building SubCategoryDropdown with categoryId: ${widget.categoryId}, items: ${_items.length}');
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF5F5F5),
@@ -146,7 +123,16 @@ class _SubCategoryDropdownState extends State<SubCategoryDropdown> {
             ),
           ),
           value: widget.value,
-          onChanged: _items.isNotEmpty ? widget.onChanged : null, // Disable dropdown if no items
+          onChanged: _items.isNotEmpty
+              ? (String? newValue) {
+            if (newValue != null) {
+              final item = _items.firstWhere((i) => i.name == newValue);
+              widget.onChanged(newValue, item.id);
+            } else {
+              widget.onChanged(null, null);
+            }
+          }
+              : null,
           items: _items.map<DropdownMenuItem<String>>((DropdownItem item) {
             return DropdownMenuItem<String>(
               value: item.name,
