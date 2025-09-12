@@ -30,6 +30,7 @@ class _UploadCourseDetailsState extends State<UploadCourseDetails> {
   List<TextEditingController> keyPointControllers = [];
   bool _isLoading = false; // For showing progress on button
   int? courseId; // Store course_id from API response
+  String? courseTitle;
 
   @override
   void initState() {
@@ -123,11 +124,14 @@ class _UploadCourseDetailsState extends State<UploadCourseDetails> {
         if (responseData["success"] == true) {
           setState(() {
             courseId = responseData["data"]["course_id"];
+            courseTitle = responseData["data"]["course_title"];
           });
           // Save courseId into SharedPreferences
           await prefs.setInt('courseId', courseId!);
+          await prefs.setString('courseTitle', courseTitle!);
 
           debugPrint("Course stored successfully. ID: $courseId");
+          debugPrint("Course stored successfully. Title: $courseTitle");
           Get.snackbar(
             'Successful', 'Course stored successfully',
             snackPosition: SnackPosition.TOP,

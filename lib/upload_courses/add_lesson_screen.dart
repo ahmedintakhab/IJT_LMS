@@ -1,9 +1,14 @@
-// File: upload_video_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:learn_megnagmet/widget/button.dart';
 import 'package:learn_megnagmet/widget/custom_text_form_field.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import '../utils/api_constant.dart';
 
 class AddLessonScreen extends StatefulWidget {
   final VoidCallback onComplete;
@@ -18,11 +23,89 @@ class AddLessonScreen extends StatefulWidget {
 class _AddLessonScreenState extends State<AddLessonScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _lessonTitleController = TextEditingController();
+  int? courseId;
+  bool _isLoading = false; // Added for loading state
+  String? courseTitle;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCourseData();
+  }
+
+  Future<void> _loadCourseData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      courseId = prefs.getInt('courseId');
+      courseTitle = prefs.getString('courseTitle');
+    });
+  }
 
   @override
   void dispose() {
     _lessonTitleController.dispose();
     super.dispose();
+  }
+
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Print data for debugging
+    debugPrint('Submitting data:');
+    debugPrint('course_id: $courseId');
+    debugPrint('name: ${_lessonTitleController.text}');
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('authToken') ?? '';
+
+      final url = Uri.parse('${ApiConstant.baseUrl}instructor/course/store-lesson');
+      var request = http.MultipartRequest('POST', url);
+
+      // Add headers
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // Add text fields
+      request.fields['course_id'] = courseId?.toString() ?? '';
+      request.fields['name'] = _lessonTitleController.text;
+
+      // Send the request
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+      final responseData = jsonDecode(responseBody);
+
+      if (response.statusCode == 200) {
+        debugPrint(' Upload course tags API Response : ${response.statusCode}');
+        debugPrint('API Response: $responseData');
+        // Extract lesson_id from response and store in SharedPreferences
+        if (responseData['success'] == true) {
+          int lessonId = responseData['data']['lesson_id'];
+          await prefs.setInt('lessonId', lessonId);
+          debugPrint('Stored lessonId: $lessonId');
+        }
+        Get.snackbar(
+          'Successful', 'Lesson title successfully added',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+        widget.onComplete();
+      } else {
+        debugPrint('Add lesson title API Error: ${response.statusCode} - $responseBody');
+      }
+    } catch (e) {
+      debugPrint('Add lesson title api error catch: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -62,7 +145,7 @@ class _AddLessonScreenState extends State<AddLessonScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Section title of the courses "Test Lesson"',
+                          'Section title of the courses, ${courseTitle ?? 'Course Title'}',
                           style: TextStyle(
                             fontSize: 16,
                             color: const Color(0xFF00AFEE),
@@ -102,12 +185,9 @@ class _AddLessonScreenState extends State<AddLessonScreen> {
                   SizedBox(width: 20),
                   Expanded(
                     child: CustomButton(
-                      onTap: () {
-                        if (_formKey.currentState!.validate()) {
-                          widget.onComplete();
-                        }
-                      },
+                      onTap: _submitForm,
                       buttonText: 'Save and Continue',
+                      isLoading: _isLoading,
                     ),
                   ),
                 ],

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:learn_megnagmet/upload_courses/sub_category_dropdown.dart';
 import 'package:learn_megnagmet/upload_courses/tags_dropdown.dart';
@@ -221,6 +222,20 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
         );
         return;
       }
+      if (isThumbnail) {
+        // Check image dimensions for thumbnail
+        final imageBytes = await file.readAsBytes();
+        final decodedImage = img.decodeImage(imageBytes);
+        if (decodedImage == null || decodedImage.width != 220 || decodedImage.height != 170) {
+          setState(() {
+            thumbnailImageError = 'Thumbnail image must be exactly 220px x 170px';
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Thumbnail image must be exactly 220px x 170px')),
+          );
+          return;
+        }
+      }
       setState(() {
         if (isThumbnail) {
           thumbnailImage = file;
@@ -329,6 +344,14 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
       if (response.statusCode == 200) {
         debugPrint(' Upload course tags API Response : ${response.statusCode}');
         debugPrint('API Response: $responseData');
+        if (responseData['success'] == true) {
+          int totalLessons = responseData['data']['total_lessons'];
+          int totalLectures = responseData['data']['total_lectures'];
+          await prefs.setInt('totalLessons', totalLessons);
+          await prefs.setInt('totalLectures', totalLectures);
+          debugPrint('Stored total lessons: $totalLessons');
+          debugPrint('Stored total lectures: $totalLectures');
+        }
         Get.snackbar(
           'Successful', 'Course Updated successfully',
           snackPosition: SnackPosition.TOP,

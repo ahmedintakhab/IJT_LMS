@@ -3,6 +3,7 @@ import 'package:learn_megnagmet/upload_courses/select%20_instructor.dart';
 import 'package:learn_megnagmet/upload_courses/submit_process.dart';
 import 'package:learn_megnagmet/upload_courses/add_lesson_screen.dart';
 import 'package:learn_megnagmet/upload_courses/upload_lesson_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'add_lecture_screen.dart';
 import 'upload_course_details.dart';
 import 'upload_course_category_tags.dart';
@@ -18,6 +19,22 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
   int _currentStep = 0; // Default to first step
   bool _isCategoryStep = false; // Track if we are in "Category & Tags"
   int _lessonSubStep = 0; // Track sub-steps for Step 2 (0: Add Lesson, 1: Upload Lesson, 2: Add Lecture)
+  int? totalLessons;
+  int? totalLectures;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLessonData();
+  }
+
+  Future<void> _loadLessonData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      totalLessons = prefs.getInt('totalLessons') ?? 0; // Default to 0 if null
+      totalLectures = prefs.getInt('totalLectures') ?? 0; // Default to 0 if null
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -183,11 +200,14 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
           );
         } else {
           return UploadCourseCategoryTags(
-            onComplete: () {
+            onComplete: () async {
+              // Reload totalLessons from SharedPreferences
+              await _loadLessonData();
+              debugPrint('Updated totalLessons: $totalLessons');
               setState(() {
                 _isCategoryStep = false;
                 _currentStep = 1;
-                _lessonSubStep = 0; // Reset to first lesson sub-step
+                _lessonSubStep = totalLessons == 0 ? 0 : 1; // Skip AddLessonScreen if totalLessons > 0
               });
             },
             onBack: () {
@@ -198,7 +218,7 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
           );
         }
       case 1:
-        if (_lessonSubStep == 0) {
+        if (_lessonSubStep == 0 && totalLessons == 0) {
           return AddLessonScreen(
             onComplete: () {
               setState(() {
@@ -208,10 +228,11 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
             onBack: () {
               setState(() {
                 _currentStep = 0; // Move back to Category
+                _isCategoryStep = true;
               });
             },
           );
-        } else if (_lessonSubStep == 1) {
+        } else if (_lessonSubStep == 1 || (_lessonSubStep == 0 && totalLessons! > 0)) {
           return UploadLessonScreen(
             onComplete: () {
               setState(() {
@@ -220,7 +241,12 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
             },
             onBack: () {
               setState(() {
-                _lessonSubStep = 0; // Move back to Add Lesson
+                if (totalLessons == 0) {
+                  _lessonSubStep = 0; // Move back to Add Lesson if totalLessons == 0
+                } else {
+                  _currentStep = 0; // Move back to Category if totalLessons > 0
+                  _isCategoryStep = true;
+                }
               });
             },
           );
@@ -239,10 +265,14 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
             },
           );
         }
+        return const SizedBox.shrink(); // Fallback for invalid sub-step
       case 2:
         return InstructorsScreen(
           onComplete: () => setState(() => _currentStep = 3),
-          onBack: () => setState(() => _currentStep = 1),
+          onBack: () => setState(() {
+            _currentStep = 1;
+            _lessonSubStep = 2; // Go back to Add Lecture
+          }),
         );
       case 3:
         return SubmitProcessScreen(
@@ -263,7 +293,5 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
       default:
         return const SizedBox.shrink();
     }
-    return const SizedBox.shrink(); // Fallback return to guarantee non-null Widget
-
   }
 }
