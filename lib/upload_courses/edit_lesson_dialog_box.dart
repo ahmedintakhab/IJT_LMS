@@ -8,10 +8,11 @@ import '../utils/api_constant.dart';
 
 class EditLessonDialogBox extends StatefulWidget {
   final Function(String) onSubmit;
+  final int? lessonId;
 
   const EditLessonDialogBox({
     super.key,
-    required this.onSubmit,
+    required this.onSubmit,required this.lessonId
   });
 
   @override
@@ -22,7 +23,6 @@ class _EditLessonDialogBoxState extends State<EditLessonDialogBox> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   int? courseId;
-  int? lessonId;
   bool _isLoading = true;
 
   @override
@@ -35,9 +35,9 @@ class _EditLessonDialogBoxState extends State<EditLessonDialogBox> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       courseId = prefs.getInt('courseId');
-      lessonId = prefs.getInt('lessonId');
+      // lessonId = prefs.getInt('lessonId');
     });
-    if (lessonId != null && lessonId != 0) {
+    if (widget.lessonId != null && widget.lessonId != 0) {
       await _fetchLessonData();
     } else {
       setState(() {
@@ -60,7 +60,7 @@ class _EditLessonDialogBoxState extends State<EditLessonDialogBox> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String token = prefs.getString('authToken') ?? '';
 
-      final url = Uri.parse('${ApiConstant.baseUrl}instructor/course/edit-lesson-data/$lessonId');
+      final url = Uri.parse('${ApiConstant.baseUrl}instructor/course/edit-lesson-data/${widget.lessonId}');
       final response = await http.get(
         url,
         headers: {
@@ -75,7 +75,7 @@ class _EditLessonDialogBoxState extends State<EditLessonDialogBox> {
         if (data['success'] == true) {
           setState(() {
             _nameController.text = data['data']['name'] ?? '';
-            lessonId = data['data']['lesson_id'];
+            // lessonId = data['data']['lesson_id'];
             courseId = data['data']['course_id'];
             _isLoading = false;
           });
@@ -102,7 +102,7 @@ class _EditLessonDialogBoxState extends State<EditLessonDialogBox> {
   }
 
   Future<void> _submitLesson() async {
-    if (!_formKey.currentState!.validate() || courseId == null || lessonId == null) {
+    if (!_formKey.currentState!.validate() || courseId == null || widget.lessonId == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Please select a valid lesson and fill in the name')),
@@ -128,7 +128,7 @@ class _EditLessonDialogBoxState extends State<EditLessonDialogBox> {
         },
         body: jsonEncode({
           'course_id': courseId,
-          'lesson_id': lessonId,
+          'lesson_id': widget.lessonId,
           'name': _nameController.text.trim(),
         }),
       );
@@ -136,6 +136,7 @@ class _EditLessonDialogBoxState extends State<EditLessonDialogBox> {
       if (response.statusCode == 200) {
         print('Check edit lesson api response: ${response.statusCode}');
         widget.onSubmit(_nameController.text.trim());
+        await _fetchLessonData();
         Navigator.pop(context);
       } else {
         print('Check edit lesson api response: ${response.body}');

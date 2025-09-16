@@ -1,14 +1,14 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/snackbar/snackbar.dart';
 import 'package:http/http.dart' as http;
 import 'package:learn_megnagmet/utils/api_constant.dart';
 import 'package:learn_megnagmet/widget/button.dart';
 import 'package:learn_megnagmet/widget/custom_text_form_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'delete_lesson_dialog_box.dart';
 import 'edit_lesson_dialog_box.dart';
 
 class UploadLessonScreen extends StatefulWidget {
@@ -30,7 +30,8 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
   List<Map<String, dynamic>> lessons = [];
   bool isLoading = true;
   final Map<String, bool> _lessonExpansion = {};
-
+  int totalLessons = 0;
+  int totalLectures = 0;
   @override
   void initState() {
     super.initState();
@@ -65,6 +66,9 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
         if (data['success'] == true) {
           setState(() {
             lessons = List<Map<String, dynamic>>.from(data['data'][0]['lessons']);
+            totalLessons = data['data'][0]['total_lessons'] ?? 0;
+            totalLectures = data['data'][0]['total_lectures'] ?? 0;
+            print('Check total lessons and lectures: ${totalLessons}, ${totalLectures}');
             for (var lesson in lessons) {
               _lessonExpansion[lesson['name']] = false;
             }
@@ -85,6 +89,65 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
       );
     }
   }
+
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    // Print data for debugging
+    debugPrint('Submitting data:');
+    debugPrint('course_id: $courseId');
+    debugPrint('name: ${_sectionTitleController.text}');
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('authToken') ?? '';
+
+      final url = Uri.parse('${ApiConstant.baseUrl}instructor/course/store-lesson');
+      var request = http.MultipartRequest('POST', url);
+
+      // Add headers
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // Add text fields
+      request.fields['course_id'] = courseId?.toString() ?? '';
+      request.fields['name'] = _sectionTitleController.text;
+
+      // Send the request
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+      // final responseData = jsonDecode(responseBody);
+
+      if (response.statusCode == 200) {
+        debugPrint(' Upload course tags API Response : ${response.statusCode}');
+        Get.snackbar(
+          'Successful', 'New lesson added successfully!',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+       await _fetchLessons();
+        setState(() {
+          _showAddSection = false; // Hide the Add Section container
+          _sectionTitleController.clear(); // Clear the text field
+        });
+      } else {
+        debugPrint('Add lesson title API Error: ${response.statusCode} - $responseBody');
+      }
+    } catch (e) {
+      debugPrint('Add lesson title api error catch: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
 
   @override
   void dispose() {
@@ -134,7 +197,7 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
                           ),
                           SizedBox(height: 16.h),
                           isLoading
-                              ? Center(child: CircularProgressIndicator())
+                              ? Center(child: CircularProgressIndicator(color:Color(0xFF00AFEE) ,))
                           :ListView.builder(
                             shrinkWrap: true,
                             physics: NeverScrollableScrollPhysics(),
@@ -262,7 +325,7 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
                                               child: ElevatedButton.icon(
                                                 onPressed: widget.onComplete,
                                                 icon: const Icon(Icons.upload),
-                                                label: const Text('Upload Lesson'),
+                                                label: const Text('Upload Lecture'),
                                                 style: ElevatedButton.styleFrom(
                                                   backgroundColor: Color(0xFF00AFEE),
                                                   foregroundColor: Colors.white,
@@ -277,10 +340,12 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
                                                 showDialog(
                                                   context: context,
                                                   builder: (context) => EditLessonDialogBox(
+                                                    lessonId: lesson['id'],
                                                     onSubmit: (newName) {
                                                       setState(() {
                                                         _lessonTitleController.text = newName;
                                                       });
+                                                      _fetchLessons();
                                                     },
                                                   ),
                                                 );
@@ -305,115 +370,6 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            padding: EdgeInsets.all(16.w),
-                            margin: EdgeInsets.only(top: 16.h),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8.r),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12.withOpacity(0.2),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Section title of the course "Test"',
-                                  style: TextStyle(
-                                    fontSize: 16.sp,
-                                    color: const Color(0xFF00AFEE),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 16.h),
-                                Text(
-                                  'Test',
-                                  style: TextStyle(
-                                    fontSize: 16.sp,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                SizedBox(height: 16.h),
-                                Center(
-                                  child: Icon(
-                                    Icons.play_circle_outline,
-                                    size: 70.sp,
-                                    color: Colors.pink[200],
-                                  ),
-                                ),
-                                SizedBox(height: 16.h),
-                                Center(
-                                  child: ElevatedButton.icon(
-                                    onPressed: widget.onComplete,
-                                    icon: const Icon(Icons.upload),
-                                    label: const Text('Upload Lesson'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xFF00AFEE),
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: 16.h),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    OutlinedButton.icon(
-                                      onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) => EditLessonDialogBox(
-                                            onSubmit: (newName) {
-                                              setState(() {
-                                                _lessonTitleController.text = newName;
-                                              });
-                                            },
-                                          ),
-                                        );
-                                      },
-                                      icon: const Icon(Icons.edit, color: Colors.black),
-                                      label: const Text('Edit', style: TextStyle(color: Colors.black)),
-                                      style: OutlinedButton.styleFrom(
-                                        side: const BorderSide(color: Colors.blue),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(width: 10.w),
-                                    OutlinedButton.icon(
-                                      onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) => DeleteLessonDialogBox(
-                                            onDelete: () {
-                                              Navigator.pop(context);
-                                            },
-                                            onCancel: () => Navigator.pop(context),
-                                          ),
-                                        );
-                                      },
-                                      icon: const Icon(Icons.delete, color: Colors.black),
-                                      label: const Text('Delete', style: TextStyle(color: Colors.black)),
-                                      style: OutlinedButton.styleFrom(
-                                        side: const BorderSide(color: Colors.blue),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
                           Padding(
                             padding: EdgeInsets.only(top: 16.h),
                             child: Row(
@@ -433,27 +389,21 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
                                     ),
                                   ),
                                 ),
-                                SizedBox(
-                                  width: 200.w,
-                                  child: ElevatedButton.icon(
-                                    onPressed: () {
-                                      setState(() {
-                                        _showAddSection = true;
-                                      });
-                                    },
-                                    icon: const Icon(Icons.add),
-                                    label: const Text('Add More Section'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xFF00AFEE),
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                SizedBox(width: 200.w,height: 50.h,
+                                  child: CustomButton(onTap: (){
+                                    setState(() {
+                                      _showAddSection = true;
+                                    });
+                                  }, buttonText: 'Add more Section'),
+                                )
                               ],
                             ),
+                          ),
+                          SizedBox(height: 10.h,),
+                          if (totalLectures > 0)
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: CustomButton(onTap: (){}, buttonText: 'Save and Continue'),
                           ),
                           if (_showAddSection)
                             Container(
@@ -513,7 +463,9 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
                                       SizedBox(
                                         width: 150.w,
                                         height: 40,
-                                        child: CustomButton(onTap: () {}, buttonText: 'Save'),
+                                        child: CustomButton( onTap: _submitForm,
+                                          buttonText: 'Save',
+                                          isLoading: isLoading,),
                                       ),
                                     ],
                                   ),
