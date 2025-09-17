@@ -1,11 +1,81 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:http/http.dart' as http;
+import 'package:learn_megnagmet/utils/api_constant.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class DeleteLessonDialogBox extends StatelessWidget {
+class DeleteLessonDialogBox extends StatefulWidget {
   final VoidCallback onDelete;
   final VoidCallback onCancel;
+  final int? lessonId;
 
-  const DeleteLessonDialogBox({super.key, required this.onDelete, required this.onCancel});
+  const DeleteLessonDialogBox({
+    super.key,
+    required this.onDelete,
+    required this.onCancel,
+    required this.lessonId,
+  });
+
+  @override
+  State<DeleteLessonDialogBox> createState() => _DeleteLessonDialogBoxState();
+}
+
+class _DeleteLessonDialogBoxState extends State<DeleteLessonDialogBox> {
+  bool _isLoading = false;
+
+  Future<void> _deleteLesson() async {
+    if (widget.lessonId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No lesson selected')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('authToken') ?? '';
+
+      final url = Uri.parse('${ApiConstant.baseUrl}instructor/course/delete-lesson');
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'lesson_id': widget.lessonId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Lesson delete api response: ${response.statusCode}');
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          widget.onDelete(); // Notify parent to refresh or handle post-deletion
+          Navigator.pop(context); // Close the dialog
+        } else {
+          throw Exception('API returned success: false - ${data['message']}');
+        }
+      } else {
+        throw Exception('Failed to delete lesson: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting lesson: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,8 +117,7 @@ class DeleteLessonDialogBox extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
-                  onPressed: onDelete,
-                  child: const Text('Yes, Delete It!'),
+                  onPressed: _isLoading ? null : _deleteLesson,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF00AFEE),
                     foregroundColor: Colors.white,
@@ -56,9 +125,19 @@ class DeleteLessonDialogBox extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
+                  child: _isLoading
+                      ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                      : const Text('Yes, Delete It!'),
                 ),
                 OutlinedButton(
-                  onPressed: onCancel,
+                  onPressed: widget.onCancel,
                   child: const Text('Cancel', style: TextStyle(color: Colors.black)),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Colors.blue),

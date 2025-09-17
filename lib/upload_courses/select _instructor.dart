@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:learn_megnagmet/widget/custom_dropdown.dart';
 import 'package:learn_megnagmet/widget/button.dart';
+
+import 'instructor_dropdown.dart';
 
 class InstructorsScreen extends StatefulWidget {
   final VoidCallback onComplete;
@@ -13,14 +14,7 @@ class InstructorsScreen extends StatefulWidget {
 }
 
 class _InstructorsScreenState extends State<InstructorsScreen> {
-  List<String> selectedInstructors = [];
-  List<String> availableInstructors = [
-    'Instructor 1',
-    'Instructor 2',
-    'Instructor 3',
-    'Instructor 4',
-    'Instructor 5'
-  ];
+  List<Map<String, dynamic>> selectedInstructors = [];
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +54,8 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            // Updated dropdown with chips
+
+            // ✅ Instructor dropdown with chips
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -76,29 +71,28 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: selectedInstructors
-                          .map((instructor) => Chip(
-                        label: Text(instructor),
-                        onDeleted: () {
-                          setState(() {
-                            selectedInstructors.remove(instructor);
-                          });
-                        },
-                      ))
-                          .toList(),
+                      children: selectedInstructors.map((instructor) {
+                        return Chip(
+                          label: Text(instructor['name']),
+                          onDeleted: () {
+                            setState(() {
+                              selectedInstructors.remove(instructor);
+                            });
+                          },
+                        );
+                      }).toList(),
                     ),
                     const SizedBox(height: 12),
                   ],
-                  CustomDropdown(
+                  InstructorDropdown(
                     hint: 'Select Instructors',
                     value: null,
-                    items: availableInstructors
-                        .where((instructor) => !selectedInstructors.contains(instructor))
-                        .toList(),
-                    onChanged: (value) {
-                      if (value != null && !selectedInstructors.contains(value)) {
+                    onChanged: (value, id) {
+                      if (value != null &&
+                          id != null &&
+                          !selectedInstructors.any((i) => i['id'] == id)) {
                         setState(() {
-                          selectedInstructors.add(value);
+                          selectedInstructors.add({'id': id, 'name': value});
                         });
                       }
                     },
@@ -106,8 +100,10 @@ class _InstructorsScreenState extends State<InstructorsScreen> {
                 ],
               ),
             ),
+
             const SizedBox(height: 16),
-            // Fixed buttons at the bottom
+
+            // Buttons
             Padding(
               padding: const EdgeInsets.only(top: 16, bottom: 16),
               child: Row(

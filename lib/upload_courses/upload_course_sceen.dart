@@ -21,6 +21,7 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
   int _lessonSubStep = 0; // Track sub-steps for Step 2 (0: Add Lesson, 1: Upload Lesson, 2: Add Lecture)
   int? totalLessons;
   int? totalLectures;
+  int? _selectedLessonId; // Store the selected lessonId
 
   @override
   void initState() {
@@ -234,10 +235,20 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
           );
         } else if (_lessonSubStep == 1 || (_lessonSubStep == 0 && totalLessons! > 0)) {
           return UploadLessonScreen(
-            onComplete: () {
-              setState(() {
-                _lessonSubStep = 2; // Move to Add Lecture
-              });
+            onComplete: (lessonId, isContinue) {
+              if (isContinue) {
+                // "Save and Continue" was clicked - go to InstructorsScreen
+                setState(() {
+                  _currentStep = 2; // Move to Instructors
+                  _lessonSubStep = 0; // Reset sub-step
+                });
+              } else {
+                // "Upload Lecture" was clicked - go to AddLectureScreen
+                setState(() {
+                  _selectedLessonId = lessonId;
+                  _lessonSubStep = 2; // Move to Add Lecture
+                });
+              }
             },
             onBack: () {
               setState(() {
@@ -252,10 +263,11 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
           );
         } else if (_lessonSubStep == 2) {
           return AddLectureScreen(
+            lessonId: _selectedLessonId ?? 0, // Pass the selected lessonId
             onComplete: () {
+              // After saving, go back to UploadLessonScreen
               setState(() {
-                _currentStep = 2; // Move to Instructors
-                _lessonSubStep = 0; // Reset for next time
+                _lessonSubStep = 1; // Go back to Upload Lesson screen
               });
             },
             onBack: () {
@@ -271,7 +283,7 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
           onComplete: () => setState(() => _currentStep = 3),
           onBack: () => setState(() {
             _currentStep = 1;
-            _lessonSubStep = 2; // Go back to Add Lecture
+            _lessonSubStep = 1; // Go back to Upload Lesson
           }),
         );
       case 3:

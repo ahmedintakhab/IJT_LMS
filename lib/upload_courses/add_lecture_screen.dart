@@ -1,15 +1,22 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:learn_megnagmet/widget/button.dart';
 import 'package:learn_megnagmet/widget/custom_text_form_field.dart';
 import 'package:learn_megnagmet/widget/custom_dropdown.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:learn_megnagmet/utils/api_constant.dart';
 
 class AddLectureScreen extends StatefulWidget {
+  final int lessonId; // Added lessonId parameter
   final VoidCallback onComplete;
   final VoidCallback? onBack;
 
-  const AddLectureScreen({super.key, required this.onComplete, this.onBack});
+  const AddLectureScreen({super.key, required this.lessonId, required this.onComplete, this.onBack});
 
   @override
   State<AddLectureScreen> createState() => _AddLectureScreenState();
@@ -17,8 +24,19 @@ class AddLectureScreen extends StatefulWidget {
 
 class _AddLectureScreenState extends State<AddLectureScreen> {
   String _selectedType = 'Video'; // Default to Video
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _textContentController = TextEditingController(); // For Text case
+  int? courseId;
+  bool _isLoading = false;
+
+  // Separate controllers for each content type
+  final TextEditingController _videoTitleController = TextEditingController();
+  final TextEditingController _pdfTitleController = TextEditingController();
+  final TextEditingController _textTitleController = TextEditingController();
+  final TextEditingController _textContentController = TextEditingController();
+  final TextEditingController _imageTitleController = TextEditingController();
+  final TextEditingController _slidesTitleController = TextEditingController();
+  final TextEditingController _youtubeTitleController = TextEditingController();
+  final TextEditingController _audioTitleController = TextEditingController();
+
   String? _videoType;
   String? _visibility;
   final TextEditingController _youtubeIdController = TextEditingController();
@@ -28,6 +46,10 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
   String _selectedAudioFileName = 'No File Chosen'; // Specific to Audio
   String _selectedImageFileName = 'No File Chosen'; // Specific to Image
   final TextEditingController _slideEmbedCodeController = TextEditingController(); // For Slides
+
+  // Validation errors
+  String? _titleError;
+  String? _visibilityError;
 
   Future<void> _pickFile() async {
     try {
@@ -78,13 +100,223 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    print('AddLectureScreen received lessonId: ${widget.lessonId}');
+    _loadCourseId();
+  }
+
+  Future<void> _loadCourseId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      courseId = prefs.getInt('courseId');
+    });
+  }
+
+  @override
   void dispose() {
-    _titleController.dispose();
-    _textContentController.dispose(); // Dispose new controller for Text
+    // Dispose all controllers
+    _videoTitleController.dispose();
+    _pdfTitleController.dispose();
+    _textTitleController.dispose();
+    _textContentController.dispose();
+    _imageTitleController.dispose();
+    _slidesTitleController.dispose();
+    _youtubeTitleController.dispose();
+    _audioTitleController.dispose();
     _youtubeIdController.dispose();
     _durationController.dispose();
-    _slideEmbedCodeController.dispose(); // Dispose new controller
+    _slideEmbedCodeController.dispose();
     super.dispose();
+  }
+
+  // Helper method to get the appropriate title controller based on selected type
+  TextEditingController _getTitleController() {
+    switch (_selectedType) {
+      case 'Video':
+        return _videoTitleController;
+      case 'PDF':
+        return _pdfTitleController;
+      case 'Text':
+        return _textTitleController;
+      case 'Image':
+        return _imageTitleController;
+      case 'Slides':
+        return _slidesTitleController;
+      case 'YouTube':
+        return _youtubeTitleController;
+      case 'Audio':
+        return _audioTitleController;
+      default:
+        return _videoTitleController;
+    }
+  }
+
+  // Helper method to get the appropriate hint text based on selected type
+  String _getTitleHint() {
+    switch (_selectedType) {
+      case 'Video':
+        return 'Enter Video Title';
+      case 'PDF':
+        return 'Enter PDF Title';
+      case 'Text':
+        return 'Enter Text Title';
+      case 'Image':
+        return 'Enter Image Title';
+      case 'Slides':
+        return 'Enter Slides Title';
+      case 'YouTube':
+        return 'Enter YouTube Video Title';
+      case 'Audio':
+        return 'Enter Audio Title';
+      default:
+        return 'Enter Lecture Title';
+    }
+  }
+
+  // Validate form
+  bool _validateForm() {
+    bool isValid = true;
+
+    // Validate title
+    final title = _getTitleController().text;
+    if (title.isEmpty) {
+      setState(() {
+        _titleError = 'Title is required';
+      });
+      isValid = false;
+    } else {
+      setState(() {
+        _titleError = null;
+      });
+    }
+
+    // Validate visibility
+    if (_visibility == null) {
+      setState(() {
+        _visibilityError = 'Visibility is required';
+      });
+      isValid = false;
+    } else {
+      setState(() {
+        _visibilityError = null;
+      });
+    }
+
+    return isValid;
+  }
+
+  // Submit lecture data to API
+  // Submit lecture data to API
+  Future<void> _submitLecture() async {
+    if (!_validateForm()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('authToken') ?? '';
+
+      final url = Uri.parse('${ApiConstant.baseUrl}instructor/course/upload-lecture');
+      var request = http.MultipartRequest('POST', url);
+
+      // Add headers
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // Add required fields
+      request.fields['lesson_id'] = widget.lessonId.toString();
+      request.fields['course_id'] = courseId?.toString() ?? '';
+      request.fields['type'] = _selectedType;
+      request.fields['title'] = _getTitleController().text;
+      request.fields['visibility'] = _visibility ?? 'Show';
+
+      // Add optional fields based on type
+      if (_selectedType == 'Video' || _selectedType == 'Audio') {
+        if (_videoType != null) {
+          request.fields['video_type'] = _videoType!;
+        }
+      }
+
+      if (_selectedType == 'YouTube') {
+        if (_youtubeIdController.text.isNotEmpty) {
+          request.fields['youtube_url_path'] = _youtubeIdController.text;
+        }
+        if (_durationController.text.isNotEmpty) {
+          request.fields['youtube_file_duration'] = _durationController.text;
+        }
+      }
+
+      if (_selectedType == 'Text') {
+        if (_textContentController.text.isNotEmpty) {
+          request.fields['text_description'] = _textContentController.text;
+        }
+      }
+
+      if (_selectedType == 'Slides') {
+        if (_slideEmbedCodeController.text.isNotEmpty) {
+          request.fields['slide_document'] = _slideEmbedCodeController.text;
+        }
+      }
+
+      // Add file names (mock, since actual file upload isn't here)
+      if (_selectedType == 'Video' && _selectedVideoFileName != 'No File Chosen') {
+        request.fields['video_file'] = _selectedVideoFileName;
+      }
+      if (_selectedType == 'PDF' && _selectedPDFFileName != 'No File Chosen') {
+        request.fields['pdf'] = _selectedPDFFileName;
+      }
+      if (_selectedType == 'Image' && _selectedImageFileName != 'No File Chosen') {
+        request.fields['image'] = _selectedImageFileName;
+      }
+      if (_selectedType == 'Audio' && _selectedAudioFileName != 'No File Chosen') {
+        request.fields['audio'] = _selectedAudioFileName;
+      }
+
+      // ✅ Print the final data before API call
+      debugPrint("📌 Data being sent to API:");
+      request.fields.forEach((key, value) {
+        debugPrint("$key: $value");
+      });
+
+      // Send the request
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+      final responseData = jsonDecode(responseBody);
+
+      if (response.statusCode == 200) {
+        if (responseData['success'] == true) {
+          debugPrint(' Upload lecture  API Response : ${response.statusCode}');
+          Get.snackbar(
+            'Successful', 'Lecture added successfully!',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
+          if (widget.onBack != null) {
+            widget.onBack!();
+          }
+        } else {
+          Get.snackbar(
+            responseData['message'], 'Failed to save lecture',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
+      } else {
+        print('Error: ${responseBody}');
+      }
+    } catch (e) {
+      print('Error saving lecture: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -375,20 +607,41 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
                                   });
                                 },
                               ),
+                            SizedBox(height: 16.h,),
                             if (_selectedType == 'Text')
-                              CustomTextFormField(
-                                controller: _textContentController,
-                                hintText: 'Enter Text Content',
-                                labelText: 'Text Content',
+                              Column(
+                                children: [
+                                  CustomTextFormField(
+                                    controller: _textContentController,
+                                    hintText: 'Enter Text Content',
+                                    labelText: 'Text Content',
+                                  ),
+                                  SizedBox(height: 16.h),
+                                ],
                               ),
-                            if (_selectedType == 'Video' || _selectedType == 'PDF' || _selectedType == 'Image' || _selectedType == 'Slides' || _selectedType == 'Audio' || _selectedType == 'Text')
+                            if (_selectedType == 'Video' || _selectedType == 'PDF' || _selectedType == 'Image' || _selectedType == 'Slides' || _selectedType == 'Audio' || _selectedType == 'Text' || _selectedType == 'YouTube')
+                              Column(
+                                children: [
+                                  CustomTextFormField(
+                                    controller: _getTitleController(),
+                                    hintText: _getTitleHint(),
+                                    labelText: 'Title',
+                                  ),
+                                  if (_titleError != null)
+                                    Padding(
+                                      padding: EdgeInsets.only(top: 4.h),
+                                      child: Text(
+                                        _titleError!,
+                                        style: TextStyle(
+                                          color: Colors.red,
+                                          fontSize: 12.sp,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            if (_selectedType == 'Video' || _selectedType == 'PDF' || _selectedType == 'Image' || _selectedType == 'Slides' || _selectedType == 'Audio' || _selectedType == 'Text' || _selectedType == 'YouTube')
                               SizedBox(height: 16.h),
-                            CustomTextFormField(
-                              controller: _titleController,
-                              hintText: 'Enter Lecture Title',
-                              labelText: 'Lecture Title',
-                            ),
-                            SizedBox(height: 16.h),
                             if (_selectedType == 'Slides')
                               CustomTextFormField(
                                 controller: _slideEmbedCodeController,
@@ -398,30 +651,47 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
                             if (_selectedType == 'Slides')
                               SizedBox(height: 16.h),
                             if (_selectedType == 'YouTube')
-                              CustomTextFormField(
-                                controller: _youtubeIdController,
-                                hintText: 'Enter YouTube ID',
-                                labelText: 'YouTube ID',
+                              Column(
+                                children: [
+                                  CustomTextFormField(
+                                    controller: _youtubeIdController,
+                                    hintText: 'Enter YouTube ID',
+                                    labelText: 'YouTube ID',
+                                  ),
+                                  SizedBox(height: 16.h),
+                                  CustomTextFormField(
+                                    controller: _durationController,
+                                    hintText: 'Enter File Duration',
+                                    labelText: 'File Duration (e.g., 10:00)',
+                                  ),
+                                  SizedBox(height: 16.h),
+                                ],
                               ),
-                            if (_selectedType == 'YouTube')
-                              SizedBox(height: 16.h),
-                            if (_selectedType == 'YouTube')
-                              CustomTextFormField(
-                                controller: _durationController,
-                                hintText: 'Enter File Duration',
-                                labelText: 'File Duration (e.g., 10:00)',
-                              ),
-                            if (_selectedType == 'YouTube')
-                              SizedBox(height: 16.h),
-                            CustomDropdown(
-                              hint: 'Select Visibility',
-                              value: _visibility,
-                              items: ['Show', 'Lock'],
-                              onChanged: (value) {
-                                setState(() {
-                                  _visibility = value;
-                                });
-                              },
+                            Column(
+                              children: [
+                                CustomDropdown(
+                                  hint: 'Select Visibility',
+                                  value: _visibility,
+                                  items: ['Show', 'Lock'],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _visibility = value;
+                                      _visibilityError = null;
+                                    });
+                                  },
+                                ),
+                                if (_visibilityError != null)
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 4.h),
+                                    child: Text(
+                                      _visibilityError!,
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 12.sp,
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ],
                         ),
@@ -451,8 +721,9 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
                   SizedBox(width: 20.w),
                   Expanded(
                     child: CustomButton(
-                      onTap: widget.onComplete,
-                      buttonText: 'Save and Continue',
+                      onTap: _submitLecture,
+                      buttonText: 'Save',
+                      isLoading: _isLoading,
                     ),
                   ),
                 ],

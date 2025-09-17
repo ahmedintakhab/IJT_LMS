@@ -9,10 +9,11 @@ import 'package:learn_megnagmet/utils/api_constant.dart';
 import 'package:learn_megnagmet/widget/button.dart';
 import 'package:learn_megnagmet/widget/custom_text_form_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'delete_lesson_dialog_box.dart';
 import 'edit_lesson_dialog_box.dart';
 
 class UploadLessonScreen extends StatefulWidget {
-  final VoidCallback onComplete;
+  final Function(int, bool) onComplete; // Changed to accept lessonId and isContinue flag
   final VoidCallback? onBack;
 
   const UploadLessonScreen({super.key, required this.onComplete, this.onBack});
@@ -32,15 +33,12 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
   final Map<String, bool> _lessonExpansion = {};
   int totalLessons = 0;
   int totalLectures = 0;
+
   @override
   void initState() {
     super.initState();
     _getCourseId();
-    for (var lesson in lessons) {
-      _lessonExpansion[lesson['title']] = false;
-    }
   }
-
 
   Future<void> _getCourseId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -131,7 +129,7 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
-       await _fetchLessons();
+        await _fetchLessons();
         setState(() {
           _showAddSection = false; // Hide the Add Section container
           _sectionTitleController.clear(); // Clear the text field
@@ -147,7 +145,6 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
       });
     }
   }
-
 
   @override
   void dispose() {
@@ -198,7 +195,7 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
                           SizedBox(height: 16.h),
                           isLoading
                               ? Center(child: CircularProgressIndicator(color:Color(0xFF00AFEE) ,))
-                          :ListView.builder(
+                              :ListView.builder(
                             shrinkWrap: true,
                             physics: NeverScrollableScrollPhysics(),
                             itemCount: lessons.length,
@@ -323,7 +320,11 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
                                           children: [
                                             Center(
                                               child: ElevatedButton.icon(
-                                                onPressed: widget.onComplete,
+                                                onPressed: () {
+                                                  // Pass the lessonId when navigating to AddLectureScreen
+                                                  // isContinue = false means we're going to AddLectureScreen
+                                                  widget.onComplete(lesson['id'], false);
+                                                },
                                                 icon: const Icon(Icons.upload),
                                                 label: const Text('Upload Lecture'),
                                                 style: ElevatedButton.styleFrom(
@@ -350,7 +351,27 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
                                                   ),
                                                 );
                                               },
-                                              child: Text('Edit Section'),
+                                              child: Text('Edit',style: TextStyle(color: Colors.blue,fontSize: 20.h,fontWeight: FontWeight.bold,
+                                                  decoration: TextDecoration.underline,decorationColor:Colors.blue ),),
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) => DeleteLessonDialogBox(
+                                                    lessonId: lesson['id'],
+                                                    onDelete: () {
+                                                      // Navigator.pop(context);
+                                                      _fetchLessons();
+                                                    },
+
+                                                    onCancel: () => Navigator.pop(context),
+                                                  ),
+                                                );
+                                              },
+
+                                              child: Text('Delete',style: TextStyle(color: Colors.red,fontSize: 18.h,fontWeight: FontWeight.bold,
+                                                  decoration: TextDecoration.underline,decorationColor:Colors.red ),),
                                             ),
                                           ],
                                         ),
@@ -401,10 +422,14 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
                           ),
                           SizedBox(height: 10.h,),
                           if (totalLectures > 0)
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: CustomButton(onTap: (){}, buttonText: 'Save and Continue'),
-                          ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: CustomButton(onTap: (){
+                                // Save and continue to next step (InstructorsScreen)
+                                // isContinue = true means we're going to InstructorsScreen
+                                widget.onComplete(0, true);
+                              }, buttonText: 'Save and Continue'),
+                            ),
                           if (_showAddSection)
                             Container(
                               padding: EdgeInsets.all(16.w),
