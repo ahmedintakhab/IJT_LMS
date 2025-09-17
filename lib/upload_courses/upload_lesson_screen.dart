@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/snackbar/snackbar.dart';
 import 'package:http/http.dart' as http;
+import 'package:learn_megnagmet/upload_courses/delete_lecture_dialogbox.dart';
 import 'package:learn_megnagmet/utils/api_constant.dart';
 import 'package:learn_megnagmet/widget/button.dart';
 import 'package:learn_megnagmet/widget/custom_text_form_field.dart';
@@ -33,6 +34,7 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
   final Map<String, bool> _lessonExpansion = {};
   int totalLessons = 0;
   int totalLectures = 0;
+  String courseTitle = '';
 
   @override
   void initState() {
@@ -66,6 +68,7 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
             lessons = List<Map<String, dynamic>>.from(data['data'][0]['lessons']);
             totalLessons = data['data'][0]['total_lessons'] ?? 0;
             totalLectures = data['data'][0]['total_lectures'] ?? 0;
+            courseTitle = data['data'][0]['course_title'] ?? 'N/A';
             print('Check total lessons and lectures: ${totalLessons}, ${totalLectures}');
             for (var lesson in lessons) {
               _lessonExpansion[lesson['name']] = false;
@@ -185,7 +188,7 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Section list of "Test"',
+                            'Section list of, ${courseTitle ?? 'N/A' } ',
                             style: TextStyle(
                               fontSize: 16.sp,
                               color: const Color(0xFF00AFEE),
@@ -290,7 +293,7 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
                                                       Text(lecture['title']),
                                                       TextButton(
                                                         onPressed: () {},
-                                                        child: Text('Preview Video'),
+                                                        child: Text('Preview Lecture'),
                                                       ),
                                                     ],
                                                   ),
@@ -306,7 +309,21 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
                                                       SizedBox(
                                                           width: 120,   // set custom width
                                                           height: 40,
-                                                          child: CustomButton(onTap: (){}, buttonText: 'Delete'))
+                                                          child: CustomButton(onTap: (){
+                                                            showDialog(
+                                                              context: context,
+                                                              builder: (context) => DeleteLectureDialogbox(
+                                                                lectureId: lecture['id'],
+                                                                onDelete: () {
+                                                                  // Navigator.pop(context);
+                                                                  _fetchLessons();
+                                                                },
+
+                                                                onCancel: () => Navigator.pop(context),
+                                                              ),
+                                                            );
+                                                          },
+                                                              buttonText: 'Delete'))
                                                     ],
                                                   ),
                                                 ],
@@ -449,7 +466,7 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Section title of the course "Test"',
+                                    'Section title of the course, ${courseTitle ?? ''}',
                                     style: TextStyle(
                                       fontSize: 16.sp,
                                       color: const Color(0xFF00AFEE),

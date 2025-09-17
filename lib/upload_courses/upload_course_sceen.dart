@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:learn_megnagmet/upload_courses/select%20_instructor.dart';
 import 'package:learn_megnagmet/upload_courses/submit_process.dart';
 import 'package:learn_megnagmet/upload_courses/add_lesson_screen.dart';
 import 'package:learn_megnagmet/upload_courses/upload_lesson_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../instructor/instructor_courses.dart';
 import 'add_lecture_screen.dart';
 import 'upload_course_details.dart';
 import 'upload_course_category_tags.dart';

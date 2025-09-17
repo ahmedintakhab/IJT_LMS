@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -12,7 +14,7 @@ import 'package:http/http.dart' as http;
 import 'package:learn_megnagmet/utils/api_constant.dart';
 
 class AddLectureScreen extends StatefulWidget {
-  final int lessonId; // Added lessonId parameter
+  final int lessonId;
   final VoidCallback onComplete;
   final VoidCallback? onBack;
 
@@ -23,11 +25,11 @@ class AddLectureScreen extends StatefulWidget {
 }
 
 class _AddLectureScreenState extends State<AddLectureScreen> {
-  String _selectedType = 'Video'; // Default to Video
+  String _selectedType = 'Video';
   int? courseId;
   bool _isLoading = false;
 
-  // Separate controllers for each content type
+  // Controllers
   final TextEditingController _videoTitleController = TextEditingController();
   final TextEditingController _pdfTitleController = TextEditingController();
   final TextEditingController _textTitleController = TextEditingController();
@@ -41,11 +43,15 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
   String? _visibility;
   final TextEditingController _youtubeIdController = TextEditingController();
   final TextEditingController _durationController = TextEditingController();
-  String _selectedVideoFileName = 'No File Chosen'; // Specific to Video
-  String _selectedPDFFileName = 'No File Chosen'; // Specific to PDF
-  String _selectedAudioFileName = 'No File Chosen'; // Specific to Audio
-  String _selectedImageFileName = 'No File Chosen'; // Specific to Image
-  final TextEditingController _slideEmbedCodeController = TextEditingController(); // For Slides
+  final TextEditingController _slideEmbedCodeController = TextEditingController();
+
+  // File data storage
+  Uint8List? _selectedFileBytes;
+  String? _selectedFileName;
+  String _selectedVideoFileName = 'No File Chosen';
+  String _selectedPDFFileName = 'No File Chosen';
+  String _selectedAudioFileName = 'No File Chosen';
+  String _selectedImageFileName = 'No File Chosen';
 
   // Validation errors
   String? _titleError;
@@ -54,42 +60,75 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
   Future<void> _pickFile() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.any, // Allow all file types, user selects manually
+        type: FileType.any,
+        allowMultiple: false,
       );
+
       if (result != null && result.files.isNotEmpty) {
-        String fileName = result.files.first.name;
-        String? fileExtension = result.files.first.extension?.toLowerCase();
+        PlatformFile file = result.files.first;
+        String fileName = file.name;
+        String? fileExtension = file.extension?.toLowerCase();
+
+        // Get file bytes
+        Uint8List? fileBytes;
+        if (file.bytes != null) {
+          fileBytes = file.bytes; // Web platform
+        } else if (file.path != null) {
+          fileBytes = await File(file.path!).readAsBytes(); // Mobile platform
+        }
+
+        if (fileBytes == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to read file data.')),
+          );
+          return;
+        }
+
+        // Validate file type and set appropriate filename
+        bool isValidFile = false;
+
         setState(() {
-          if (_selectedType == 'Video' && (fileExtension == 'mp4' || fileExtension == 'avi' || fileExtension == 'mov')) {
+          if (_selectedType == 'Video' && (fileExtension == 'mp4' || fileExtension == 'avi' || fileExtension == 'mov' || fileExtension == 'mkv')) {
             _selectedVideoFileName = fileName;
             _selectedPDFFileName = 'No File Chosen';
             _selectedAudioFileName = 'No File Chosen';
             _selectedImageFileName = 'No File Chosen';
+            isValidFile = true;
           } else if (_selectedType == 'PDF' && fileExtension == 'pdf') {
             _selectedPDFFileName = fileName;
             _selectedVideoFileName = 'No File Chosen';
             _selectedAudioFileName = 'No File Chosen';
             _selectedImageFileName = 'No File Chosen';
+            isValidFile = true;
           } else if (_selectedType == 'Image' && (fileExtension == 'jpg' || fileExtension == 'jpeg' || fileExtension == 'png')) {
             _selectedImageFileName = fileName;
             _selectedVideoFileName = 'No File Chosen';
             _selectedPDFFileName = 'No File Chosen';
             _selectedAudioFileName = 'No File Chosen';
-          } else if (_selectedType == 'Audio' && (fileExtension == 'mp3' || fileExtension == 'wav')) {
+            isValidFile = true;
+          } else if (_selectedType == 'Audio' && (fileExtension == 'mp3' || fileExtension == 'wav' || fileExtension == 'aac')) {
             _selectedAudioFileName = fileName;
             _selectedVideoFileName = 'No File Chosen';
             _selectedPDFFileName = 'No File Chosen';
             _selectedImageFileName = 'No File Chosen';
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Please select a valid file type for the chosen category.')),
-            );
-            return;
+            isValidFile = true;
+          }
+
+          if (isValidFile) {
+            _selectedFileBytes = fileBytes;
+            _selectedFileName = fileName;
           }
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('File selected: ${result.files.first.path}')),
-        );
+
+        if (isValidFile) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('File selected: $fileName')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Please select a valid ${_selectedType.toLowerCase()} file.')),
+          );
+        }
       }
     } catch (e) {
       print('Error picking file: $e');
@@ -115,7 +154,6 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
 
   @override
   void dispose() {
-    // Dispose all controllers
     _videoTitleController.dispose();
     _pdfTitleController.dispose();
     _textTitleController.dispose();
@@ -130,7 +168,6 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
     super.dispose();
   }
 
-  // Helper method to get the appropriate title controller based on selected type
   TextEditingController _getTitleController() {
     switch (_selectedType) {
       case 'Video':
@@ -152,7 +189,6 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
     }
   }
 
-  // Helper method to get the appropriate hint text based on selected type
   String _getTitleHint() {
     switch (_selectedType) {
       case 'Video':
@@ -174,11 +210,9 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
     }
   }
 
-  // Validate form
   bool _validateForm() {
     bool isValid = true;
 
-    // Validate title
     final title = _getTitleController().text;
     if (title.isEmpty) {
       setState(() {
@@ -191,7 +225,6 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
       });
     }
 
-    // Validate visibility
     if (_visibility == null) {
       setState(() {
         _visibilityError = 'Visibility is required';
@@ -203,11 +236,17 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
       });
     }
 
+    // Validate file selection for types that require files
+    if (['Video', 'PDF', 'Image', 'Audio'].contains(_selectedType) && _selectedFileBytes == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select a ${_selectedType.toLowerCase()} file.')),
+      );
+      isValid = false;
+    }
+
     return isValid;
   }
 
-  // Submit lecture data to API
-  // Submit lecture data to API
   Future<void> _submitLecture() async {
     if (!_validateForm()) {
       return;
@@ -224,7 +263,6 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
       final url = Uri.parse('${ApiConstant.baseUrl}instructor/course/upload-lecture');
       var request = http.MultipartRequest('POST', url);
 
-      // Add headers
       request.headers['Authorization'] = 'Bearer $token';
 
       // Add required fields
@@ -262,34 +300,56 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
         }
       }
 
-      // Add file names (mock, since actual file upload isn't here)
-      if (_selectedType == 'Video' && _selectedVideoFileName != 'No File Chosen') {
-        request.fields['video_file'] = _selectedVideoFileName;
-      }
-      if (_selectedType == 'PDF' && _selectedPDFFileName != 'No File Chosen') {
-        request.fields['pdf'] = _selectedPDFFileName;
-      }
-      if (_selectedType == 'Image' && _selectedImageFileName != 'No File Chosen') {
-        request.fields['image'] = _selectedImageFileName;
-      }
-      if (_selectedType == 'Audio' && _selectedAudioFileName != 'No File Chosen') {
-        request.fields['audio'] = _selectedAudioFileName;
+      // Add actual file uploads
+      if (_selectedFileBytes != null && _selectedFileName != null) {
+        String fieldName;
+        switch (_selectedType) {
+          case 'Video':
+            fieldName = 'video_file';
+            break;
+          case 'PDF':
+            fieldName = 'pdf';
+            break;
+          case 'Image':
+            fieldName = 'image';
+            break;
+          case 'Audio':
+            fieldName = 'audio';
+            break;
+          default:
+            fieldName = 'file';
+        }
+
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            fieldName,
+            _selectedFileBytes!,
+            filename: _selectedFileName!,
+          ),
+        );
       }
 
-      // ✅ Print the final data before API call
       debugPrint("📌 Data being sent to API:");
       request.fields.forEach((key, value) {
         debugPrint("$key: $value");
       });
 
-      // Send the request
+      if (request.files.isNotEmpty) {
+        debugPrint("📎 Files being uploaded:");
+        for (var file in request.files) {
+          debugPrint("Field: ${file.field}, Filename: ${file.filename}, Size: ${file.length} bytes");
+        }
+      }
+
       final response = await request.send();
       final responseBody = await response.stream.bytesToString();
       final responseData = jsonDecode(responseBody);
 
+      debugPrint('Upload lecture API Response: ${response.statusCode}');
+      debugPrint('Response body: $responseBody');
+
       if (response.statusCode == 200) {
         if (responseData['success'] == true) {
-          debugPrint(' Upload lecture  API Response : ${response.statusCode}');
           Get.snackbar(
             'Successful', 'Lecture added successfully!',
             snackPosition: SnackPosition.TOP,
@@ -301,17 +361,42 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
           }
         } else {
           Get.snackbar(
-            responseData['message'], 'Failed to save lecture',
+            responseData['message'] ?? 'Error', 'Failed to save lecture',
             snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.red,
             colorText: Colors.white,
           );
         }
       } else {
+        String errorMessage = 'Failed to save lecture';
+        if (responseData.containsKey('error')) {
+          // Handle validation errors
+          Map<String, dynamic> errors = responseData['error'];
+          List<String> errorMessages = [];
+          errors.forEach((key, value) {
+            if (value is List) {
+              errorMessages.addAll(value.map((e) => e.toString()));
+            }
+          });
+          errorMessage = errorMessages.join('\n');
+        }
+
+        Get.snackbar(
+          'Error', errorMessage,
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
         print('Error: ${responseBody}');
       }
     } catch (e) {
       print('Error saving lecture: $e');
+      Get.snackbar(
+        'Error', 'An error occurred while saving the lecture',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       setState(() {
         _isLoading = false;
@@ -363,209 +448,21 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
                               _buildRadioOption('Slides'),
                               _buildRadioOption('YouTube'),
                               _buildRadioOption('Audio'),
-                              const SizedBox.shrink(), // Placeholder to balance
+                              const SizedBox.shrink(),
                             ],
                           ),
                         ],
                       ),
-                      // Container for file upload (shown for applicable types except Image and Slides)
+                      // Container for file upload (shown for applicable types)
                       if (_selectedType == 'Video')
-                        Center(
-                          child: Container(
-                            width: double.infinity,
-                            padding: EdgeInsets.all(24.w),
-                            margin: EdgeInsets.only(top: 16.h),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12.r),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12.withOpacity(0.2),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              children: [
-                                Text(
-                                  'Upload Video',
-                                  style: TextStyle(
-                                    fontSize: 18.sp,
-                                    color: const Color(0xFF00AFEE),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 20.h),
-                                Icon(
-                                  Icons.videocam,
-                                  size: 80.sp,
-                                  color: Colors.pink[200],
-                                ),
-                                SizedBox(height: 10.h),
-                                OutlinedButton.icon(
-                                  onPressed: _pickFile,
-                                  icon: const Icon(Icons.folder_open, color: Colors.black),
-                                  label: Text(_selectedVideoFileName, style: const TextStyle(color: Colors.black)),
-                                  style: OutlinedButton.styleFrom(
-                                    side: const BorderSide(color: Colors.blue),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                        _buildFileUploadContainer('Upload Video', Icons.videocam, _selectedVideoFileName),
                       if (_selectedType == 'PDF')
-                        Center(
-                          child: Container(
-                            width: double.infinity,
-                            padding: EdgeInsets.all(24.w),
-                            margin: EdgeInsets.only(top: 16.h),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12.r),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12.withOpacity(0.2),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              children: [
-                                Text(
-                                  'Upload PDF',
-                                  style: TextStyle(
-                                    fontSize: 18.sp,
-                                    color: const Color(0xFF00AFEE),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 20.h),
-                                Icon(
-                                  Icons.picture_as_pdf,
-                                  size: 80.sp,
-                                  color: Colors.pink[200],
-                                ),
-                                SizedBox(height: 10.h),
-                                OutlinedButton.icon(
-                                  onPressed: _pickFile,
-                                  icon: const Icon(Icons.folder_open, color: Colors.black),
-                                  label: Text(_selectedPDFFileName, style: const TextStyle(color: Colors.black)),
-                                  style: OutlinedButton.styleFrom(
-                                    side: const BorderSide(color: Colors.blue),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                        _buildFileUploadContainer('Upload PDF', Icons.picture_as_pdf, _selectedPDFFileName),
                       if (_selectedType == 'Audio')
-                        Center(
-                          child: Container(
-                            width: double.infinity,
-                            padding: EdgeInsets.all(24.w),
-                            margin: EdgeInsets.only(top: 16.h),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12.r),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12.withOpacity(0.2),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              children: [
-                                Text(
-                                  'Upload Audio',
-                                  style: TextStyle(
-                                    fontSize: 18.sp,
-                                    color: const Color(0xFF00AFEE),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 20.h),
-                                Icon(
-                                  Icons.audiotrack,
-                                  size: 80.sp,
-                                  color: Colors.pink[200],
-                                ),
-                                SizedBox(height: 10.h),
-                                OutlinedButton.icon(
-                                  onPressed: _pickFile,
-                                  icon: const Icon(Icons.folder_open, color: Colors.black),
-                                  label: Text(_selectedAudioFileName, style: const TextStyle(color: Colors.black)),
-                                  style: OutlinedButton.styleFrom(
-                                    side: const BorderSide(color: Colors.blue),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      // Separate Choose Image UI for Image case
+                        _buildFileUploadContainer('Upload Audio', Icons.audiotrack, _selectedAudioFileName),
                       if (_selectedType == 'Image')
-                        Center(
-                          child: Container(
-                            width: double.infinity,
-                            padding: EdgeInsets.all(24.w),
-                            margin: EdgeInsets.only(top: 16.h),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12.r),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12.withOpacity(0.2),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              children: [
-                                Text(
-                                  'Choose Image',
-                                  style: TextStyle(
-                                    fontSize: 18.sp,
-                                    color: const Color(0xFF00AFEE),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 20.h),
-                                Icon(
-                                  Icons.image,
-                                  size: 80.sp,
-                                  color: Colors.pink[200],
-                                ),
-                                SizedBox(height: 10.h),
-                                OutlinedButton.icon(
-                                  onPressed: _pickFile,
-                                  icon: const Icon(Icons.folder_open, color: Colors.black),
-                                  label: Text(_selectedImageFileName, style: const TextStyle(color: Colors.black)),
-                                  style: OutlinedButton.styleFrom(
-                                    side: const BorderSide(color: Colors.blue),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                        _buildFileUploadContainer('Choose Image', Icons.image, _selectedImageFileName),
+
                       // Hint text below Choose Image
                       if (_selectedType == 'Image')
                         Padding(
@@ -607,7 +504,8 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
                                   });
                                 },
                               ),
-                            SizedBox(height: 16.h,),
+                            if (_selectedType == 'Video' || _selectedType == 'Audio')
+                              SizedBox(height: 16.h),
                             if (_selectedType == 'Text')
                               Column(
                                 children: [
@@ -619,37 +517,38 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
                                   SizedBox(height: 16.h),
                                 ],
                               ),
-                            if (_selectedType == 'Video' || _selectedType == 'PDF' || _selectedType == 'Image' || _selectedType == 'Slides' || _selectedType == 'Audio' || _selectedType == 'Text' || _selectedType == 'YouTube')
+                            Column(
+                              children: [
+                                CustomTextFormField(
+                                  controller: _getTitleController(),
+                                  hintText: _getTitleHint(),
+                                  labelText: 'Title',
+                                ),
+                                if (_titleError != null)
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 4.h),
+                                    child: Text(
+                                      _titleError!,
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 12.sp,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            SizedBox(height: 16.h),
+                            if (_selectedType == 'Slides')
                               Column(
                                 children: [
                                   CustomTextFormField(
-                                    controller: _getTitleController(),
-                                    hintText: _getTitleHint(),
-                                    labelText: 'Title',
+                                    controller: _slideEmbedCodeController,
+                                    hintText: 'Slide Embeded Code',
+                                    labelText: 'Write your slide embedded code',
                                   ),
-                                  if (_titleError != null)
-                                    Padding(
-                                      padding: EdgeInsets.only(top: 4.h),
-                                      child: Text(
-                                        _titleError!,
-                                        style: TextStyle(
-                                          color: Colors.red,
-                                          fontSize: 12.sp,
-                                        ),
-                                      ),
-                                    ),
+                                  SizedBox(height: 16.h),
                                 ],
                               ),
-                            if (_selectedType == 'Video' || _selectedType == 'PDF' || _selectedType == 'Image' || _selectedType == 'Slides' || _selectedType == 'Audio' || _selectedType == 'Text' || _selectedType == 'YouTube')
-                              SizedBox(height: 16.h),
-                            if (_selectedType == 'Slides')
-                              CustomTextFormField(
-                                controller: _slideEmbedCodeController,
-                                hintText: 'Slide Embeded Code',
-                                labelText: 'Write your slide embedded code',
-                              ),
-                            if (_selectedType == 'Slides')
-                              SizedBox(height: 16.h),
                             if (_selectedType == 'YouTube')
                               Column(
                                 children: [
@@ -735,6 +634,57 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
     );
   }
 
+  Widget _buildFileUploadContainer(String title, IconData icon, String fileName) {
+    return Center(
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(24.w),
+        margin: EdgeInsets.only(top: 16.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12.withOpacity(0.2),
+              blurRadius: 15,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 18.sp,
+                color: const Color(0xFF00AFEE),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 20.h),
+            Icon(
+              icon,
+              size: 80.sp,
+              color: Colors.pink[200],
+            ),
+            SizedBox(height: 10.h),
+            OutlinedButton.icon(
+              onPressed: _pickFile,
+              icon: const Icon(Icons.folder_open, color: Colors.black),
+              label: Text(fileName, style: const TextStyle(color: Colors.black)),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.blue),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildRadioOption(String value) {
     return Flexible(
       fit: FlexFit.tight,
@@ -742,6 +692,13 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
         onTap: () {
           setState(() {
             _selectedType = value;
+            // Reset file selection when type changes
+            _selectedFileBytes = null;
+            _selectedFileName = null;
+            _selectedVideoFileName = 'No File Chosen';
+            _selectedPDFFileName = 'No File Chosen';
+            _selectedAudioFileName = 'No File Chosen';
+            _selectedImageFileName = 'No File Chosen';
           });
         },
         child: Row(
@@ -753,6 +710,13 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
               onChanged: (newValue) {
                 setState(() {
                   _selectedType = newValue!;
+                  // Reset file selection when type changes
+                  _selectedFileBytes = null;
+                  _selectedFileName = null;
+                  _selectedVideoFileName = 'No File Chosen';
+                  _selectedPDFFileName = 'No File Chosen';
+                  _selectedAudioFileName = 'No File Chosen';
+                  _selectedImageFileName = 'No File Chosen';
                 });
               },
               activeColor: const Color(0xFF00AFEE),
