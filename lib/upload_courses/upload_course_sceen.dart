@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:learn_megnagmet/upload_courses/select%20_instructor.dart';
 import 'package:learn_megnagmet/upload_courses/submit_process.dart';
 import 'package:learn_megnagmet/upload_courses/add_lesson_screen.dart';
 import 'package:learn_megnagmet/upload_courses/upload_lesson_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../instructor/instructor_courses.dart';
 import 'add_lecture_screen.dart';
 import 'upload_course_details.dart';
 import 'upload_course_category_tags.dart';
@@ -77,17 +81,17 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
                   child: Container(
                     width: _getProgressWidth(context),
                     height: 2,
-                    color: const Color(0xFF00BCD4),
+                    color: const Color(0xFF00AFEE),
                   ),
                 ),
                 // Step indicators
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildStep(0, 'Course Overview'),
-                    _buildStep(1, 'Upload Video'),
+                    _buildStep(0, 'Overview'),
+                    _buildStep(1, 'Lectures'),
                     _buildStep(2, 'Instructors'),
-                    _buildStep(3, 'Submit Process'),
+                    _buildStep(3, 'Submit'),
                   ],
                 ),
               ],
@@ -138,13 +142,13 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isCompleted
-                ? const Color(0xFF00BCD4)
+                ? const Color(0xFF00AFEE)
                 : isCurrent
                 ? Colors.white
                 : Colors.white,
             border: Border.all(
               color: isCompleted || isCurrent
-                  ? const Color(0xFF00BCD4)
+                  ? const Color(0xFF00AFEE)
                   : Colors.grey[300]!,
               width: 2,
             ),
@@ -162,7 +166,7 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isCurrent
-                    ? const Color(0xFF00BCD4)
+                    ? const Color(0xFF00AFEE)
                     : Colors.transparent,
               ),
             ),
@@ -176,10 +180,10 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(
               color: isCompleted || isCurrent
-                  ? const Color(0xFF00BCD4)
+                  ? const Color(0xFF00AFEE)
                   : Colors.grey[400],
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -288,18 +292,21 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
         );
       case 3:
         return SubmitProcessScreen(
-          onSubmit: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Course Submitted Successfully!'),
-                backgroundColor: Colors.green,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            );
-          },
+          // onSubmit: () { Get.off(() => InstructorCourses());
+
+            // Navigator.push(context, MaterialPageRoute(builder:
+            //     (context)=>InstructorCourses()));
+
+            // ScaffoldMessenger.of(context).showSnackBar(
+            //   SnackBar(
+            //     content: const Text('Course Submitted Successfully!'),
+            //     backgroundColor: Colors.green,
+            //     behavior: SnackBarBehavior.floating,
+            //     shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(8),
+            //     ),
+            //   ),
+            // );
           onBack: () => setState(() => _currentStep = 2),
         );
       default:

@@ -50,43 +50,85 @@ class _InstructorPanelState extends State<InstructorPanel> {
   }
   Future<void> logoutApiCall() async {
     final String apiUrl = "${ApiConstant.baseUrl}logout";
+    bool isLoggingOut = false;
+
+    if (isLoggingOut) return;
+    isLoggingOut = true;
 
     try {
-      // Assuming the token is saved in shared preferences
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String token = prefs.getString('authToken') ?? '';
-      print('Token check: $token');
+      final prefs = await SharedPreferences.getInstance();
+      final String token = prefs.getString('authToken') ?? '';
 
-      final response = await http.post(
+      if (token.isEmpty) {
+        Get.snackbar('Error', 'No session found. Please log in again.',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+            duration: const Duration(seconds: 3));
+        await prefs.clear();
+        await PrefData.setLogin(false);
+        return;
+      }
+
+      final response = await http
+          .post(
         Uri.parse(apiUrl),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token', // Include token in the header
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
         },
+        body: '{}',
       );
+      //     .timeout(const Duration(seconds: 10), onTimeout: () {
+      //   throw const HttpException('Request timed out');
+      // });
 
       if (response.statusCode == 200) {
-        // Successfully logged out
-        print("Logout successful");
-        Get.snackbar(
-          'Successful', 'User logout successfully',
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
-        // Clear user data from SharedPreferences
-        prefs.clear();
+        Get.snackbar('Success', 'Logged out successfully.',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+            duration: const Duration(seconds: 3));
+        await prefs.clear();
+        await PrefData.setLogin(false);
+        await Future.delayed(const Duration(seconds: 1));
+        if (Get.currentRoute != '/EmptyState') {
+          Get.off(() => const EmptyState());
+        }
       } else {
-        print("Logout failed: ${response.body}");
-        Get.snackbar(
-          'Failed', '${response.body}',
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        String message;
+        Color bgColor = Colors.red;
+        switch (response.statusCode) {
+          case 302:
+            message = 'Server redirected request. Please try again.';
+            break;
+          case 401:
+            message = 'Session expired. Please log in again.';
+            bgColor = Colors.orange;
+            break;
+          case 402:
+            message = 'Payment issue. Please contact support.';
+            break;
+          case 403:
+            message = 'Access denied.';
+            break;
+          case 500:
+            message = 'Server error. Please try again later.';
+            break;
+          default:
+            message = 'Logout failed. Please try again.';
+        }
+        Get.snackbar('Error', message,
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: bgColor,
+            colorText: Colors.white,
+            duration: const Duration(seconds: 3));
+        await prefs.clear();
+        await PrefData.setLogin(false);
       }
-    } catch (e) {
-      print("Error: $e");
+    }  finally {
+      isLoggingOut = false;
     }
   }
 
