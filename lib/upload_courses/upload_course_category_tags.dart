@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:learn_megnagmet/upload_courses/sub_category_dropdown.dart';
@@ -31,7 +30,8 @@ class UploadCourseCategoryTags extends StatefulWidget {
 
 class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
   final _formKey = GlobalKey<FormState>();
-  bool _isLoading = false; // Added for loading state
+  bool _isLoading = false;
+  bool _isFetchingData = true; // New state for API fetch loading
 
   String? selectedCategory;
   int? selectedCategoryId;
@@ -55,9 +55,11 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
 
   File? courseImage;
   File? thumbnailImage;
+  String? courseImageUrl; // Store network image URL
+  String? thumbnailImageUrl; // Store network thumbnail URL
+  String? introVideoUrl; // Store network video URL
   final ImagePicker _picker = ImagePicker();
 
-  // Validation error messages
   String? categoryError;
   String? requestCourseAsError;
   String? dripContentError;
@@ -90,17 +92,122 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
     'Free',
   ];
 
+  final Map<int, String> videoOptionIdMap = {
+    1: "Video Upload",
+    2: "Youtube Video",
+  };
+
   @override
   void initState() {
     super.initState();
-    _loadCourseId();
+    _loadCourseIdAndFetchData();
   }
 
-  Future<void> _loadCourseId() async {
+  Future<void> _loadCourseIdAndFetchData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       courseId = prefs.getInt('courseId');
     });
+    if (courseId != null) {
+      _fetchData();
+    } else {
+      setState(() {
+        _isFetchingData = false;
+      });
+    }
+  }
+
+  Future<void> _fetchData() async {
+    setState(() {
+      _isFetchingData = true;
+    });
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('authToken');
+      if (token == null || courseId == null) {
+        throw Exception('Authentication token or Course ID is missing');
+      }
+
+      final url = Uri.parse('${ApiConstant.baseUrl}instructor/course/step-one-edit-data/$courseId');
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        if (responseData['success'] == true && responseData['data'] != null && responseData['data'].isNotEmpty) {
+          final courseData = responseData['data'][0];
+          setState(() {
+            // Populate form fields with fetched data
+            selectedCategoryId = courseData['category_id'];
+            selectedSubCategoryId = courseData['subcategory_id'];
+            // You will need to fetch category and subcategory names separately or have them in the API response.
+            // Since the API gives IDs, you'll need to find the corresponding names for your dropdowns.
+            // For now, we set the IDs and assume the dropdowns handle fetching names based on these IDs.
+            // Example: category_dropdown.dart would need to be modified to take an initial ID and fetch the name.
+
+            selectedRequestCourseAs = requestCourseAsIdMap.entries.firstWhere((e) => e.value == courseData['request_course']).key;
+            selectedRequestCourseAsId = courseData['request_course'];
+
+            // Drip content IDs and names are not provided in the API response, so we'll use a hardcoded map
+            selectedDripContentId = courseData['drip_content'];
+            if (selectedDripContentId == 1) {
+              selectedDripContent = 'Show all lessons';
+            } else if (selectedDripContentId == 2) {
+              selectedDripContent = 'Drip Content';
+            }
+
+            accessPeriodController.text = courseData['access_period']?.toString() ?? '';
+            selectedLearnersAccessibility = courseData['learner_accessibility'];
+
+            if (selectedLearnersAccessibility == 'Paid') {
+              coursePriceController.text = courseData['price']?.toString() ?? '';
+              oldPriceController.text = courseData['old_price']?.toString() ?? '';
+            } else {
+              coursePriceController.clear();
+              oldPriceController.clear();
+            }
+
+            selectedLanguageId = courseData['course_language_id'];
+            selectedDifficultyId = courseData['difficulty_level_id'];
+
+            courseImageUrl = courseData['image'];
+            thumbnailImageUrl = courseData['thumbnail_image'];
+
+            selectedVideoOptionId = courseData['intro_video_check'];
+            if (selectedVideoOptionId == 1) {
+              selectedVideoOption = 'upload';
+              introVideoUrl = courseData['video'];
+            } else if (selectedVideoOptionId == 2) {
+              selectedVideoOption = 'youtube';
+              youtubeIdController.text = courseData['youtube_video_id'] ?? '';
+            }
+
+            // Tags are not in the response, so we can't populate them directly.
+            // You may need a separate API for tags or a different endpoint.
+            // Assuming for now that tags will be handled by the user re-selecting them.
+          });
+        }
+      } else {
+        debugPrint('Failed to fetch data: ${response.statusCode} - ${response.body}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to load course data')),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error fetching data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('An error occurred while fetching data')),
+      );
+    } finally {
+      setState(() {
+        _isFetchingData = false;
+      });
+    }
   }
 
   @override
@@ -132,7 +239,7 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
     _clearValidationErrors();
     bool isValid = true;
 
-    if (selectedCategory == null) {
+    if (selectedCategory == null && selectedCategoryId == null) {
       setState(() {
         categoryError = 'Please select a category';
       });
@@ -175,28 +282,28 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
       }
     }
 
-    if (selectedLanguage == null) {
+    if (selectedLanguage == null && selectedLanguageId == null) {
       setState(() {
         languageError = 'Please select a language';
       });
       isValid = false;
     }
 
-    if (selectedDifficultyName == null) {
+    if (selectedDifficultyName == null && selectedDifficultyId == null) {
       setState(() {
         difficultyLevelError = 'Please select difficulty level';
       });
       isValid = false;
     }
 
-    if (courseImage == null) {
+    if (courseImage == null && courseImageUrl == null) {
       setState(() {
         courseImageError = 'Please select a course image';
       });
       isValid = false;
     }
 
-    if (thumbnailImage == null) {
+    if (thumbnailImage == null && thumbnailImageUrl == null) {
       setState(() {
         thumbnailImageError = 'Please select a thumbnail image';
       });
@@ -223,7 +330,6 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
         return;
       }
       if (isThumbnail) {
-        // Check image dimensions for thumbnail
         final imageBytes = await file.readAsBytes();
         final decodedImage = img.decodeImage(imageBytes);
         if (decodedImage == null || decodedImage.width != 220 || decodedImage.height != 170) {
@@ -239,9 +345,11 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
       setState(() {
         if (isThumbnail) {
           thumbnailImage = file;
+          thumbnailImageUrl = null; // Clear network URL
           thumbnailImageError = null;
         } else {
           courseImage = file;
+          courseImageUrl = null; // Clear network URL
           courseImageError = null;
         }
       });
@@ -262,6 +370,7 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
       }
       setState(() {
         introVideoFile = file;
+        introVideoUrl = null; // Clear network URL
       });
     }
   }
@@ -275,7 +384,6 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
       _isLoading = true;
     });
 
-    // Print all data for debugging
     debugPrint('Submitting data:');
     debugPrint('course_id: $courseId');
     debugPrint('category_id: $selectedCategoryId');
@@ -302,10 +410,8 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
       final url = Uri.parse('${ApiConstant.baseUrl}instructor/course/update-category');
       var request = http.MultipartRequest('POST', url);
 
-      // Add headers
       request.headers['Authorization'] = 'Bearer $token';
 
-      // Add text fields
       request.fields['course_id'] = courseId?.toString() ?? '';
       request.fields['category_id'] = selectedCategoryId?.toString() ?? '';
       request.fields['subcategory_id'] = selectedSubCategoryId?.toString() ?? '';
@@ -320,12 +426,10 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
       request.fields['difficulty_level_id'] = selectedDifficultyId?.toString() ?? '';
       request.fields['intro_video_check'] = selectedVideoOptionId?.toString() ?? '';
 
-      // Add YouTube video ID if selected
       if (selectedVideoOptionId == 2) {
         request.fields['youtube_video_id'] = youtubeIdController.text;
       }
 
-      // Add image files
       if (courseImage != null) {
         request.files.add(await http.MultipartFile.fromPath('image', courseImage!.path));
       }
@@ -336,13 +440,12 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
         request.files.add(await http.MultipartFile.fromPath('video', introVideoFile!.path));
       }
 
-      // Send the request
       final response = await request.send();
       final responseBody = await response.stream.bytesToString();
       final responseData = jsonDecode(responseBody);
 
       if (response.statusCode == 200) {
-        debugPrint(' Upload course tags API Response : ${response.statusCode}');
+        debugPrint('Upload course tags API Response : ${response.statusCode}');
         debugPrint('API Response: $responseData');
         if (responseData['success'] == true) {
           int totalLessons = responseData['data']['total_lessons'];
@@ -379,7 +482,6 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
 
   Widget _buildErrorMessage(String? errorMessage) {
     if (errorMessage == null) return const SizedBox.shrink();
-
     return Padding(
       padding: EdgeInsets.only(top: 4.h),
       child: Text(
@@ -393,11 +495,79 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
     );
   }
 
+// Start of _imagePickerBox method
+  Widget _imagePickerBox(
+      File? imageFile,
+      String label,
+      VoidCallback onTap, {
+        String? imageUrl,
+      }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        height: 150.h,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFFDEDEDE), width: 1.w),
+        ),
+        child: () {
+          // Case 1: If imageFile exists
+          if (imageFile != null) {
+            return Image.file(imageFile, fit: BoxFit.cover);
+          }
+
+          // Case 2: If imageUrl exists and not empty
+          if (imageUrl != null && imageUrl.isNotEmpty) {
+            return Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                // Prevent crash & show placeholder if URL is invalid
+                return Center(
+                  child: Text(
+                    'Tap to select $label',
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                );
+              },
+              loadingBuilder: (BuildContext context, Widget child,
+                  ImageChunkEvent? loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                        : null,
+                    color: const Color(0xFF00AFEE),
+                  ),
+                );
+              },
+            );
+          }
+
+          // Case 3: Both empty → show placeholder text
+          return Center(
+            child: Text(
+              'Tap to select $label',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+          );
+        }(),
+      ),
+    );
+  }
+
+// End of _imagePickerBox method
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Padding(
+      body: _isFetchingData
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF00AFEE)))
+          : Padding(
         padding: EdgeInsets.all(24.w),
         child: Column(
           children: [
@@ -413,6 +583,7 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                       CategoryDropdown(
                         hint: 'Select Category',
                         value: selectedCategory,
+                        initialValueId: selectedCategoryId, // Pass initial ID
                         onChanged: (name, id) {
                           setState(() {
                             selectedCategory = name;
@@ -430,6 +601,7 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                       SubCategoryDropdown(
                         hint: 'Select Subcategory',
                         value: selectedSubCategory,
+                        initialValueId: selectedSubCategoryId, // Pass initial ID
                         categoryId: selectedCategoryId,
                         onChanged: (name, id) {
                           setState(() {
@@ -509,6 +681,7 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                       LessonsDropdown(
                         hint: 'Show all lesson',
                         value: selectedDripContent,
+                        initialValueId: selectedDripContentId, // Pass initial ID
                         onChanged: (name, id) {
                           setState(() {
                             selectedDripContent = name;
@@ -530,7 +703,9 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                       SizedBox(height: 12.h),
                       CustomDropdown(
                         hint: 'Select Option',
-                        value: selectedLearnersAccessibility,
+                        value: learnersAccessibilityOptions.contains(selectedLearnersAccessibility)
+                            ? selectedLearnersAccessibility
+                            : null,
                         items: learnersAccessibilityOptions,
                         onChanged: (value) {
                           setState(() {
@@ -554,7 +729,7 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                           controller: coursePriceController,
                           hintText: 'Price',
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
+                            if (selectedLearnersAccessibility == "Paid" && (value == null || value.isEmpty)) {
                               return 'Please enter the course price';
                             }
                             return null;
@@ -568,7 +743,7 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                           controller: oldPriceController,
                           hintText: 'Old Price',
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
+                            if (selectedLearnersAccessibility == "Paid" && (value == null || value.isEmpty)) {
                               return 'Please enter the old price';
                             }
                             return null;
@@ -582,6 +757,7 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                       LanguagesDropdown(
                         hint: 'Select language',
                         value: selectedLanguage,
+                        initialValueId: selectedLanguageId, // Pass initial ID
                         onChanged: (name, id) {
                           setState(() {
                             selectedLanguage = name;
@@ -597,6 +773,7 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                       DifficultyDropdown(
                         hint: 'Select Difficulty Level',
                         value: selectedDifficultyName,
+                        initialValueId: selectedDifficultyId, // Pass initial ID
                         onChanged: (name, id) {
                           setState(() {
                             selectedDifficultyName = name;
@@ -609,7 +786,7 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                       SizedBox(height: 20.h),
                       Text('Course Image', style: _titleStyle()),
                       SizedBox(height: 12.h),
-                      _imagePickerBox(courseImage, "Image", () => pickImage(false)),
+                      _imagePickerBox(courseImage, "Image", () => pickImage(false), imageUrl: courseImageUrl),
                       _buildErrorMessage(courseImageError),
                       SizedBox(height: 6.h),
                       Text(
@@ -619,7 +796,7 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                       SizedBox(height: 20.h),
                       Text('Course Thumbnail', style: _titleStyle()),
                       SizedBox(height: 12.h),
-                      _imagePickerBox(thumbnailImage, "Thumbnail", () => pickImage(true)),
+                      _imagePickerBox(thumbnailImage, "Thumbnail", () => pickImage(true), imageUrl: thumbnailImageUrl),
                       _buildErrorMessage(thumbnailImageError),
                       SizedBox(height: 6.h),
                       Text(
@@ -672,6 +849,17 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
                                           padding: EdgeInsets.only(left: 8.w),
                                           child: Text(
                                             introVideoFile!.path.split('/').last,
+                                            style: TextStyle(
+                                              fontSize: 14.sp,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ),
+                                      if (introVideoUrl != null && introVideoFile == null)
+                                        Padding(
+                                          padding: EdgeInsets.only(left: 8.w),
+                                          child: Text(
+                                            introVideoUrl!.split('/').last,
                                             style: TextStyle(
                                               fontSize: 14.sp,
                                               color: Colors.black,
@@ -761,34 +949,6 @@ class _UploadCourseCategoryTagsState extends State<UploadCourseCategoryTags> {
       fontFamily: 'Gilroy',
       color: const Color(0xFF00AFEE),
       fontWeight: FontWeight.w600,
-    );
-  }
-
-  Widget _imagePickerBox(File? file, String label, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        height: 150.h,
-        decoration: BoxDecoration(
-          color: const Color(0xFFF5F5F5),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: const Color(0xFFDEDEDE), width: 1.w),
-        ),
-        child: file != null
-            ? ClipRRect(
-          borderRadius: BorderRadius.circular(12.r),
-          child: Image.file(file, fit: BoxFit.cover),
-        )
-            : Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.camera_alt, color: Colors.grey),
-            SizedBox(height: 6.h),
-            Text(label, style: const TextStyle(color: Colors.grey)),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:http/http.dart' as http;
+import 'package:learn_megnagmet/upload_courses/upload_course_sceen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import '../utils/api_constant.dart';
+import '../widget/button.dart';
 
 class InstructorCourses extends StatefulWidget {
   const InstructorCourses({Key? key}) : super(key: key);
@@ -17,6 +21,7 @@ class _InstructorCoursesState extends State<InstructorCourses> {
   List<dynamic> courses = [];
 
   bool isLoading = true;
+  int? isEdit = 0;
 
   @override
   void initState() {
@@ -49,6 +54,10 @@ class _InstructorCoursesState extends State<InstructorCourses> {
             courses = data['data'];
             isLoading = false;
           });
+          // Print is_edit for each course
+          for (var course in courses) {
+            print('Course ID: ${course['id']}, is_edit: ${course['is_edit']}');
+          }
         } else {
           print('API success flag is false');
           throw Exception('Failed to load courses: ${data['message'] ?? 'Unknown error'}');
@@ -112,7 +121,7 @@ class _InstructorCoursesState extends State<InstructorCourses> {
       padding: EdgeInsets.all(10.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22.r),
+        borderRadius: BorderRadius.circular(8.r),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF23408F).withOpacity(0.14),
@@ -129,7 +138,7 @@ class _InstructorCoursesState extends State<InstructorCourses> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(12.r),
+                borderRadius: BorderRadius.circular(8.r),
                 child: Image.network(
                   course['image'],
                   height: 150.h,
@@ -208,23 +217,43 @@ class _InstructorCoursesState extends State<InstructorCourses> {
                   ),
                 ],
               ),
-              SizedBox(height: 5.h),
+              SizedBox(height: 10.h),
               // Status
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF00AFEE),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Text(
-                  course['status'] == 1 ? 'Published' : 'Unpublished',
-                  style: TextStyle(
-                    fontFamily: 'Gilroy',
-                    fontSize: 12.sp,
-                    color: Colors.white,
-                  ),
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SizedBox(
+                      width: 90,   // set custom width
+                      height: 30,
+                      child: CustomButton(onTap: (){
+                        Get.to(() => UploadCourseScreen(
+                          courseId: course['id'],
+                          isEdit: course['is_edit'],
+                        ));                      }, buttonText: 'Edit')),
+                  SizedBox(width: 10.w,),
+
+                  SizedBox(
+                      width: 90,   // set custom width
+                      height: 30,
+                      child: CustomButton(onTap: (){},
+                          buttonText: 'Delete'))
+                ],
               ),
+              // Container(
+              //   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+              //   decoration: BoxDecoration(
+              //     color: const Color(0xFF00AFEE),
+              //     borderRadius: BorderRadius.circular(8.r),
+              //   ),
+              //   child: Text(
+              //     course['status'] == 1 ? 'Published' : 'Unpublished',
+              //     style: TextStyle(
+              //       fontFamily: 'Gilroy',
+              //       fontSize: 12.sp,
+              //       color: Colors.white,
+              //     ),
+              //   ),
+              // ),
             ],
           ),
           const Spacer(),

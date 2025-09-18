@@ -10,12 +10,14 @@ import 'dropdown_items.dart';
 class DifficultyDropdown extends StatefulWidget {
   final String hint;
   final String? value;
+  final int? initialValueId;
   final void Function(String?, int?) onChanged;
 
   const DifficultyDropdown({
     super.key,
     required this.hint,
     this.value,
+    this.initialValueId,
     required this.onChanged,
   });
 
@@ -25,6 +27,7 @@ class DifficultyDropdown extends StatefulWidget {
 
 class _DifficultyDropdownState extends State<DifficultyDropdown> {
   List<DropdownItem> _items = [];
+  String? _selectedValueName;
 
   @override
   void initState() {
@@ -36,7 +39,7 @@ class _DifficultyDropdownState extends State<DifficultyDropdown> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? cached = prefs.getString('difficulty_levels');
 
-    // Load cached first
+    // Load from cache first
     if (cached != null) {
       try {
         final jsonResponse = jsonDecode(cached);
@@ -46,12 +49,13 @@ class _DifficultyDropdownState extends State<DifficultyDropdown> {
             _items = jsonList
                 .map((m) => DropdownItem(id: m['id'], name: m['name']))
                 .toList();
+            _setInitialValue();
           });
         }
       } catch (_) {}
     }
 
-    // Fetch from API
+    // Fetch from API to ensure data is fresh
     try {
       final url =
           '${ApiConstant.baseUrl}instructor/get-difficulty-levels';
@@ -65,6 +69,7 @@ class _DifficultyDropdownState extends State<DifficultyDropdown> {
             _items = jsonList
                 .map((m) => DropdownItem(id: m['id'], name: m['name']))
                 .toList();
+            _setInitialValue();
           });
           await prefs.setString('difficulty_levels', response.body);
         } else {
@@ -81,6 +86,19 @@ class _DifficultyDropdownState extends State<DifficultyDropdown> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error fetching difficulty levels')),
       );
+    }
+  }
+
+  void _setInitialValue() {
+    if (widget.initialValueId != null && _items.isNotEmpty) {
+      final initialItem = _items.firstWhere(
+            (item) => item.id == widget.initialValueId,
+        orElse: () => null as DropdownItem,
+      );
+      if (initialItem != null) {
+        _selectedValueName = initialItem.name;
+        widget.onChanged(_selectedValueName, widget.initialValueId);
+      }
     }
   }
 
@@ -104,14 +122,20 @@ class _DifficultyDropdownState extends State<DifficultyDropdown> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          value: widget.value,
+          value: _selectedValueName ?? widget.value,
           onChanged: _items.isNotEmpty
               ? (String? newValue) {
             if (newValue != null) {
               final item =
               _items.firstWhere((i) => i.name == newValue);
+              setState(() {
+                _selectedValueName = newValue;
+              });
               widget.onChanged(newValue, item.id);
             } else {
+              setState(() {
+                _selectedValueName = null;
+              });
               widget.onChanged(null, null);
             }
           }

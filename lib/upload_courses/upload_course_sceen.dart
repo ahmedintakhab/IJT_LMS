@@ -10,7 +10,9 @@ import 'upload_course_details.dart';
 import 'upload_course_category_tags.dart';
 
 class UploadCourseScreen extends StatefulWidget {
-  const UploadCourseScreen({super.key});
+  final int courseId;
+  final int isEdit;
+  const UploadCourseScreen({super.key, required this.isEdit, required this.courseId});
 
   @override
   State<UploadCourseScreen> createState() => _UploadCourseScreenState();
@@ -23,6 +25,7 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
   int? totalLessons;
   int? totalLectures;
   int? _selectedLessonId; // Store the selected lessonId
+
 
   @override
   void initState() {
@@ -40,6 +43,7 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // print('Check course id and isEdit :${widget.courseId}, ${widget.isEdit}');
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: Column(
@@ -193,6 +197,8 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
       case 0:
         if (!_isCategoryStep) {
           return UploadCourseDetails(
+            courseId: widget.courseId,
+            isEdit: widget.isEdit,
             onComplete: () {
               setState(() {
                 _isCategoryStep = true;

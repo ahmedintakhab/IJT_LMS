@@ -304,7 +304,9 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
                                                       SizedBox(
                                                           width: 120,   // set custom width
                                                           height: 40,
-                                                          child: CustomButton(onTap: (){}, buttonText: 'Edit')),
+                                                          child: CustomButton(onTap: (){
+                                                            widget.onComplete(lecture['id'], false);
+                                                          }, buttonText: 'Edit')),
 
                                                       SizedBox(
                                                           width: 120,   // set custom width

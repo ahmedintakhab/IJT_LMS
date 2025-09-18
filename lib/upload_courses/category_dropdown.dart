@@ -10,12 +10,14 @@ import 'dropdown_items.dart';
 class CategoryDropdown extends StatefulWidget {
   final String hint;
   final String? value;
+  final int? initialValueId;
   final void Function(String?, int?) onChanged;
 
   const CategoryDropdown({
     super.key,
     required this.hint,
     this.value,
+    this.initialValueId,
     required this.onChanged,
   });
 
@@ -25,6 +27,7 @@ class CategoryDropdown extends StatefulWidget {
 
 class _CategoryDropdownState extends State<CategoryDropdown> {
   List<DropdownItem> _items = [];
+  String? _selectedValueName;
 
   @override
   void initState() {
@@ -41,6 +44,7 @@ class _CategoryDropdownState extends State<CategoryDropdown> {
         List<dynamic> jsonList = jsonResponse['data'];
         setState(() {
           _items = jsonList.map((m) => DropdownItem(id: m['id'], name: m['name'])).toList();
+          _setInitialValue();
         });
       }
     } else {
@@ -53,6 +57,7 @@ class _CategoryDropdownState extends State<CategoryDropdown> {
             List<dynamic> jsonList = jsonResponse['data'];
             setState(() {
               _items = jsonList.map((m) => DropdownItem(id: m['id'], name: m['name'])).toList();
+              _setInitialValue();
             });
             await prefs.setString('categories', response.body);
           } else {
@@ -69,6 +74,19 @@ class _CategoryDropdownState extends State<CategoryDropdown> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error fetching categories')),
         );
+      }
+    }
+  }
+
+  void _setInitialValue() {
+    if (widget.initialValueId != null) {
+      final initialItem = _items.firstWhere(
+            (item) => item.id == widget.initialValueId,
+        orElse: () => null as DropdownItem,
+      );
+      if (initialItem != null) {
+        _selectedValueName = initialItem.name;
+        widget.onChanged(_selectedValueName, widget.initialValueId);
       }
     }
   }
@@ -93,13 +111,19 @@ class _CategoryDropdownState extends State<CategoryDropdown> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          value: widget.value,
+          value: _selectedValueName ?? widget.value,
           onChanged: _items.isNotEmpty
               ? (String? newValue) async {
             if (newValue != null) {
               final item = _items.firstWhere((i) => i.name == newValue);
+              setState(() {
+                _selectedValueName = newValue;
+              });
               widget.onChanged(newValue, item.id);
             } else {
+              setState(() {
+                _selectedValueName = null;
+              });
               widget.onChanged(null, null);
             }
           }

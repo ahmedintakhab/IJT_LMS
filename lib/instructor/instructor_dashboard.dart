@@ -35,6 +35,8 @@ class InstructorPanel extends StatefulWidget {
 class _InstructorPanelState extends State<InstructorPanel> {
   String userName = "User Name"; // Default placeholder
   String email = "Email"; // Default placeholder
+  int courseId = 0;
+  int isEdit = 0;
   @override
   void initState() {
     super.initState();
@@ -254,7 +256,7 @@ class _InstructorPanelState extends State<InstructorPanel> {
                               title:'Upload Courses',
                               icon: Icon(Icons.upload, color: Color(0XFF00AFEE)),
                               onTap: () {
-                                Get.to(UploadCourseScreen());
+                                Get.to(UploadCourseScreen( courseId:courseId, isEdit: isEdit,));
                               },
                             ),
                             // Saved Course

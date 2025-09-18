@@ -11,6 +11,7 @@ class SubCategoryDropdown extends StatefulWidget {
   final String hint;
   final String? value;
   final int? categoryId;
+  final int? initialValueId;
   final void Function(String?, int?) onChanged;
 
   const SubCategoryDropdown({
@@ -18,6 +19,7 @@ class SubCategoryDropdown extends StatefulWidget {
     required this.hint,
     this.value,
     this.categoryId,
+    this.initialValueId,
     required this.onChanged,
   });
 
@@ -28,6 +30,7 @@ class SubCategoryDropdown extends StatefulWidget {
 class _SubCategoryDropdownState extends State<SubCategoryDropdown> {
   List<DropdownItem> _items = [];
   int? _currentCategoryId;
+  String? _selectedValueName;
 
   @override
   void initState() {
@@ -44,6 +47,7 @@ class _SubCategoryDropdownState extends State<SubCategoryDropdown> {
       setState(() {
         _items = [];
         _currentCategoryId = null;
+        _selectedValueName = null;
         if (widget.value != null) {
           widget.onChanged(null, null);
         }
@@ -69,6 +73,7 @@ class _SubCategoryDropdownState extends State<SubCategoryDropdown> {
           List<dynamic> jsonList = jsonResponse['data'];
           setState(() {
             _items = jsonList.map((m) => DropdownItem(id: m['id'], name: m['name'])).toList();
+            _setInitialValue();
           });
         }
       } catch (e) {}
@@ -82,6 +87,7 @@ class _SubCategoryDropdownState extends State<SubCategoryDropdown> {
             List<dynamic> jsonList = jsonResponse['data'];
             setState(() {
               _items = jsonList.map((m) => DropdownItem(id: m['id'], name: m['name'])).toList();
+              _setInitialValue();
             });
             await prefs.setString(key, response.body);
           } else {
@@ -98,6 +104,19 @@ class _SubCategoryDropdownState extends State<SubCategoryDropdown> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error fetching subcategories')),
         );
+      }
+    }
+  }
+
+  void _setInitialValue() {
+    if (widget.initialValueId != null) {
+      final initialItem = _items.firstWhere(
+            (item) => item.id == widget.initialValueId,
+        orElse: () => null as DropdownItem,
+      );
+      if (initialItem != null) {
+        _selectedValueName = initialItem.name;
+        widget.onChanged(_selectedValueName, widget.initialValueId);
       }
     }
   }
@@ -122,13 +141,19 @@ class _SubCategoryDropdownState extends State<SubCategoryDropdown> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          value: widget.value,
+          value: _selectedValueName ?? widget.value,
           onChanged: _items.isNotEmpty
               ? (String? newValue) {
             if (newValue != null) {
               final item = _items.firstWhere((i) => i.name == newValue);
+              setState(() {
+                _selectedValueName = newValue;
+              });
               widget.onChanged(newValue, item.id);
             } else {
+              setState(() {
+                _selectedValueName = null;
+              });
               widget.onChanged(null, null);
             }
           }
