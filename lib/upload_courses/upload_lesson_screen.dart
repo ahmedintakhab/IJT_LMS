@@ -291,13 +291,13 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
                                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [
                                                       Text(lecture['title']),
-                                                      TextButton(
-                                                        onPressed: () {},
-                                                        child: Text('Preview Lecture'),
-                                                      ),
+                                                      // TextButton(
+                                                      //   onPressed: () {},
+                                                      //   child: Text('Preview Lecture'),
+                                                      // ),
                                                     ],
                                                   ),
-                                                  SizedBox(height: 8.h),
+                                                  SizedBox(height: 18.h),
                                                   Row(
                                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: [

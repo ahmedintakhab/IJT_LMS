@@ -15,12 +15,17 @@ import 'package:learn_megnagmet/utils/api_constant.dart';
 
 class AddLectureScreen extends StatefulWidget {
   final int lessonId;
-  final int? lectureId; // Add lectureId
+  final int? lectureId;
   final VoidCallback onComplete;
   final VoidCallback? onBack;
 
-  const AddLectureScreen({super.key, required this.lessonId, required this.onComplete,
-    this.onBack, required this.lectureId});
+  const AddLectureScreen({
+    super.key,
+    required this.lessonId,
+    required this.onComplete,
+    this.onBack,
+    this.lectureId,
+  });
 
   @override
   State<AddLectureScreen> createState() => _AddLectureScreenState();
@@ -30,6 +35,7 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
   String _selectedType = 'Video';
   int? courseId;
   bool _isLoading = false;
+  int isEdit = 0;
 
   // Controllers
   final TextEditingController _videoTitleController = TextEditingController();
@@ -58,6 +64,137 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
   // Validation errors
   String? _titleError;
   String? _visibilityError;
+
+  @override
+  void initState() {
+    super.initState();
+    print('AddLectureScreen received lessonId: ${widget.lessonId}, lectureId: ${widget.lectureId}');
+    _loadCourseId();
+    if (widget.lectureId != null) {
+      _fetchLectureData();
+    }
+  }
+
+  Future<void> _loadCourseId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      courseId = prefs.getInt('courseId');
+    });
+  }
+
+  Future<void> _fetchLectureData() async {
+    if (widget.lectureId == null) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('authToken') ?? '';
+
+      final url = Uri.parse('${ApiConstant.baseUrl}instructor/course/edit-lecture-data/${widget.lectureId}');
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      debugPrint('Fetch lecture API Response: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        if (responseData['success'] == true && responseData['data'].isNotEmpty) {
+          final lectureData = responseData['data'][0];
+          isEdit = lectureData['is_edit'];
+          print('Check is edit 111 : $isEdit');
+          final validVideoTypes = ['Book', 'Summary', 'Notes'];
+          setState(() {
+            _selectedType = lectureData['lecture_type'];
+            _visibility = lectureData['learner_visibility'];
+
+            // Populate fields based on lecture type
+            switch (_selectedType) {
+              case 'Video':
+                _videoTitleController.text = lectureData['lesson_title'] ?? '';
+                _videoType = validVideoTypes.contains(lectureData['video_type'])
+                    ? lectureData['video_type']
+                    : null;
+                _selectedVideoFileName = lectureData['upload_video'] != null
+                    ? lectureData['upload_video'].split('/').last
+                    : 'No File Chosen';
+                break;
+              case 'Audio':
+                _audioTitleController.text = lectureData['lesson_title'] ?? '';
+                _videoType = validVideoTypes.contains(lectureData['audio_type'])
+                    ? lectureData['audio_type']
+                    : null;
+                _selectedAudioFileName = lectureData['upload_audio'] != null
+                    ? lectureData['upload_audio'].split('/').last
+                    : 'No File Chosen';
+                break;
+              case 'Image':
+                _imageTitleController.text = lectureData['lesson_title'] ?? '';
+                _selectedImageFileName = lectureData['lesson_image'] != null
+                    ? lectureData['lesson_image'].split('/').last
+                    : 'No File Chosen';
+                break;
+              case 'PDF':
+                _pdfTitleController.text = lectureData['lesson_title'] ?? '';
+                _selectedPDFFileName = lectureData['upload_pdf'] != null
+                    ? lectureData['upload_pdf'].split('/').last
+                    : 'No File Chosen';
+                break;
+              case 'Text':
+                _textTitleController.text = lectureData['lesson_title'] ?? '';
+                _textContentController.text = lectureData['lesson_description'] ?? '';
+                break;
+              case 'YouTube':
+                _youtubeTitleController.text = lectureData['lesson_title'] ?? '';
+                _youtubeIdController.text = lectureData['youtube_video_id'] ?? '';
+                _durationController.text = lectureData['file_duration'] ?? '';
+                break;
+              case 'Slides':
+                _slidesTitleController.text = lectureData['lesson_title'] ?? '';
+                _slideEmbedCodeController.text = lectureData['slide_document'] ?? '';
+                break;
+            }
+          });
+        } else {
+          Get.snackbar(
+            'Error',
+            responseData['message'] ?? 'Failed to fetch lecture data',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
+      } else {
+        Get.snackbar(
+          'Error',
+          'Failed to fetch lecture data',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      print('Error fetching lecture data: $e');
+      Get.snackbar(
+        'Error',
+        'An error occurred while fetching lecture data',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   Future<void> _pickFile() async {
     try {
@@ -90,7 +227,8 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
         bool isValidFile = false;
 
         setState(() {
-          if (_selectedType == 'Video' && (fileExtension == 'mp4' || fileExtension == 'avi' || fileExtension == 'mov' || fileExtension == 'mkv')) {
+          if (_selectedType == 'Video' &&
+              (fileExtension == 'mp4' || fileExtension == 'avi' || fileExtension == 'mov' || fileExtension == 'mkv')) {
             _selectedVideoFileName = fileName;
             _selectedPDFFileName = 'No File Chosen';
             _selectedAudioFileName = 'No File Chosen';
@@ -102,13 +240,15 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
             _selectedAudioFileName = 'No File Chosen';
             _selectedImageFileName = 'No File Chosen';
             isValidFile = true;
-          } else if (_selectedType == 'Image' && (fileExtension == 'jpg' || fileExtension == 'jpeg' || fileExtension == 'png')) {
+          } else if (_selectedType == 'Image' &&
+              (fileExtension == 'jpg' || fileExtension == 'jpeg' || fileExtension == 'png')) {
             _selectedImageFileName = fileName;
             _selectedVideoFileName = 'No File Chosen';
             _selectedPDFFileName = 'No File Chosen';
             _selectedAudioFileName = 'No File Chosen';
             isValidFile = true;
-          } else if (_selectedType == 'Audio' && (fileExtension == 'mp3' || fileExtension == 'wav' || fileExtension == 'aac')) {
+          } else if (_selectedType == 'Audio' &&
+              (fileExtension == 'mp3' || fileExtension == 'wav' || fileExtension == 'aac')) {
             _selectedAudioFileName = fileName;
             _selectedVideoFileName = 'No File Chosen';
             _selectedPDFFileName = 'No File Chosen';
@@ -138,20 +278,6 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
         const SnackBar(content: Text('Failed to pick file. Please try again.')),
       );
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    print('AddLectureScreen received lessonId: ${widget.lessonId}');
-    _loadCourseId();
-  }
-
-  Future<void> _loadCourseId() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      courseId = prefs.getInt('courseId');
-    });
   }
 
   @override
@@ -239,7 +365,7 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
     }
 
     // Validate file selection for types that require files
-    if (['Video', 'PDF', 'Image', 'Audio'].contains(_selectedType) && _selectedFileBytes == null) {
+    if (['Video', 'PDF', 'Image', 'Audio'].contains(_selectedType) && _selectedFileBytes == null && widget.lectureId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please select a ${_selectedType.toLowerCase()} file.')),
       );
@@ -275,9 +401,15 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
       request.fields['visibility'] = _visibility ?? 'Show';
 
       // Add optional fields based on type
-      if (_selectedType == 'Video' || _selectedType == 'Audio') {
+      if (_selectedType == 'Video') {
         if (_videoType != null) {
           request.fields['video_type'] = _videoType!;
+        }
+      }
+
+      if (_selectedType == 'Audio') {
+        if (_videoType != null) {
+          request.fields['audio_type'] = _videoType!; // 👈 pass audio_type instead of video_type
         }
       }
 
@@ -353,17 +485,20 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
       if (response.statusCode == 200) {
         if (responseData['success'] == true) {
           Get.snackbar(
-            'Successful', 'Lecture added successfully!',
+            'Successful',
+            'Lecture added successfully!',
             snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.green,
             colorText: Colors.white,
           );
+          widget.onComplete();
           if (widget.onBack != null) {
             widget.onBack!();
           }
         } else {
           Get.snackbar(
-            responseData['message'] ?? 'Error', 'Failed to save lecture',
+            responseData['message'] ?? 'Error',
+            'Failed to save lecture',
             snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.red,
             colorText: Colors.white,
@@ -384,7 +519,8 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
         }
 
         Get.snackbar(
-          'Error', errorMessage,
+          'Error',
+          errorMessage,
           snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red,
           colorText: Colors.white,
@@ -394,7 +530,174 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
     } catch (e) {
       print('Error saving lecture: $e');
       Get.snackbar(
-        'Error', 'An error occurred while saving the lecture',
+        'Error',
+        'An error occurred while saving the lecture',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+  Future<void> _updateLecture() async {
+    if (!_validateForm()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('authToken') ?? '';
+
+      final url = Uri.parse('${ApiConstant.baseUrl}instructor/course/update-lecture');
+      var request = http.MultipartRequest('POST', url);
+
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // Add required fields
+      request.fields['lecture_id'] = widget.lectureId.toString();
+      request.fields['type'] = _selectedType;
+      request.fields['title'] = _getTitleController().text;
+      request.fields['visibility'] = _visibility ?? 'Show';
+
+      // Add optional fields based on type
+      if (_selectedType == 'Video') {
+        if (_videoType != null) {
+          request.fields['video_type'] = _videoType!;
+        }
+      }
+
+      if (_selectedType == 'Audio') {
+        if (_videoType != null) {
+          request.fields['audio_type'] = _videoType!; // 👈 pass audio_type instead of video_type
+        }
+      }
+
+      if (_selectedType == 'YouTube') {
+        if (_youtubeIdController.text.isNotEmpty) {
+          request.fields['youtube_url_path'] = _youtubeIdController.text;
+        }
+        if (_durationController.text.isNotEmpty) {
+          request.fields['youtube_file_duration'] = _durationController.text;
+        }
+      }
+
+      if (_selectedType == 'Text') {
+        if (_textContentController.text.isNotEmpty) {
+          request.fields['text_description'] = _textContentController.text;
+        }
+      }
+
+      if (_selectedType == 'Slides') {
+        if (_slideEmbedCodeController.text.isNotEmpty) {
+          request.fields['slide_document'] = _slideEmbedCodeController.text;
+        }
+      }
+
+      // Add actual file uploads
+      if (_selectedFileBytes != null && _selectedFileName != null) {
+        String fieldName;
+        switch (_selectedType) {
+          case 'Video':
+            fieldName = 'video_file';
+            break;
+          case 'PDF':
+            fieldName = 'pdf';
+            break;
+          case 'Image':
+            fieldName = 'image';
+            break;
+          case 'Audio':
+            fieldName = 'audio';
+            break;
+          default:
+            fieldName = 'file';
+        }
+
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            fieldName,
+            _selectedFileBytes!,
+            filename: _selectedFileName!,
+          ),
+        );
+      }
+
+      debugPrint("📌 Data being sent to API:");
+      request.fields.forEach((key, value) {
+        debugPrint("$key: $value");
+      });
+
+      if (request.files.isNotEmpty) {
+        debugPrint("📎 Files being uploaded:");
+        for (var file in request.files) {
+          debugPrint("Field: ${file.field}, Filename: ${file.filename}, Size: ${file.length} bytes");
+        }
+      }
+
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+      final responseData = jsonDecode(responseBody);
+
+      debugPrint('Upload lecture API Response: ${response.statusCode}');
+      debugPrint('Response body: $responseBody');
+
+      if (response.statusCode == 200) {
+        if (responseData['success'] == true) {
+          Get.snackbar(
+            'Successful',
+            'Lecture updated successfully!',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
+          widget.onComplete();
+          if (widget.onBack != null) {
+            widget.onBack!();
+          }
+        } else {
+          Get.snackbar(
+            responseData['message'] ?? 'Error',
+            'Failed to save lecture',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
+      } else {
+        String errorMessage = 'Failed to save lecture';
+        if (responseData.containsKey('error')) {
+          // Handle validation errors
+          Map<String, dynamic> errors = responseData['error'];
+          List<String> errorMessages = [];
+          errors.forEach((key, value) {
+            if (value is List) {
+              errorMessages.addAll(value.map((e) => e.toString()));
+            }
+          });
+          errorMessage = errorMessages.join('\n');
+        }
+
+        Get.snackbar(
+          'Error',
+          errorMessage,
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        print('Error: ${responseBody}');
+      }
+    } catch (e) {
+      print('Error saving lecture: $e');
+      Get.snackbar(
+        'Error',
+        'An error occurred while saving the lecture',
         snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -406,12 +709,16 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
+    print('Check is edit 111 : $isEdit');
     print('Check lecture id in add lecture screen: ${widget.lectureId}');
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Padding(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
         padding: EdgeInsets.all(10.w),
         child: Column(
           children: [
@@ -623,9 +930,17 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
                   SizedBox(width: 20.w),
                   Expanded(
                     child: CustomButton(
-                      onTap: _submitLecture,
-                      buttonText: 'Save',
-                      isLoading: _isLoading,
+                      onTap: () {
+                        if (isEdit == 0) {
+                          _submitLecture();
+                        } else {
+                          _updateLecture();
+                        }
+                      },
+                      buttonText: 'Update',
+                      // onTap: _submitLecture,
+                      // buttonText: widget.lectureId != null ? 'Update' : 'Save',
+                      // isLoading: _isLoading,
                     ),
                   ),
                 ],
@@ -674,7 +989,11 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
             OutlinedButton.icon(
               onPressed: _pickFile,
               icon: const Icon(Icons.folder_open, color: Colors.black),
-              label: Text(fileName, style: const TextStyle(color: Colors.black)),
+              label: Text(
+                fileName,
+                style: const TextStyle(color: Colors.black),
+                overflow: TextOverflow.ellipsis,
+              ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.blue),
                 shape: RoundedRectangleBorder(
@@ -727,7 +1046,7 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
             Text(
               value,
               style: TextStyle(
-                fontSize: 14.sp,
+                fontSize: 12.sp,
                 color: _selectedType == value ? const Color(0xFF00AFEE) : Colors.black,
               ),
             ),
