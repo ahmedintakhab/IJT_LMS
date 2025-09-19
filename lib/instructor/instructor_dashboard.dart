@@ -346,7 +346,7 @@ class _InstructorPanelState extends State<InstructorPanel> {
                                       style: BorderStyle.solid,
                                       width: 1.0.w,
                                     ),
-                                    borderRadius: BorderRadius.circular(20.h),
+                                    borderRadius: BorderRadius.circular(8.h),
                                   ),
                                   child: Center(
                                     child: Text("Logout",
@@ -413,7 +413,7 @@ class _InstructorPanelState extends State<InstructorPanel> {
                         height: 56.h,
                         width: double.infinity.w,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(22.h),
+                          borderRadius: BorderRadius.circular(8.h),
                           color: const Color(0XFF00AFEE),
                         ),
                         child: Center(
@@ -445,7 +445,7 @@ class _InstructorPanelState extends State<InstructorPanel> {
                             style: BorderStyle.solid,
                             width: 1.0.w,
                           ),
-                          borderRadius: BorderRadius.circular(22.h),
+                          borderRadius: BorderRadius.circular(8.h),
                         ),
                         child: Center(
                           child: Text(

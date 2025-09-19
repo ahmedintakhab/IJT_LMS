@@ -15,10 +15,12 @@ import 'package:learn_megnagmet/utils/api_constant.dart';
 
 class AddLectureScreen extends StatefulWidget {
   final int lessonId;
+  final int? lectureId; // Add lectureId
   final VoidCallback onComplete;
   final VoidCallback? onBack;
 
-  const AddLectureScreen({super.key, required this.lessonId, required this.onComplete, this.onBack});
+  const AddLectureScreen({super.key, required this.lessonId, required this.onComplete,
+    this.onBack, required this.lectureId});
 
   @override
   State<AddLectureScreen> createState() => _AddLectureScreenState();
@@ -406,6 +408,7 @@ class _AddLectureScreenState extends State<AddLectureScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print('Check lecture id in add lecture screen: ${widget.lectureId}');
     return Scaffold(
       backgroundColor: Colors.white,
       body: Padding(

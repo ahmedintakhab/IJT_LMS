@@ -25,6 +25,7 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
   int? totalLessons;
   int? totalLectures;
   int? _selectedLessonId; // Store the selected lessonId
+  int? _selectedLectureId; // Add this to store lectureId
 
 
   @override
@@ -183,7 +184,7 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
               color: isCompleted || isCurrent
                   ? const Color(0xFF00AFEE)
                   : Colors.grey[400],
-              fontSize: 14.sp,
+              fontSize: 13.sp,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -242,7 +243,7 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
           );
         } else if (_lessonSubStep == 1 || (_lessonSubStep == 0 && totalLessons! > 0)) {
           return UploadLessonScreen(
-            onComplete: (lessonId, isContinue) {
+            onComplete: (lessonId, isContinue, {int? lectureId}) {
               if (isContinue) {
                 // "Save and Continue" was clicked - go to InstructorsScreen
                 setState(() {
@@ -250,9 +251,10 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
                   _lessonSubStep = 0; // Reset sub-step
                 });
               } else {
-                // "Upload Lecture" was clicked - go to AddLectureScreen
+                // "Upload Lecture" or "Edit" was clicked - go to AddLectureScreen
                 setState(() {
                   _selectedLessonId = lessonId;
+                  _selectedLectureId = lectureId; // Store lectureId
                   _lessonSubStep = 2; // Move to Add Lecture
                 });
               }
@@ -270,16 +272,19 @@ class _UploadCourseScreenState extends State<UploadCourseScreen> {
           );
         } else if (_lessonSubStep == 2) {
           return AddLectureScreen(
-            lessonId: _selectedLessonId ?? 0, // Pass the selected lessonId
+            lessonId: _selectedLessonId ?? 0,
+            lectureId: _selectedLectureId, // Pass lectureId
             onComplete: () {
               // After saving, go back to UploadLessonScreen
               setState(() {
                 _lessonSubStep = 1; // Go back to Upload Lesson screen
+                _selectedLectureId = null; // Reset lectureId
               });
             },
             onBack: () {
               setState(() {
                 _lessonSubStep = 1; // Move back to Upload Lesson
+                _selectedLectureId = null; // Reset lectureId
               });
             },
           );

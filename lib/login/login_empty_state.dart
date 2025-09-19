@@ -188,8 +188,8 @@ class _EmptyStateState extends State<EmptyState> {
                           Image(image: const AssetImage("assets/lms_splash.png"),fit: BoxFit.cover,))),
                       SizedBox(height: 20.h),
                       email_password_form(),
-                      // SizedBox(height: 21.h),
-                      // forgotpassword(),
+                       SizedBox(height: 21.h),
+                       forgotpassword(),
                       SizedBox(height: 40.h),
                       CustomButton(
                         onTap: loginUser,

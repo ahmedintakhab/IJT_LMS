@@ -14,7 +14,7 @@ import 'delete_lesson_dialog_box.dart';
 import 'edit_lesson_dialog_box.dart';
 
 class UploadLessonScreen extends StatefulWidget {
-  final Function(int, bool) onComplete; // Changed to accept lessonId and isContinue flag
+  final Function(int lessonId, bool isContinue, {int? lectureId}) onComplete;
   final VoidCallback? onBack;
 
   const UploadLessonScreen({super.key, required this.onComplete, this.onBack});
@@ -305,8 +305,7 @@ class _UploadLessonScreenState extends State<UploadLessonScreen> {
                                                           width: 120,   // set custom width
                                                           height: 40,
                                                           child: CustomButton(onTap: (){
-                                                            widget.onComplete(lecture['id'], false);
-                                                          }, buttonText: 'Edit')),
+                                                            widget.onComplete(lesson['id'], false, lectureId: lecture['id']);                                                          }, buttonText: 'Edit')),
 
                                                       SizedBox(
                                                           width: 120,   // set custom width
