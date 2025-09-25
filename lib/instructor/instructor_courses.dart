@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:http/http.dart' as http;
+import 'package:learn_megnagmet/upload_courses/delete_instructor_course_dialogbox.dart';
 import 'package:learn_megnagmet/upload_courses/upload_course_sceen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -229,13 +230,26 @@ class _InstructorCoursesState extends State<InstructorCourses> {
                         Get.to(() => UploadCourseScreen(
                           courseId: course['id'],
                           isEdit: course['is_edit'],
-                        ));                      }, buttonText: 'Edit')),
+                        ));  }, buttonText: 'Edit')),
                   SizedBox(width: 10.w,),
 
                   SizedBox(
                       width: 90,   // set custom width
                       height: 30,
-                      child: CustomButton(onTap: (){},
+                      child: CustomButton(onTap: (){
+                        showDialog(
+                          context: context,
+                          builder: (context) => DeleteInstructorCourseDialogbox(
+                            courseId: course['id'],
+                            onDelete: () {
+                              fetchCourses();
+                               Navigator.pop(context);
+                            },
+
+                            onCancel: () => Navigator.pop(context),
+                          ),
+                        );
+                      },
                           buttonText: 'Delete'))
                 ],
               ),

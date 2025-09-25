@@ -115,9 +115,9 @@ class _InstructorPanelState extends State<InstructorPanel> {
           case 403:
             message = 'Access denied.';
             break;
-          case 500:
-            message = 'Server error. Please try again later.';
-            break;
+          // case 500:
+          //   message = 'Server error. Please try again later.';
+          //   break;
           default:
             message = 'Logout failed. Please try again.';
         }
