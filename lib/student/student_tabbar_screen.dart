@@ -150,7 +150,7 @@ class _TabBarDetailsState extends State<TabBarDetails> with SingleTickerProvider
             courseContent: courseContent,
             onLectureOpen: handleLectureOpen,
           ),
-           QuizPage(quizData: quizData),
+           QuizPage(quizData: quizData,courseId: courseId),
            AssignmentPage(assignmentData: assignmentData, courseId: courseId,),
           NoticePage(noticeData: noticeData),
           LiveClassPage(liveClassData: liveClassData),

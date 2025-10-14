@@ -12,8 +12,9 @@ import 'package:learn_megnagmet/quiz/quiz_result.dart';
 import 'package:learn_megnagmet/widget/button.dart';
 
 class QuizPage extends StatefulWidget {
-  final List<dynamic> quizData;
-  const QuizPage({Key? key, required this.quizData}) : super(key: key);
+  final List<dynamic> quizData; final String courseId; const
+  QuizPage({Key? key, required this.quizData,
+    required this.courseId}) : super(key: key);
 
   @override
   State<QuizPage> createState() => _QuizPageState();
@@ -22,6 +23,16 @@ class QuizPage extends StatefulWidget {
 class _QuizPageState extends State<QuizPage> {
   final Map<int, bool> _isLoadingAction = {};
   final Map<int, bool> _isLoadingLeaderboard = {};
+
+  List<dynamic> quizData = [];
+  bool isLoading = true;
+  String? errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchQuizList();
+  }
 
   Future<Map<String, dynamic>> _fetchQuizResult(String quizId) async {
     const String apiUrl = '${ApiConstant.baseUrl}student/course/quiz-result';
@@ -73,6 +84,45 @@ class _QuizPageState extends State<QuizPage> {
     }
   }
 
+  Future<void> _fetchQuizList() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('authToken') ?? '';
+
+      final String apiUrl =
+          "${ApiConstant.baseUrl}student/course/quiz-list/${widget.courseId}";
+
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print('Quiz list fetched successfully: ${response.body}');
+        setState(() {
+          quizData = data["course_quiz_tab"] ?? [];
+        });
+      } else {
+        print('Failed to fetch quiz list: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching quiz list: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   String _getButtonText(int statusNumber) {
     switch (statusNumber) {
       case 1:
@@ -86,10 +136,9 @@ class _QuizPageState extends State<QuizPage> {
     }
   }
 
-  void _handleButtonAction(int index, int statusNumber, String quizId, String quizName, String quizType, String quizUuid) async {
-    if (_isLoadingAction[index] == true) {
-      return;
-    }
+  void _handleButtonAction(int index, int statusNumber, String quizId,
+      String quizName, String quizType, String quizUuid) async {
+    if (_isLoadingAction[index] == true) return;
 
     setState(() {
       _isLoadingAction[index] = true;
@@ -97,18 +146,18 @@ class _QuizPageState extends State<QuizPage> {
 
     try {
       if (statusNumber == 1 || statusNumber == 2) {
-        // Call start-quiz API and navigate to StartQuizScreen with response
         final response = await _startQuiz(quizUuid);
-        Get.to(() => StartQuizScreen(
+        await Get.to(() => StartQuizScreen(
           quizId: quizId,
           quizName: quizName,
           quizType: quizType,
           startQuizResponse: response['data'],
         ));
+        _fetchQuizList();
       } else if (statusNumber == 3) {
-        // Navigate to Result Screen for Passed
         final resultData = await _fetchQuizResult(quizId);
-        Get.to(() => QuizResult(resultData: resultData));
+        await Get.to(() => QuizResult(resultData: resultData));
+        _fetchQuizList();
       }
     } catch (e) {
       print('Error: $e');
@@ -122,16 +171,15 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   void _handleLeaderboardAction(int index, String quizId) async {
-    if (_isLoadingLeaderboard[index] == true) {
-      return;
-    }
+    if (_isLoadingLeaderboard[index] == true) return;
 
     setState(() {
       _isLoadingLeaderboard[index] = true;
     });
 
     try {
-      Get.to(() => LeaderboardScreen(quizId: quizId));
+     await Get.to(() => LeaderboardScreen(quizId: quizId));
+     _fetchQuizList();
     } catch (e) {
       print('Error navigating to leaderboard: $e');
     } finally {
@@ -145,12 +193,35 @@ class _QuizPageState extends State<QuizPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator(color: Color(0xFF00AFEE),)),
+      );
+    }
+
+    // if (errorMessage != null) {
+    //   return Scaffold(
+    //     body: Center(
+    //       child: Text(
+    //         errorMessage!,
+    //         style: const TextStyle(color: Colors.red),
+    //       ),
+    //     ),
+    //   );
+    // }
+
+    if (quizData.isEmpty || quizData == null) {
+      return const Scaffold(
+        body: Center(child: Text("No quizzes available.")),
+      );
+    }
+
     return Scaffold(
       body: ListView.builder(
         padding: const EdgeInsets.all(16.0),
-        itemCount: widget.quizData.length,
+        itemCount: quizData.length,
         itemBuilder: (context, index) {
-          final quiz = widget.quizData[index];
+          final quiz = quizData[index];
           _isLoadingAction.putIfAbsent(index, () => false);
           _isLoadingLeaderboard.putIfAbsent(index, () => false);
           final statusNumber = quiz['status_number'] ?? 0;
@@ -165,65 +236,13 @@ class _QuizPageState extends State<QuizPage> {
             ),
             child: Column(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Quiz Name',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-                    ),
-                    // SizedBox(width: 100.w),
-                     Text(
-                        quiz['quiz_name']?.toString() ?? '',
-                        style: const TextStyle(fontSize: 14, color: Colors.black),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-
-                  ],
-                ),
+                _buildInfoRow('Quiz Name', quiz['quiz_name']),
                 SizedBox(height: 10.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Quiz Types',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-                    ),
-                    Text(
-                      quiz['quiz_type']?.toString() ?? '',
-                      style: const TextStyle(fontSize: 14, color: Colors.black),
-                    ),
-                  ],
-                ),
+                _buildInfoRow('Quiz Type', quiz['quiz_type']),
                 SizedBox(height: 10.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Total Question',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-                    ),
-                    Text(
-                      quiz['total_questions']?.toString() ?? '',
-                      style: const TextStyle(fontSize: 16, color: Colors.black),
-                    ),
-                  ],
-                ),
+                _buildInfoRow('Total Questions', quiz['total_questions']),
                 SizedBox(height: 10.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Time Duration',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-                    ),
-                    Text(
-                      quiz['time_duration']?.toString() ?? '',
-                      style: const TextStyle(fontSize: 16, color: Colors.black),
-                    ),
-                  ],
-                ),
+                _buildInfoRow('Time Duration', quiz['time_duration']),
                 SizedBox(height: 10.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -243,7 +262,9 @@ class _QuizPageState extends State<QuizPage> {
                                 quiz['quiz_type'].toString(),
                                 quizUuid,
                               ),
-                              buttonText: _isLoadingAction[index]! ? '' : _getButtonText(statusNumber),
+                              buttonText: _isLoadingAction[index]!
+                                  ? ''
+                                  : _getButtonText(statusNumber),
                               buttonColor: const Color(0xFF00AFEE),
                               textColor: Colors.white,
                             ),
@@ -272,7 +293,9 @@ class _QuizPageState extends State<QuizPage> {
                                 index,
                                 quiz['quiz_id'].toString(),
                               ),
-                              buttonText: _isLoadingLeaderboard[index]! ? '' : 'LeaderBoard',
+                              buttonText: _isLoadingLeaderboard[index]!
+                                  ? ''
+                                  : 'LeaderBoard',
                               buttonColor: const Color(0xFF00AFEE),
                               textColor: Colors.white,
                             ),
@@ -296,6 +319,21 @@ class _QuizPageState extends State<QuizPage> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, dynamic value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label,
+            style:
+            const TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+        Text(
+          value?.toString() ?? '',
+          style: const TextStyle(fontSize: 14, color: Colors.black),
+        ),
+      ],
     );
   }
 }
