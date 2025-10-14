@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
+import 'package:learn_megnagmet/student/quiz_screen.dart';
 import 'package:learn_megnagmet/student/resources_screen.dart';
 import 'package:learn_megnagmet/student/review_screen.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
@@ -8,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import '../utils/api_constant.dart';
+import 'assignment_screen.dart';
 import 'discussion_screen.dart';
 import 'live_screen.dart';
 import 'notice_screen.dart';
@@ -29,12 +31,14 @@ class _TabBarDetailsState extends State<TabBarDetails> with SingleTickerProvider
   final List<String> tabs = [
     'Overview',
     'Content',
+    'Quiz',
+    'Assignment',
     'Notice',
     'Live Class',
     'Discussion',
     'Certificate',
     'Review',
-  ]; //'Quiz',Assignment hide
+  ];
   late List<Widget> pages;
 
   // API Data
@@ -112,8 +116,9 @@ class _TabBarDetailsState extends State<TabBarDetails> with SingleTickerProvider
             'two_star_percentage': apiData?['data']['reviews']?['two_star_percentage'] ?? 0,
             'first_star_percentage': apiData?['data']['reviews']?['first_star_percentage'] ?? 0,
           };
-          quizData = apiData?['data']['quizzes'] ?? [];
-          assignmentData = apiData?['data']['assignments'] ?? [];
+          quizData = apiData?['data']['course_quiz_tab'] ?? [];
+          print('Check quizzes data from api$quizData');
+          assignmentData = apiData?['data']['course_assignment_tab'] ?? [];
           liveClassData = apiData?['data']['live_classes'] ?? {'upcoming_live_classes': [], 'current_live_classes': [], 'past_live_classes': []};
 
           isLoading = false;
@@ -145,8 +150,8 @@ class _TabBarDetailsState extends State<TabBarDetails> with SingleTickerProvider
             courseContent: courseContent,
             onLectureOpen: handleLectureOpen,
           ),
-          // QuizPage(quizData: quizData),
-          // AssignmentPage(assignmentData: assignmentData),
+           QuizPage(quizData: quizData),
+           AssignmentPage(assignmentData: assignmentData, courseId: courseId,),
           NoticePage(noticeData: noticeData),
           LiveClassPage(liveClassData: liveClassData),
           DiscussionPage(discussionData: discussionData, courseId: courseId),
