@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:http/http.dart' as http;
+import 'package:learn_megnagmet/quiz/create_quiz_list.dart';
 import 'package:learn_megnagmet/upload_courses/delete_instructor_course_dialogbox.dart';
 import 'package:learn_megnagmet/upload_courses/upload_course_sceen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -288,8 +289,7 @@ class _InstructorCoursesState extends State<InstructorCourses> {
                 text: 'Quiz',
                 color: const Color(0xFF00AFEE),
                 onTap: () {
-                  // Add functionality for Quiz button
-                  print('Quiz button tapped');
+                Get.to(()=> CreateQuizList(courseId: course['id'].toString() ?? ''));
                 },
               ),
               SizedBox(height: 18.h),
