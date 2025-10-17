@@ -49,7 +49,7 @@ class _UploadAssignmentState extends State<UploadAssignment> {
     }
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = prefs.getString('auth_token') ?? '';
+    String token = prefs.getString('authToken') ?? '';
 
     final url = Uri.parse("${ApiConstant.baseUrl}student/course/submit-assignment-store");
     var request = http.MultipartRequest('POST', url);
@@ -112,12 +112,12 @@ class _UploadAssignmentState extends State<UploadAssignment> {
       appBar: AppBar(
         title: const Text(
           'Assignment Upload',
-          style: TextStyle(color: Color(0xFF78A03F)),
+          style: TextStyle(color: Color(0xFF00AFEE)),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
         titleTextStyle: const TextStyle(
-          color: Color(0xFF78A03F),
+          color: Color(0xFF00AFEE),
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
@@ -197,7 +197,7 @@ class _UploadAssignmentState extends State<UploadAssignment> {
                             }
                           },
                           buttonText: _isLoading ? '' : 'Submit',
-                          buttonColor: const Color(0xFF78A03F),
+                          buttonColor: const Color(0xFF00AFEE),
                           textColor: Colors.white,
                         ),
                         if (_isLoading)

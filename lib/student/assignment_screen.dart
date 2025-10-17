@@ -30,7 +30,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
 
   Future<Map<String, dynamic>> fetchAssignmentDetails(String assignmentId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = prefs.getString('auth_token') ?? '';
+    String token = prefs.getString('authToken') ?? '';
 
     final url = Uri.parse("${ApiConstant.baseUrl}student/course/assignment-detail");
     final response = await http.post(
@@ -52,7 +52,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
 
   Future<Map<String, dynamic>> fetchAssignmentResult(String assignmentId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = prefs.getString('auth_token') ?? '';
+    String token = prefs.getString('authToken') ?? '';
 
     final url = Uri.parse("${ApiConstant.baseUrl}student/course/assignment-result");
     final response = await http.post(

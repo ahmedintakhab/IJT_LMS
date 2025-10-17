@@ -13,7 +13,7 @@ class AssignmentResult extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Assignment Result',
-          style: TextStyle(color: Color(0xFF78A03F)),
+          style: TextStyle(color: Color(0xFF00AFEE)),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -104,7 +104,7 @@ class AssignmentResult extends StatelessWidget {
                   Navigator.pop(context);
                 },
                 buttonText: 'BACK',
-                buttonColor: const Color(0xFF78A03F),
+                buttonColor: const Color(0xFF00AFEE),
                 textColor: Colors.white,
               ),
             ),

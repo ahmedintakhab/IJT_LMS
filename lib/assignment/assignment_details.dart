@@ -34,7 +34,7 @@ class AssignmentDetails extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         titleTextStyle: const TextStyle(
-          color: Color(0xFF78A03F),
+          color: Color(0xFF00AFEE),
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
@@ -201,7 +201,7 @@ class AssignmentDetails extends StatelessWidget {
                             UploadAssignment(courseId: courseId,assignmentId : assignmentId)),
                       );
                     },
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF78A03F)),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00AFEE)),
                     child: const Text(
                       'SUBMIT ASSIGNMENT',
                       style: TextStyle(color: Colors.white),

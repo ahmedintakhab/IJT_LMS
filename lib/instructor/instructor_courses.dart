@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:http/http.dart' as http;
+import 'package:learn_megnagmet/create_assignment/created_assignment_list.dart';
 import 'package:learn_megnagmet/quiz/create_quiz_list.dart';
 import 'package:learn_megnagmet/upload_courses/delete_instructor_course_dialogbox.dart';
 import 'package:learn_megnagmet/upload_courses/upload_course_sceen.dart';
@@ -297,8 +298,7 @@ class _InstructorCoursesState extends State<InstructorCourses> {
                 text: 'Assignment',
                 color: const Color(0xFF7B3F8C),
                 onTap: () {
-                  // Add functionality for Assignment button
-                  print('Assignment button tapped');
+                  Get.to(()=> CreatedAssignmentList(courseId: course['id'].toString() ?? ''));
                 },
               ),
             ],
