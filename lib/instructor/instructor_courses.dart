@@ -290,7 +290,9 @@ class _InstructorCoursesState extends State<InstructorCourses> {
                 text: 'Quiz',
                 color: const Color(0xFF00AFEE),
                 onTap: () {
-                Get.to(()=> CreateQuizList(courseId: course['id'].toString() ?? ''));
+                Get.to(()=> CreateQuizList(courseId: course['id'].toString() ?? '',
+                    courseName : course['title'] ?? ''
+                ));
                 },
               ),
               SizedBox(height: 18.h),
@@ -298,7 +300,8 @@ class _InstructorCoursesState extends State<InstructorCourses> {
                 text: 'Assignment',
                 color: const Color(0xFF7B3F8C),
                 onTap: () {
-                  Get.to(()=> CreatedAssignmentList(courseId: course['id'].toString() ?? ''));
+                  Get.to(()=> CreatedAssignmentList(courseId: course['id'].toString() ?? '',
+                      courseName : course['title'] ?? ''));
                 },
               ),
             ],

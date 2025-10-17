@@ -3,7 +3,9 @@ import 'package:learn_megnagmet/create_assignment/create_assignment_container.da
 import 'package:learn_megnagmet/quiz/quiz_list_widget.dart';
 class CreatedAssignmentList extends StatefulWidget {
   final String courseId;
-  const CreatedAssignmentList({super.key, required this.courseId});
+  final String courseName;
+
+  const CreatedAssignmentList({super.key, required this.courseId, required this.courseName});
 
   @override
   State<CreatedAssignmentList> createState() => _CreatedAssignmentListState();
@@ -19,7 +21,7 @@ class _CreatedAssignmentListState extends State<CreatedAssignmentList> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            CreateAssignmentContainer(),
+            CreateAssignmentContainer(courseName: widget.courseName,),
             QuizListWidget(courseId: widget.courseId,),
           ],
         ),

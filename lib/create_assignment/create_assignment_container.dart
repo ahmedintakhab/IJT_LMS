@@ -4,11 +4,12 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:learn_megnagmet/create_assignment/create_assignment_form.dart';
 
-import '../quiz/create_quiz_form.dart';
 import '../widget/button.dart';
 
 class CreateAssignmentContainer extends StatelessWidget {
-  const CreateAssignmentContainer({super.key});
+  final String courseName;
+
+  const CreateAssignmentContainer({super.key, required this.courseName});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class CreateAssignmentContainer extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Course Name: خَوَاتِين',
+              'Course Name: ${courseName}',
               style: TextStyle( fontSize: 16.sp),
             ),
             SizedBox(height: 10),

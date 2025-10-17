@@ -6,6 +6,10 @@ import '../widget/button.dart';
 import '../widget/custom_text_form_field.dart';
 
 class AddTrueFalseQuestionScreen extends StatefulWidget {
+  final String courseId;
+  final int quizId;
+  const AddTrueFalseQuestionScreen({super.key, required this.courseId, required this.quizId});
+
   @override
   _AddTrueFalseQuestionScreenState createState() => _AddTrueFalseQuestionScreenState();
 }

@@ -1,32 +1,135 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../widget/button.dart';
+import 'package:learn_megnagmet/utils/api_constant.dart';
+import 'delete_quiz_question_dialogbox.dart'; // Import the dialog
 
-class QuizListScreen extends StatefulWidget {
+class McqsQuestionList extends StatefulWidget {
+  final int quizId;
+  const McqsQuestionList({super.key, required this.quizId});
+
   @override
-  _QuizListScreenState createState() => _QuizListScreenState();
+  _McqsQuestionListState createState() => _McqsQuestionListState();
 }
 
-class _QuizListScreenState extends State<QuizListScreen> {
-  final List<Map<String, dynamic>> quizData = [
-    {
-      'quiz_name': '5-4',
-      'options': ['1', '2', '3', '4'],
-      'correct_option': 0, // Index of correct option
-    },
-    {
-      'quiz_name': 'What is the capital of France? A very long question to test the 3-line limit with ellipsis',
-      'options': ['Paris', 'London', 'Berlin', 'Madrid'],
-      'correct_option': 0,
-    },
-    {
-      'quiz_name': 'Which planet is known as the Red Planet?',
-      'options': ['Mars', 'Jupiter', 'Venus', 'Saturn'],
-      'correct_option': 3,
-    },
-  ];
+class _McqsQuestionListState extends State<McqsQuestionList> {
+  List<Map<String, dynamic>> quizData = [];
+  bool isLoading = true;
+  Map<int, int> questionIds = {}; // Store question ID with index
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchQuizData();
+  }
+
+  Future<void> _fetchQuizData() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('authToken') ?? '';
+
+      final url = Uri.parse("${ApiConstant.baseUrl}instructor/course/exam/view_mcq/${widget.quizId}");
+
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['status'] == true) {
+          final questions = data['data']['questions'] as List<dynamic>;
+          setState(() {
+            quizData = questions.asMap().entries.map((entry) {
+              final index = entry.key;
+              final question = entry.value;
+              final options = (question['options'] as List<dynamic>)
+                  .map((option) => option['name'] as String)
+                  .toList();
+              final correctOption = (question['options'] as List<dynamic>)
+                  .indexWhere((option) => option['is_correct_answer'] as bool);
+              questionIds[index] = question['id'] as int; // Use index as key, store question id
+              return {
+                'quiz_name': question['name'],
+                'options': options,
+                'correct_option': correctOption,
+              };
+            }).toList();
+            isLoading = false;
+            print('Fetched questionIds: $questionIds'); // Debug log
+          });
+        } else {
+          Get.snackbar('Error', 'Failed to load quiz data: ${data['message']}',
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: Colors.red,
+              colorText: Colors.white);
+          setState(() {
+            isLoading = false;
+          });
+        }
+      } else {
+        Get.snackbar('Error', 'Failed to load quiz data: ${response.statusCode}',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.red,
+            colorText: Colors.white);
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('MCQS list api getting error: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  void _showDeleteDialog(int index) {
+    print('Attempting to delete index: $index, questionId: ${questionIds[index]}'); // Debug log
+    if (!questionIds.containsKey(index) || questionIds[index] == null) {
+      Get.snackbar('Error', 'Invalid question index or ID',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
+      return;
+    }
+    Get.dialog(
+      DeleteQuizQuestionDialogbox(
+        onDelete: () async {
+          await _fetchQuizData(); // Refresh data from API
+          Get.snackbar('Success', 'Question deleted successfully',
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: Colors.green,
+              colorText: Colors.white);
+        },
+        onCancel: () => Navigator.pop(context),
+        questionId: questionIds[index],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            color: const Color(0xFF00AFEE),
+          ),
+        ),
+      );
+    }
+
     if (quizData.isEmpty) {
       return const Scaffold(
         body: Center(child: Text("No quizzes available.")),
@@ -35,12 +138,12 @@ class _QuizListScreenState extends State<QuizListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Test 9', style: TextStyle(color: Colors.white,
-            fontWeight: FontWeight.bold),),
-        backgroundColor: Color(0xFF00AFEE),
+        title: const Text('MCQs List',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFF00AFEE),
         elevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Column(
         children: [
@@ -78,7 +181,7 @@ class _QuizListScreenState extends State<QuizListScreen> {
                           isCorrect: quiz['correct_option'] == optionIndex,
                         ),
                       const SizedBox(height: 10),
-                      _buildInfoRow('Action', '', flex: 1, isAction: true),
+                      _buildInfoRow('Action', '', flex: 1, isAction: true, onDelete: () => _showDeleteDialog(index)),
                     ],
                   ),
                 );
@@ -104,15 +207,15 @@ class _QuizListScreenState extends State<QuizListScreen> {
         int maxLines = 1,
         bool isCorrect = false,
         bool isAction = false,
-        TextAlign textAlign = TextAlign.right}) {
+        TextAlign textAlign = TextAlign.right,
+        VoidCallback? onDelete}) {
     return Row(
       children: [
         Expanded(
           flex: flex,
           child: Text(
             label,
-            style: const TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.blue),
+            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
             textAlign: TextAlign.left,
           ),
         ),
@@ -128,7 +231,7 @@ class _QuizListScreenState extends State<QuizListScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.grey),
-                  onPressed: () {},
+                  onPressed: onDelete,
                 ),
               ],
             ),

@@ -7,7 +7,9 @@ import 'package:learn_megnagmet/quiz/create_quiz_form.dart';
 import '../widget/button.dart';
 
 class CreateQuizContainer extends StatelessWidget {
-  const CreateQuizContainer({super.key});
+  final String courseName;
+  final String courseId;
+  const CreateQuizContainer({super.key, required this.courseName, required this.courseId});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,7 @@ class CreateQuizContainer extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Course Name: خَوَاتِين',
+              'Course Name: ${courseName}',
               style: TextStyle( fontSize: 16.sp),
             ),
             SizedBox(height: 10),
@@ -40,7 +42,7 @@ class CreateQuizContainer extends StatelessWidget {
                 height: 55.h,
                 child: CustomButton(
                   onTap: () {
-                    Get.to(()=> CreateQuizForm());
+                    Get.to(()=> CreateQuizForm(courseId : courseId));
                   },
                   buttonText: 'Create New Quiz',
                 ),

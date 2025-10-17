@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:http/http.dart' as http;
+import 'package:learn_megnagmet/quiz/mcqs_question_list.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/api_constant.dart';
@@ -90,6 +93,7 @@ class _QuizListWidgetState extends State<QuizListWidget> {
             final status = quiz['status'] ?? 'Unknown';
             final quizUuid = quiz['uuid']?.toString() ?? '';
             final addQuestionUrl = quiz['add_question_url'] ?? '';
+            final quizId = quiz['id'] ?? '';
 
             return Container(
               margin: const EdgeInsets.only(bottom: 16.0),
@@ -132,7 +136,7 @@ class _QuizListWidgetState extends State<QuizListWidget> {
                               print('Unpublish quiz: $quizUuid');
                               break;
                             case 'view':
-                              print('View quiz: $quizUuid');
+                              Get.to(()=>McqsQuestionList(quizId: quizId));
                               break;
                             case 'edit':
                               print('Edit quiz: $quizUuid');
