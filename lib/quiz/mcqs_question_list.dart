@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:learn_megnagmet/quiz/create_quiz_list.dart';
+import 'package:learn_megnagmet/quiz/edit_quiz_question_form.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -19,6 +21,8 @@ class _McqsQuestionListState extends State<McqsQuestionList> {
   List<Map<String, dynamic>> quizData = [];
   bool isLoading = true;
   Map<int, int> questionIds = {}; // Store question ID with index
+  String courseId = '';
+  String courseName = '';
 
   @override
   void initState() {
@@ -49,6 +53,12 @@ class _McqsQuestionListState extends State<McqsQuestionList> {
         final data = jsonDecode(response.body);
         if (data['status'] == true) {
           final questions = data['data']['questions'] as List<dynamic>;
+          // ✅ FETCH courseId and courseName from API response
+          courseId = data['data']['course_id'].toString(); // Convert to String
+          courseName = data['data']['course_title'];
+
+          print('Fetched Course ID: $courseId');
+          print('Fetched Course Name: $courseName');
           setState(() {
             quizData = questions.asMap().entries.map((entry) {
               final index = entry.key;
@@ -181,7 +191,8 @@ class _McqsQuestionListState extends State<McqsQuestionList> {
                           isCorrect: quiz['correct_option'] == optionIndex,
                         ),
                       const SizedBox(height: 10),
-                      _buildInfoRow('Action', '', flex: 1, isAction: true, onDelete: () => _showDeleteDialog(index)),
+                      _buildInfoRow('Action', '', flex: 1, isAction: true, onDelete: () =>
+                          _showDeleteDialog(index),index: index),
                     ],
                   ),
                 );
@@ -190,11 +201,9 @@ class _McqsQuestionListState extends State<McqsQuestionList> {
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: CustomButton(
-              onTap: () => Navigator.pop(context),
-              buttonText: 'Back to Quiz',
-              buttonColor: const Color(0xFF00AFEE),
-              textColor: Colors.white,
+            child: CustomButton(onTap: () {
+              Get.to(()=>CreateQuizList(courseId: courseId, courseName: courseName));
+            }, buttonText: 'Back to Quiz',
             ),
           ),
         ],
@@ -208,7 +217,9 @@ class _McqsQuestionListState extends State<McqsQuestionList> {
         bool isCorrect = false,
         bool isAction = false,
         TextAlign textAlign = TextAlign.right,
-        VoidCallback? onDelete}) {
+        VoidCallback? onDelete,
+        int? index
+      }) {
     return Row(
       children: [
         Expanded(
@@ -227,7 +238,11 @@ class _McqsQuestionListState extends State<McqsQuestionList> {
               children: [
                 IconButton(
                   icon: const Icon(Icons.edit, color: Colors.grey),
-                  onPressed: () {},
+                  onPressed: () {
+                    Get.to(()=>EditQuizQuestionForm(quizId: widget.quizId,
+                      questionId: questionIds[index!],
+                    ));
+                  },
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.grey),

@@ -8,20 +8,32 @@ import 'package:learn_megnagmet/utils/api_constant.dart';
 import '../widget/button.dart';
 import '../widget/custom_text_form_field.dart';
 
-class AddTrueFalseQuestionScreen extends StatefulWidget {
-  final String courseId;
+class EditTrueFalseQuestionScreen extends StatefulWidget {
   final int quizId;
-  const AddTrueFalseQuestionScreen({super.key, required this.courseId, required this.quizId});
+  final int? questionId;
+
+  const EditTrueFalseQuestionScreen({
+    super.key,
+    required this.quizId,
+    required this.questionId
+  });
 
   @override
-  _AddTrueFalseQuestionScreenState createState() => _AddTrueFalseQuestionScreenState();
+  _EditTrueFalseQuestionScreenState createState() => _EditTrueFalseQuestionScreenState();
 }
 
-class _AddTrueFalseQuestionScreenState extends State<AddTrueFalseQuestionScreen> {
+class _EditTrueFalseQuestionScreenState extends State<EditTrueFalseQuestionScreen> {
   final TextEditingController _questionController = TextEditingController();
   int _selectedAnswer = 0; // 0 for True, 1 for False
   bool _isLoadingSave = false;
   bool _isLoadingSaveAnother = false;
+  bool _isLoadingData = true; // Loading for fetching data
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchQuestionData(); // Fetch data when screen loads
+  }
 
   @override
   void dispose() {
@@ -29,7 +41,74 @@ class _AddTrueFalseQuestionScreenState extends State<AddTrueFalseQuestionScreen>
     super.dispose();
   }
 
-  // API Call Function - UPDATED with SaveAnother logic
+  // ✅ NEW: Fetch question data from API
+  Future<void> _fetchQuestionData() async {
+    setState(() {
+      _isLoadingData = true;
+    });
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('authToken') ?? '';
+
+      final url = Uri.parse("${ApiConstant.baseUrl}instructor/course/exam/edit_quiz_question/${widget.questionId}");
+
+      print('Fetching question data for ID: ${widget.questionId}');
+
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final questionData = data['data']['quiz_question'];
+          final options = questionData['options'] as List<dynamic>;
+
+          // ✅ Populate question text
+          _questionController.text = questionData['name'] ?? '';
+
+          // ✅ Find correct answer from options
+          final trueOption = options.firstWhere((option) => option['option_name'] == 'True');
+          if (trueOption['is_correct_answer'] == true) {
+            _selectedAnswer = 0; // True
+          } else {
+            _selectedAnswer = 1; // False
+          }
+
+          print('✅ Data populated successfully!');
+          print('Question: ${_questionController.text}');
+          print('Correct Answer: $_selectedAnswer');
+        } else {
+          Get.snackbar('Error', 'Failed to load question data: ${data['message']}',
+              snackPosition: SnackPosition.TOP,
+              backgroundColor: Colors.red,
+              colorText: Colors.white);
+        }
+      } else {
+        Get.snackbar('Error', 'Failed to load question data: ${response.statusCode}',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.red,
+            colorText: Colors.white);
+      }
+    } catch (e) {
+      print('Error fetching question data: $e');
+      Get.snackbar('Error', 'Something went wrong: $e',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white);
+    } finally {
+      setState(() {
+        _isLoadingData = false;
+      });
+    }
+  }
+
+  // API Call Function - FIXED payload key
   Future<void> _saveQuestion({bool isSaveAnother = false}) async {
     // Basic validation
     if (_questionController.text.trim().isEmpty) {
@@ -56,12 +135,13 @@ class _AddTrueFalseQuestionScreenState extends State<AddTrueFalseQuestionScreen>
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String token = prefs.getString('authToken') ?? '';
 
-      final url = Uri.parse("${ApiConstant.baseUrl}instructor/course/exam/save_true_false_question");
+      final url = Uri.parse("${ApiConstant.baseUrl}instructor/course/exam/update_true_false_question");
 
-      // Prepare the payload
+      // Prepare the payload - FIXED: 'questionId_id' → 'question_id'
       final isCorrectAnswer = _selectedAnswer == 0 ? 1 : 0; // True = 1, False = 0
 
       final payload = {
+        'question_id': widget.questionId, // ✅ FIXED key name
         'quiz_id': widget.quizId,
         'name': _questionController.text.trim(),
         'is_correct_answer': isCorrectAnswer,
@@ -80,10 +160,10 @@ class _AddTrueFalseQuestionScreenState extends State<AddTrueFalseQuestionScreen>
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         // API Success
-        print('Question saved successfully: ${response.body}');
+        print('Question updated successfully: ${response.body}');
         Get.snackbar(
           'Success',
-          'True/False question saved successfully!',
+          'True/False question updated successfully!',
           snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.green,
           colorText: Colors.white,
@@ -93,7 +173,7 @@ class _AddTrueFalseQuestionScreenState extends State<AddTrueFalseQuestionScreen>
           // Reset form for "Save and Another"
           setState(() {
             _questionController.clear();
-            _selectedAnswer = 0; // Reset to True
+            _selectedAnswer = 0;
             _isLoadingSaveAnother = false;
           });
         } else {
@@ -105,7 +185,7 @@ class _AddTrueFalseQuestionScreenState extends State<AddTrueFalseQuestionScreen>
         }
       } else {
         // API Error
-        final errorMessage = jsonDecode(response.body)['message'] ?? 'Failed to save question';
+        final errorMessage = jsonDecode(response.body)['message'] ?? 'Failed to update question';
         Get.snackbar(
           'Error',
           errorMessage,
@@ -115,7 +195,7 @@ class _AddTrueFalseQuestionScreenState extends State<AddTrueFalseQuestionScreen>
         );
       }
     } catch (e) {
-      print('Error saving question: $e');
+      print('Error updating question: $e');
       Get.snackbar(
         'Error',
         'Something went wrong: $e',
@@ -130,10 +210,20 @@ class _AddTrueFalseQuestionScreenState extends State<AddTrueFalseQuestionScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingData) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            color: const Color(0xFF00AFEE),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Add True/False Question',
+          'Edit True/False Question',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -197,21 +287,20 @@ class _AddTrueFalseQuestionScreenState extends State<AddTrueFalseQuestionScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 SizedBox(
-                  width: 200,
+                  width: 150,
                   child: CustomButton(
-                    onTap: () => _saveQuestion(isSaveAnother: true),
-                    buttonText: 'Save and Another',
-                    buttonColor: const Color(0xFF00AFEE),
-                    textColor: Colors.white,
-                    isLoading: _isLoadingSaveAnother,
+                    onTap: () => Navigator.pop(context),
+                    buttonText: 'Cancel',
+                    buttonColor: Colors.grey[300],
+                    textColor: Colors.black,
                   ),
                 ),
                 SizedBox(
-                  width: 120,
+                  width: 150,
                   child: CustomButton(
-                    onTap: () => _saveQuestion(),
-                    buttonText: 'Save',
-                    buttonColor: const Color(0xFF00AFEE),
+                    onTap:  () => _saveQuestion(),
+                    buttonText:  'Save',
+                    buttonColor: _isLoadingSave ? Colors.grey : const Color(0xFF00AFEE),
                     textColor: Colors.white,
                     isLoading: _isLoadingSave,
                   ),

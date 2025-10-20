@@ -3,7 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:http/http.dart' as http;
+import 'package:learn_megnagmet/quiz/delete_true_false_question_dialogbox.dart';
+import 'package:learn_megnagmet/quiz/edit_quiz_screen.dart';
 import 'package:learn_megnagmet/quiz/mcqs_question_list.dart';
+import 'package:learn_megnagmet/quiz/true_false_quiz_question_list.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/api_constant.dart';
@@ -130,19 +133,42 @@ class _QuizListWidgetState extends State<QuizListWidget> {
                       ),
                       PopupMenuButton<String>(
                         icon: Icon(Icons.more_horiz, color: Colors.grey[600]),
-                        onSelected: (String value) {
+                        onSelected: (String value) async {
                           switch (value) {
                             case 'unpublish':
                               print('Unpublish quiz: $quizUuid');
                               break;
                             case 'view':
-                              Get.to(()=>McqsQuestionList(quizId: quizId));
+                              Get.to(() => TrueFalseQuizListScreen(
+                                quizId: int.parse(quizId.toString()),
+                              ));
                               break;
                             case 'edit':
-                              print('Edit quiz: $quizUuid');
+                              await Get.to(() => EditQuizScreen(
+                                quizId: int.parse(quizId.toString()),
+                              ));
+                             _fetchQuizList();
                               break;
                             case 'delete':
-                              print('Delete quiz: $quizUuid');
+                            // ✅ FIXED: Proper Dialog Implementation
+                              Get.dialog(
+                                DeleteTrueFalseQuestionDialogbox(
+                                  onDelete: () async {
+                                    await _fetchQuizList(); // Refresh data from API
+                                    if (mounted) {
+                                      Get.snackbar(
+                                        'Success',
+                                        'Quiz deleted successfully',
+                                        snackPosition: SnackPosition.TOP,
+                                        backgroundColor: Colors.green,
+                                        colorText: Colors.white,
+                                      );
+                                    }
+                                  },
+                                  onCancel: () => Navigator.pop(context),
+                                  quizId: int.parse(quizId.toString()), // Pass quizId
+                                ),
+                              );
                               break;
                           }
                         },
@@ -170,11 +196,9 @@ class _QuizListWidgetState extends State<QuizListWidget> {
                 ],
               ),
             );
-
           },
         ),
       ),
-
     );
   }
 
