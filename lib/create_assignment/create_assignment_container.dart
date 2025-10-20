@@ -8,8 +8,9 @@ import '../widget/button.dart';
 
 class CreateAssignmentContainer extends StatelessWidget {
   final String courseName;
+  final String courseId;
 
-  const CreateAssignmentContainer({super.key, required this.courseName});
+  const CreateAssignmentContainer({super.key, required this.courseName, required this.courseId});
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +43,7 @@ class CreateAssignmentContainer extends StatelessWidget {
                 height: 55.h,
                 child: CustomButton(
                   onTap: () {
-                    Get.to(()=> CreateAssignmentForm());
+                    Get.to(()=> CreateAssignmentForm(courseId : courseId));
                   },
                   buttonText: 'Create New Assignment',
                 ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:learn_megnagmet/create_assignment/create_assignment_container.dart';
+import 'package:learn_megnagmet/create_assignment/created_assignment_list_widget.dart';
 import 'package:learn_megnagmet/quiz/quiz_list_widget.dart';
 class CreatedAssignmentList extends StatefulWidget {
   final String courseId;
@@ -21,8 +22,8 @@ class _CreatedAssignmentListState extends State<CreatedAssignmentList> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            CreateAssignmentContainer(courseName: widget.courseName,),
-            QuizListWidget(courseId: widget.courseId,),
+            CreateAssignmentContainer(courseName: widget.courseName,courseId: widget.courseId),
+            CreatedAssignmentListWidget(courseId: widget.courseId,),
           ],
         ),
 
