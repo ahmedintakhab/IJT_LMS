@@ -3,11 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:http/http.dart' as http;
+import 'package:learn_megnagmet/create_assignment/assignment_tabbar_widget.dart';
 import 'package:learn_megnagmet/create_assignment/delete_assignment_dialogbox.dart';
 import 'package:learn_megnagmet/create_assignment/edit_assignment_form.dart';
-import 'package:learn_megnagmet/quiz/delete_true_false_question_dialogbox.dart';
-import 'package:learn_megnagmet/quiz/edit_quiz_screen.dart';
-import 'package:learn_megnagmet/quiz/true_false_quiz_question_list.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/api_constant.dart';
@@ -119,8 +117,9 @@ class _CreatedAssignmentListWidgetState extends State<CreatedAssignmentListWidge
                       SizedBox(width: 250.w,height: 55.h,
                         child: CustomButton(
                           onTap: () {
-                            // Handle Add Question navigation
-                          },
+                            Get.to(() => AssignmentTabWidget(assignmentId : assignmentId));
+
+                            },
                           buttonText: 'Click Here',
                           buttonColor: Colors.blue[100]!,
                           textColor: Colors.blue,

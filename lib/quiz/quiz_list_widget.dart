@@ -5,12 +5,13 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:http/http.dart' as http;
 import 'package:learn_megnagmet/quiz/delete_true_false_question_dialogbox.dart';
 import 'package:learn_megnagmet/quiz/edit_quiz_screen.dart';
-import 'package:learn_megnagmet/quiz/mcqs_question_list.dart';
 import 'package:learn_megnagmet/quiz/true_false_quiz_question_list.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/api_constant.dart';
 import '../widget/button.dart';
+import 'add_quiz_question_form.dart';
+import 'add_true_false_question_screen.dart';
 
 class QuizListWidget extends StatefulWidget {
   final String courseId;
@@ -73,6 +74,68 @@ class _QuizListWidgetState extends State<QuizListWidget> {
     }
   }
 
+  // New method to change quiz status
+  Future<void> _changeQuizStatus(String quizId, String status) async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String token = prefs.getString('authToken') ?? '';
+
+      final String apiUrl =
+          "${ApiConstant.baseUrl}instructor/course/exam/status_change";
+
+      final Map<String, String> body = {
+        'quiz_id': quizId,
+        'status': status,
+      };
+
+      print('Changing quiz status: $body');
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: json.encode(body),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print('Status changed successfully: ${response.body}');
+
+        // Show success message
+        Get.snackbar(
+          'Success',
+          'Quiz status changed to $status',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+
+        // Refresh the quiz list
+        await _fetchQuizList();
+      } else {
+        print('Failed to change quiz status: ${response.body}');
+        Get.snackbar(
+          'Error',
+          'Failed to change quiz status',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      print('Error changing quiz status: $e');
+      Get.snackbar(
+        'Error',
+        'An error occurred while changing quiz status',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -95,8 +158,7 @@ class _QuizListWidgetState extends State<QuizListWidget> {
             _isLoadingLeaderboard.putIfAbsent(index, () => false);
             final status = quiz['status'] ?? 'Unknown';
             final quizUuid = quiz['uuid']?.toString() ?? '';
-            final addQuestionUrl = quiz['add_question_url'] ?? '';
-            final quizId = quiz['id'] ?? '';
+            final quizId = quiz['id']?.toString() ?? '';
 
             return Container(
               margin: const EdgeInsets.only(bottom: 16.0),
@@ -123,8 +185,28 @@ class _QuizListWidgetState extends State<QuizListWidget> {
                       SizedBox(width: 250.w,height: 55.h,
                         child: CustomButton(
                           onTap: () {
-                            // Handle Add Question navigation
-                            print('Navigate to: $addQuestionUrl');
+                            final quizType = quiz['type']?.toString() ?? '';
+                            final quizId = int.parse(quiz['id'].toString());
+
+                            // ✅ DEBUG: Print EXACT value with quotes!
+                            print('🔍 DEBUG Quiz $quizId: Type = "$quizType" | Length = ${quizType.length}');
+
+                            // ✅ FIXED: TRIM SPACES + Flexible matching
+                            final cleanType = quizType.trim();
+
+                            if (cleanType.contains('Multiple') || cleanType.contains('MCQ')) {
+                              print('✅ GOING TO: Multiple Choice Form');
+                              Get.to(() => AddQuizQuestionForm(
+                                courseId: widget.courseId,
+                                quizId: quizId,
+                              ));
+                            } else {
+                              print('✅ GOING TO: True False Form');
+                              Get.to(() => AddTrueFalseQuestionScreen(
+                                courseId: widget.courseId,
+                                quizId: quizId,
+                              ));
+                            }
                           },
                           buttonText: 'Add Question',
                           buttonColor: Colors.blue[100]!,
@@ -135,8 +217,13 @@ class _QuizListWidgetState extends State<QuizListWidget> {
                         icon: Icon(Icons.more_horiz, color: Colors.grey[600]),
                         onSelected: (String value) async {
                           switch (value) {
-                            case 'unpublish':
-                              print('Unpublish quiz: $quizUuid');
+                            case 'Published':
+                              print('📢 Setting quiz to Published: $quizUuid');
+                              await _changeQuizStatus(quizId, 'Published');
+                              break;
+                            case 'Unpublished':
+                              print('🔇 Setting quiz to Unpublished: $quizUuid');
+                              await _changeQuizStatus(quizId, 'Unpublished');
                               break;
                             case 'view':
                               Get.to(() => TrueFalseQuizListScreen(
@@ -147,14 +234,13 @@ class _QuizListWidgetState extends State<QuizListWidget> {
                               await Get.to(() => EditQuizScreen(
                                 quizId: int.parse(quizId.toString()),
                               ));
-                             _fetchQuizList();
+                              _fetchQuizList();
                               break;
                             case 'delete':
-                            // ✅ FIXED: Proper Dialog Implementation
                               Get.dialog(
                                 DeleteTrueFalseQuestionDialogbox(
                                   onDelete: () async {
-                                    await _fetchQuizList(); // Refresh data from API
+                                    await _fetchQuizList();
                                     if (mounted) {
                                       Get.snackbar(
                                         'Success',
@@ -166,30 +252,33 @@ class _QuizListWidgetState extends State<QuizListWidget> {
                                     }
                                   },
                                   onCancel: () => Navigator.pop(context),
-                                  quizId: int.parse(quizId.toString()), // Pass quizId
+                                  quizId: int.parse(quizId.toString()),
                                 ),
                               );
                               break;
                           }
                         },
-                        itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                          const PopupMenuItem<String>(
-                            value: 'unpublish',
-                            child: Text('Unpublish'),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'view',
-                            child: Text('View'),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'edit',
-                            child: Text('Edit'),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'delete',
-                            child: Text('Delete'),
-                          ),
-                        ],
+                        itemBuilder: (BuildContext context) {
+                          final status = quiz['status']?.toString() ?? 'Unknown';
+                          return <PopupMenuEntry<String>>[
+                            PopupMenuItem<String>(
+                              value: status == 'Published' ? 'Unpublished' : 'Published',
+                              child: Text(status == 'Published' ? 'Unpublished' : 'Published'),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'view',
+                              child: Text('View'),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'edit',
+                              child: Text('Edit'),
+                            ),
+                            const PopupMenuItem<String>(
+                              value: 'delete',
+                              child: Text('Delete'),
+                            ),
+                          ];
+                        },
                       ),
                     ],
                   ),
