@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:learn_megnagmet/profile/profile_field_container.dart';
+import 'package:learn_megnagmet/profile/recommended_courses_list.dart';
 import 'package:learn_megnagmet/profile/student_change_password.dart';
 import 'package:learn_megnagmet/profile/student_update_profile.dart';
 import 'package:learn_megnagmet/utils/slider_page_data_model.dart';
@@ -278,6 +279,13 @@ class _MyProfileState extends State<MyProfile> {
                               icon: Icon(Icons.edit, color: Color(0XFF00AFEE)),
                               onTap: () {
                                 Get.to(StudentUpdateProfile());
+                              },
+                            ),
+                            ProfileFieldContainer(
+                              title: 'Recommended Courses',
+                              icon: Icon(Icons.book, color: Color(0XFF00AFEE)),
+                              onTap: () {
+                                Get.to(RecommendedCoursesList());
                               },
                             ),
                             ProfileFieldContainer(

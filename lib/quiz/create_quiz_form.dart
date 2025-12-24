@@ -95,7 +95,8 @@ class _CreateQuizFormState extends State<CreateQuizForm> {
 
         // ✅ FETCH quiz_id FROM RESPONSE
         quizId = responseData['quiz_id'];
-        print('Fetched Quiz ID: $quizId');        Get.snackbar(
+        print('Fetched Quiz ID: $quizId');
+        Get.snackbar(
           'Success',
           'Quiz Created Successfully!',
           snackPosition: SnackPosition.TOP,

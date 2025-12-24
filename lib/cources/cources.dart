@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:learn_megnagmet/controller/controller.dart';
+import 'package:learn_megnagmet/cources/course_recommended_form.dart';
 import 'package:learn_megnagmet/cources/lessons_screen.dart';
 import 'package:learn_megnagmet/cources/overview_page.dart';
 import 'package:learn_megnagmet/cources/review_screen.dart';
@@ -97,7 +98,9 @@ class _MyCourcesState extends State<MyCources> {
       String token = prefs.getString('authToken') ?? '';
 
       final url = '${ApiConstant.baseUrl}course-details/${widget.slug}';
-
+        //🗑️ Clear old cache before fetching new data
+      // await CustomCacheManager.instance.removeFile(url);
+      // print('🗑️ Old cache removed before fetching course details');
       // Check if cached response exists
       final cachedResponse = await CustomCacheManager.instance.getFileFromCache(url);
       dynamic data;
@@ -444,13 +447,20 @@ class _MyCourcesState extends State<MyCources> {
 
                 // Enroll Button
                 Padding(
-                  padding: EdgeInsets.only(bottom: 30.h, left: 10.w, right: 10.w),
+                  padding: EdgeInsets.only(bottom: 10.h, left: 10.w, right: 10.w),
                   child: CustomButton(
                     onTap: _enrollCourse,
                     buttonText: btnText ?? '',
                     isLoading: isButtonLoading, // Pass button loading state
                   ),
                 ),
+                Padding(
+                  padding:  EdgeInsets.only(bottom: 30.h, left: 10.w, right: 10.w),
+                  child: CustomButton(onTap: (){
+                    Get.to(()=>CourseRecommendedForm(courseId : courseId));
+                  }, buttonText: 'Recommended Course',
+                    textColor: Color(0xFF00AFEE),buttonColor: Colors.white,),
+                )
               ],
             ),
           ),

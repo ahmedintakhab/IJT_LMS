@@ -8,6 +8,7 @@ import 'package:learn_megnagmet/home/home_screen.dart';
 import 'package:learn_megnagmet/instructor/all_students.dart';
 import 'package:learn_megnagmet/instructor/instructor_courses.dart';
 import 'package:learn_megnagmet/instructor/instructor_notice_board.dart';
+import 'package:learn_megnagmet/instructor/instructor_recommended_courses.dart';
 import 'package:learn_megnagmet/profile/profile_field_container.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:learn_megnagmet/utils/screen_size.dart';
@@ -201,34 +202,6 @@ class _InstructorPanelState extends State<InstructorPanel> {
                             fontWeight: FontWeight.w400,
                             color: const Color(0XFF000000)),
                       ),
-                      SizedBox(height: 2.h),
-                      // GestureDetector(
-                      //   onTap: () {
-                      //     Navigator.push(
-                      //         context,
-                      //         MaterialPageRoute(
-                      //             builder: (context) =>
-                      //                 EditScreen(
-                      //                   user: widget.user_detail,
-                      //                 )));
-                      //   },
-                      //   child: Row(
-                      //     mainAxisAlignment: MainAxisAlignment.center,
-                      //     children: [
-                      //       Text("Edit Profile",
-                      //           style: TextStyle(
-                      //               fontSize: 15.sp,
-                      //               fontFamily: 'Gilroy',
-                      //               fontWeight: FontWeight.w400,
-                      //               color: Color(0XFF000000))),
-                      //       Image(
-                      //         image: AssetImage("assets/editsymbol.png"),
-                      //         height: 16.h,
-                      //         width: 16.w,
-                      //       )
-                      //     ],
-                      //   ),
-                      // ),
                       SizedBox(height: 20),
                       Expanded(
                         child: ListView(
@@ -252,6 +225,14 @@ class _InstructorPanelState extends State<InstructorPanel> {
                                 Get.to(InstructorCourses());
                               },
                             ),
+                            ProfileFieldContainer(
+                              title: 'Recommended Courses',
+                              icon: Icon(Icons.book, color: Color(0XFF00AFEE)),
+                              onTap: () {
+                                Get.to(InstructorRecommendedCourses());
+                              },
+                            ),
+
                             ProfileFieldContainer(
                               title:'Upload Courses',
                               icon: Icon(Icons.upload, color: Color(0XFF00AFEE)),
